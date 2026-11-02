@@ -4,6 +4,8 @@ Cutting for Silhouette machines on the Mac — a lean, free, native app for peop
 
 *English and Portuguese UI.*
 
+**[⬇ Download Cutline for Mac (.dmg)](https://github.com/joaogmcorrea/cutline/releases/latest/download/Cutline.dmg)** — macOS 26 (Tahoe) or newer. See [Install](#install) for the first launch.
+
 ## What it does
 
 - Draws (Bézier pen, rectangle, ellipse, star, text) and imports PDF, AI, SVG and EPS, images (it traces the outline) and Silhouette Studio `.studio3` files.
@@ -29,7 +31,7 @@ macOS 26 (Tahoe) or newer.
 
 ## Install
 
-1. Download `Cutline-<version>.dmg` from the [latest release](https://github.com/joaogmcorrea/cutline/releases/latest).
+1. Download [Cutline.dmg](https://github.com/joaogmcorrea/cutline/releases/latest/download/Cutline.dmg) — always the latest version. (On a [release page](https://github.com/joaogmcorrea/cutline/releases/latest), the `.dmg` is under **Assets**; the "Source code" files are only the code.)
 2. Open the DMG and drag Cutline to the Applications folder.
 3. The first time you open it, macOS says it can't verify the app: Cutline isn't notarized by Apple (that requires a paid developer account). Go to System Settings › Privacy & Security and click **Open Anyway**. You only need to do this once.
 
