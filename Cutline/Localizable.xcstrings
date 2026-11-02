@@ -1,0 +1,6033 @@
+{
+  "sourceLanguage" : "pt-BR",
+  "strings" : {
+    "" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ""
+          }
+        }
+      }
+    },
+    " (antes do Cutline)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : " (before Cutline)"
+          }
+        }
+      }
+    },
+    "#" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "#"
+          }
+        }
+      }
+    },
+    "%@ (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (%@)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ (%2$@)"
+          }
+        }
+      }
+    },
+    "%@ (do arquivo)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (from file)"
+          }
+        }
+      }
+    },
+    "%@ mm da borda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ mm from the edge"
+          }
+        }
+      }
+    },
+    "%@ · %lld na fila" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · %lld in queue"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$lld na fila"
+          }
+        }
+      }
+    },
+    "%@ · cortando" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · cutting"
+          }
+        }
+      }
+    },
+    "%@ · fila parada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · queue stopped"
+          }
+        }
+      }
+    },
+    "%@ · muda no painel Página" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · change it in the Page panel"
+          }
+        }
+      }
+    },
+    "%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld"
+          }
+        }
+      }
+    },
+    "%lld camadas" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld layer"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld layers"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld camada"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld camadas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld caminhos" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld path"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld paths"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld caminho"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld caminhos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld contornos" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld outline"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld outlines"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld contorno"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld contornos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld cores" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld color"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld colors"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cor"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cores"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld cores desligadas como no Studio" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld color turned off as in Studio"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld colors turned off as in Studio"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cor desligada como no Studio"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cores desligadas como no Studio"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld de %lld bytes enviados" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld bytes sent"
+          }
+        }
+      }
+    },
+    "%lld famílias instaladas" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld font family installed"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld font families installed"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld família instalada"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld famílias instaladas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld fora da página" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld off the page"
+          }
+        }
+      }
+    },
+    "%lld imagens" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld image"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld images"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld imagem"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld imagens"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld imagens não importadas" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld image not imported"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld images not imported"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld imagem não importada"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld imagens não importadas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld na frente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ahead"
+          }
+        }
+      }
+    },
+    "%lld não lidos" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld not read"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld not read"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld não lido"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld não lidos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld nós" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld node"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld nodes"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld nó"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld nós"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld objetos" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld object"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld objects"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld objeto"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld objetos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld objetos passam da área entre as marcas — o que ficar de fora não é cortado." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld object goes past the area between the marks — whatever is outside isn’t cut."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld objects go past the area between the marks — whatever is outside isn’t cut."
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld objeto passa da área entre as marcas — o que ficar de fora não é cortado."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld objetos passam da área entre as marcas — o que ficar de fora não é cortado."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld passadas" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pass"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld passes"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld passada"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld passadas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld pontos · aberto" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld point · open"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld points · open"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ponto · aberto"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pontos · aberto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld pontos · fechado" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld point · closed"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld points · closed"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ponto · fechado"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pontos · fechado"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld sem corte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld not cut"
+          }
+        }
+      }
+    },
+    "%lld × %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld × %lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld × %2$lld"
+          }
+        }
+      }
+    },
+    "%lld%%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%%"
+          }
+        }
+      }
+    },
+    "(Texto cortado: o relatório completo foi copiado; cole aqui.)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(Text cut short: the full report was copied; paste it here.)"
+          }
+        }
+      }
+    },
+    "**%@ cm** de corte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**%@ cm** of cutting"
+          }
+        }
+      }
+    },
+    "**Print & Cut:** imprima a página em 100 % (⌘P) e ponha a folha na base na mesma posição da tela, com o quadrado no canto superior esquerdo. A máquina lê as marcas antes de cortar (até 40 s)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Print & Cut:** print the page at 100% (⌘P) and place the sheet on the mat in the same position as on screen, with the square in the top-left corner. The machine reads the marks before cutting (up to 40 s)."
+          }
+        }
+      }
+    },
+    "0 pt aparece na tela, não imprime e indica o corte." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0 pt shows on screen, doesn’t print and marks the cut."
+          }
+        }
+      }
+    },
+    "?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "?"
+          }
+        }
+      }
+    },
+    "A" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "H"
+          }
+        }
+      }
+    },
+    "A cortadora desconectou." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The cutter disconnected."
+          }
+        }
+      }
+    },
+    "A cortadora não respondeu a tempo." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The cutter didn’t respond in time."
+          }
+        }
+      }
+    },
+    "A fila parou em “%@”: tente de novo ou tire da fila para seguir." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The queue stopped at “%@”: try again or remove it from the queue to continue."
+          }
+        }
+      }
+    },
+    "A folha vai colada na base, no canto superior esquerdo da grade." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The sheet sticks to the mat, in the top-left corner of the grid."
+          }
+        }
+      }
+    },
+    "A margem e as cantoneiras têm de ser as mesmas da folha impressa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The margin and corner marks must match the printed sheet"
+          }
+        }
+      }
+    },
+    "A máquina corta de cima para baixo. Arraste uma cor (ou use as setas) para mudar a ordem." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The machine cuts from top to bottom. Drag a color (or use the arrows) to change the order."
+          }
+        }
+      }
+    },
+    "A máquina não achou as marcas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The machine couldn’t find the marks"
+          }
+        }
+      }
+    },
+    "A máquina não achou as marcas de registro." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The machine couldn’t find the registration marks."
+          }
+        }
+      }
+    },
+    "A máquina não achou as marcas — nada foi cortado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The machine couldn’t find the marks — nothing was cut."
+          }
+        }
+      }
+    },
+    "A máquina procura o quadrado e as duas cantoneiras…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The machine looks for the square and the two corner marks…"
+          }
+        }
+      }
+    },
+    "A4 · 210 × 297 mm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A4 · 210 × 297 mm"
+          }
+        }
+      }
+    },
+    "Abaixo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Below"
+          }
+        }
+      }
+    },
+    "Abri a página do GitHub (é preciso uma conta gratuita)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opened the GitHub page (you need a free account)."
+          }
+        }
+      }
+    },
+    "Abri o e-mail para %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opened an email to %@."
+          }
+        }
+      }
+    },
+    "Abrir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open"
+          }
+        }
+      }
+    },
+    "Abrir no GitHub" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open in GitHub"
+          }
+        }
+      }
+    },
+    "Abrir um documento do Cutline ou do Silhouette Studio (⌘O)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open a Cutline or Silhouette Studio document (⌘O)"
+          }
+        }
+      }
+    },
+    "Achou as três marcas: aí ela corta em cima da impressão." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Found all three marks: now it cuts right over the print."
+          }
+        }
+      }
+    },
+    "Acima" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Above"
+          }
+        }
+      }
+    },
+    "Agrupar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Group"
+          }
+        }
+      }
+    },
+    "Ajustar à janela" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fit in Window"
+          }
+        }
+      }
+    },
+    "Ajustar à janela (⌘0)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fit in Window (⌘0)"
+          }
+        }
+      }
+    },
+    "Ajustes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        }
+      }
+    },
+    "Alinhar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Align"
+          }
+        }
+      }
+    },
+    "Alinhar %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Align %@"
+          }
+        }
+      }
+    },
+    "Alinhar %@ da folha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Align %@ to the sheet"
+          }
+        }
+      }
+    },
+    "Alinhar %@ da seleção" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Align %@ to the selection"
+          }
+        }
+      }
+    },
+    "Alinhar à direita" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Align right"
+          }
+        }
+      }
+    },
+    "Alinhar à esquerda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Align left"
+          }
+        }
+      }
+    },
+    "Alinhar à folha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Align to the sheet"
+          }
+        }
+      }
+    },
+    "Alinhar à seleção" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Align to the selection"
+          }
+        }
+      }
+    },
+    "Ampliar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom In"
+          }
+        }
+      }
+    },
+    "Ampliar (⌘+)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom In (⌘+)"
+          }
+        }
+      }
+    },
+    "Apagar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        }
+      }
+    },
+    "Apagar camada ativa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Active Layer"
+          }
+        }
+      }
+    },
+    "Apagar guias" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear Guides"
+          }
+        }
+      }
+    },
+    "Apagar “%@” de Meus materiais?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete “%@” from My Materials?"
+          }
+        }
+      }
+    },
+    "Apagar “%@” e o objeto dela?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete “%@” and its object?"
+          }
+        }
+      }
+    },
+    "Apagar “%@” e os %lld objetos dela?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete “%@” and its %lld objects?"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Apagar “%1$@” e os %2$lld objetos dela?"
+          }
+        }
+      }
+    },
+    "Apagar “%@”…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete “%@”…"
+          }
+        }
+      }
+    },
+    "Arraste o teste de corte (o quadrado tracejado) para onde quiser testar na folha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag the test cut (the dashed square) to where you want to test on the sheet"
+          }
+        }
+      }
+    },
+    "Arraste para mudar a ordem do corte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag to change the cutting order"
+          }
+        }
+      }
+    },
+    "As formas saem da base (%lld × %lld mm)." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The shapes go past the mat (%lld × %lld mm)."
+          }
+        }
+      }
+    },
+    "As letras viram caminhos com pontos editáveis e não dependem mais da fonte (⇧⌘O). Só volta a ser texto com ⌘Z." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The letters become paths with editable points and no longer depend on the font (⇧⌘O). Only ⌘Z turns them back into text."
+          }
+        }
+      }
+    },
+    "As margens das marcas vieram diferentes em cada lado (do arquivo do Studio); mudar aqui iguala as quatro." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The mark margins came different on each side (from the Studio file); changing them here makes all four equal."
+          }
+        }
+      }
+    },
+    "Atualizar “%@” com estes ajustes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update “%@” with These Settings"
+          }
+        }
+      }
+    },
+    "Auto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto"
+          }
+        }
+      }
+    },
+    "AutoBlade (ajuste automático)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AutoBlade (automatic)"
+          }
+        }
+      }
+    },
+    "Avançar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bring Forward"
+          }
+        }
+      }
+    },
+    "Barra de controle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Control Bar"
+          }
+        }
+      }
+    },
+    "Base 12 × 12 pol." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "12 × 12 in mat"
+          }
+        }
+      }
+    },
+    "Base 12 × 24 pol." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "12 × 24 in mat"
+          }
+        }
+      }
+    },
+    "Base 15 × 15 pol." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15 × 15 in mat"
+          }
+        }
+      }
+    },
+    "Base 24 × 24 pol." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "24 × 24 in mat"
+          }
+        }
+      }
+    },
+    "Base 6 × 8 pol." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 × 8 in mat"
+          }
+        }
+      }
+    },
+    "Base 8 × 12 pol." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "8 × 12 in mat"
+          }
+        }
+      }
+    },
+    "Base 8,5 × 12 pol." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "8.5 × 12 in mat"
+          }
+        }
+      }
+    },
+    "Base A4 · 210 × 297 mm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A4 sheet · 210 × 297 mm"
+          }
+        }
+      }
+    },
+    "Base PixScan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PixScan mat"
+          }
+        }
+      }
+    },
+    "Base de corte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cutting mat"
+          }
+        }
+      }
+    },
+    "Base eletrostática 12 × 12 pol." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Electrostatic 12 × 12 in mat"
+          }
+        }
+      }
+    },
+    "Base eletrostática 8,5 × 12 pol." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Electrostatic 8.5 × 12 in mat"
+          }
+        }
+      }
+    },
+    "Branco" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "White"
+          }
+        }
+      }
+    },
+    "Buscar fonte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search fonts"
+          }
+        }
+      }
+    },
+    "Cada linha é um parágrafo: o texto só quebra onde se tecla Enter. Vale para o texto inteiro." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each line is a paragraph: text only breaks where you press Return. Applies to the whole text."
+          }
+        }
+      }
+    },
+    "Caixa alta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All caps"
+          }
+        }
+      }
+    },
+    "Camada %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Layer %lld"
+          }
+        }
+      }
+    },
+    "Camadas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Layers"
+          }
+        }
+      }
+    },
+    "Caminho" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Path"
+          }
+        }
+      }
+    },
+    "Cancelar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "Caneta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pen"
+          }
+        }
+      }
+    },
+    "Canto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corner"
+          }
+        }
+      }
+    },
+    "Canto arredondado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Round join"
+          }
+        }
+      }
+    },
+    "Canto chanfrado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bevel join"
+          }
+        }
+      }
+    },
+    "Canto vivo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miter join"
+          }
+        }
+      }
+    },
+    "Cantoneiras" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corner marks"
+          }
+        }
+      }
+    },
+    "Caractere" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Character"
+          }
+        }
+      }
+    },
+    "Carregue a base na máquina e tente de novo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Load the mat into the machine and try again."
+          }
+        }
+      }
+    },
+    "Carregue a folha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Load the sheet"
+          }
+        }
+      }
+    },
+    "Carregue a folha na máquina e tente de novo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Load the sheet into the machine and try again."
+          }
+        }
+      }
+    },
+    "Cartolina lisa" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Smooth cardstock"
+          }
+        }
+      }
+    },
+    "Centralizar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Align center"
+          }
+        }
+      }
+    },
+    "Colar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste"
+          }
+        }
+      }
+    },
+    "Com base de corte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With cutting mat"
+          }
+        }
+      }
+    },
+    "Como" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Presets"
+          }
+        }
+      }
+    },
+    "Como o Cutline (15 mm, cantoneiras de 20 mm)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Like Cutline (15 mm, 20 mm corner marks)"
+          }
+        }
+      }
+    },
+    "Como o Silhouette Studio (5/8 pol., cantoneiras de 20 mm)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Like Silhouette Studio (5/8 in, 20 mm corner marks)"
+          }
+        }
+      }
+    },
+    "Como reproduzir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Steps to reproduce"
+          }
+        }
+      }
+    },
+    "Conectar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect"
+          }
+        }
+      }
+    },
+    "Conte o que você fez e o que o Cutline fez (mensagem de erro, o que a máquina cortou…)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tell what you did and what Cutline did (error message, what the machine cut…)"
+          }
+        }
+      }
+    },
+    "Contorno" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Outline"
+          }
+        }
+      }
+    },
+    "Contorno %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ outline"
+          }
+        }
+      }
+    },
+    "Contorno externo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Outer outline"
+          }
+        }
+      }
+    },
+    "Contornos internos também" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inner outlines too"
+          }
+        }
+      }
+    },
+    "Contínua" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solid"
+          }
+        }
+      }
+    },
+    "Converter em caminho" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convert to Path"
+          }
+        }
+      }
+    },
+    "Converter em caminho para editar os pontos (seleção direta)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convert to a path to edit its points (direct selection)"
+          }
+        }
+      }
+    },
+    "Converter em curvas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Outlines"
+          }
+        }
+      }
+    },
+    "Converter texto em curvas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Outlines"
+          }
+        }
+      }
+    },
+    "Copiar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy"
+          }
+        }
+      }
+    },
+    "Cor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color"
+          }
+        }
+      }
+    },
+    "Cores sempre em CMYK (RGB, HSL e hex convertem na hora). O preenchimento é impresso." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colors are always CMYK (RGB, HSL and hex convert on the fly). The fill is printed."
+          }
+        }
+      }
+    },
+    "Cores sempre em CMYK. A cor do traço define a configuração de corte; sem traço, o objeto não corta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colors are always CMYK. The stroke color sets the cut settings; with no stroke, the object isn’t cut."
+          }
+        }
+      }
+    },
+    "Corpo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Size"
+          }
+        }
+      }
+    },
+    "Corpo da fonte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Font size"
+          }
+        }
+      }
+    },
+    "Corta em volta da arte, com margem. O que está dentro dela é ignorado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuts around the artwork, with a margin. Anything inside it is ignored."
+          }
+        }
+      }
+    },
+    "Corta só o quadrado com o triângulo, no lugar marcado na folha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuts only the square with the triangle, where it is marked on the sheet"
+          }
+        }
+      }
+    },
+    "Corta só o quadrado com o triângulo, no lugar marcado na folha (arraste para mudar), com os ajustes de %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuts only the square with the triangle, where it is marked on the sheet (drag to move it), with the settings of %@"
+          }
+        }
+      }
+    },
+    "Corta também os vazados da arte, como o miolo de um O. A margem os estreita; os pequenos somem." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Also cuts the openings in the artwork, like the inside of an O. The margin narrows them; small ones disappear."
+          }
+        }
+      }
+    },
+    "Cortadora Silhouette" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silhouette cutter"
+          }
+        }
+      }
+    },
+    "Cortando" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cutting"
+          }
+        }
+      }
+    },
+    "Cortando %@…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cutting %@…"
+          }
+        }
+      }
+    },
+    "Cortar antes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cut Earlier"
+          }
+        }
+      }
+    },
+    "Cortar depois" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cut Later"
+          }
+        }
+      }
+    },
+    "Cortar por cor de linha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cut by line color"
+          }
+        }
+      }
+    },
+    "Cutline no GitHub" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cutline on GitHub"
+          }
+        }
+      }
+    },
+    "Desagrupar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ungroup"
+          }
+        }
+      }
+    },
+    "Desconectada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disconnected"
+          }
+        }
+      }
+    },
+    "Descreva o recurso" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Describe the feature"
+          }
+        }
+      }
+    },
+    "Desenhe com as ferramentas à esquerda (P caneta, T texto, M, L e S formas) ou importe com ⇧⌘I." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Draw with the tools on the left (P pen, T text, M, L and S shapes) or import with ⇧⌘I."
+          }
+        }
+      }
+    },
+    "Desfazer (⌘Z)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Undo (⌘Z)"
+          }
+        }
+      }
+    },
+    "Deslocamento da linha de base (positivo sobe)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baseline shift (positive moves up)"
+          }
+        }
+      }
+    },
+    "Destravar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock"
+          }
+        }
+      }
+    },
+    "Destravar camada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock layer"
+          }
+        }
+      }
+    },
+    "Detecta só o formato externo — o que está dentro da arte é ignorado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Traces only the outer shape — anything inside the artwork is ignored."
+          }
+        }
+      }
+    },
+    "Dividir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Divide"
+          }
+        }
+      }
+    },
+    "Duplicar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duplicate"
+          }
+        }
+      }
+    },
+    "Duplicar ao lado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duplicate Beside"
+          }
+        }
+      }
+    },
+    "Duplo clique apaga as guias" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double-click to clear the guides"
+          }
+        }
+      }
+    },
+    "Duplo clique para renomear" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double-click to rename"
+          }
+        }
+      }
+    },
+    "Elipse" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ellipse"
+          }
+        }
+      }
+    },
+    "Em movimento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moving"
+          }
+        }
+      }
+    },
+    "Em uma linha, o que deu errado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In one line, what went wrong"
+          }
+        }
+      }
+    },
+    "Em uma linha, o que você gostaria" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In one line, what you’d like"
+          }
+        }
+      }
+    },
+    "Encontrei %lld cortadoras. Qual delas?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Found %lld cutters. Which one?"
+          }
+        }
+      }
+    },
+    "Encoste a folha na guia da esquerda, bem reta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Push the sheet against the left guide, nice and straight."
+          }
+        }
+      }
+    },
+    "Encoste a folha na guia da esquerda, reta, com o quadrado preto em cima à esquerda — ele entra primeiro na máquina." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Push the sheet straight against the left guide, with the black square at the top left — it goes into the machine first."
+          }
+        }
+      }
+    },
+    "Encoste a folha no canto superior esquerdo da base, bem reta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Place the sheet in the top-left corner of the mat, nice and straight."
+          }
+        }
+      }
+    },
+    "Encoste no canto superior esquerdo da grade da base, com o quadrado preto em cima à esquerda — ele entra primeiro na máquina." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Place it in the top-left corner of the mat’s grid, with the black square at the top left — it goes into the machine first."
+          }
+        }
+      }
+    },
+    "Entra na fila: a máquina corta quando terminar o trabalho anterior" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Goes into the queue: the machine cuts it when it finishes the previous job"
+          }
+        }
+      }
+    },
+    "Entra para imprimir, sem linha de corte." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Placed for printing, with no cut line."
+          }
+        }
+      }
+    },
+    "Entrelinha (vazio = automática; a linha usa a maior)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leading (empty = auto; each line uses the largest)"
+          }
+        }
+      }
+    },
+    "Enviado. A máquina terminou o corte." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sent. The machine finished cutting."
+          }
+        }
+      }
+    },
+    "Enviar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send"
+          }
+        }
+      }
+    },
+    "Enviar para a cortadora" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send to the cutter"
+          }
+        }
+      }
+    },
+    "Enviar para a cortadora (⌘E)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send to the cutter (⌘E)"
+          }
+        }
+      }
+    },
+    "Enviar para a máquina…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send to Machine…"
+          }
+        }
+      }
+    },
+    "Enviar para trás" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send to Back"
+          }
+        }
+      }
+    },
+    "Enviar por e-mail" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send by Email"
+          }
+        }
+      }
+    },
+    "Escala horizontal (do texto inteiro)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Horizontal scale (whole text)"
+          }
+        }
+      }
+    },
+    "Escala vertical (do texto inteiro)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vertical scale (whole text)"
+          }
+        }
+      }
+    },
+    "Escolha a máquina" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the machine"
+          }
+        }
+      }
+    },
+    "Espaço antes do parágrafo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Space before paragraph"
+          }
+        }
+      }
+    },
+    "Espaço depois do parágrafo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Space after paragraph"
+          }
+        }
+      }
+    },
+    "Esperando a máquina terminar o trabalho anterior…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for the machine to finish the previous job…"
+          }
+        }
+      }
+    },
+    "Espessura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weight"
+          }
+        }
+      }
+    },
+    "Espessura: 0 pt aparece na tela, não imprime e indica o corte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weight: 0 pt shows on screen, doesn’t print and marks the cut"
+          }
+        }
+      }
+    },
+    "Espessura: este traço também será impresso" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weight: this stroke will also be printed"
+          }
+        }
+      }
+    },
+    "Este Mac não tem Bluetooth LE." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This Mac doesn’t have Bluetooth LE."
+          }
+        }
+      }
+    },
+    "Este arquivo do Illustrator foi salvo sem o conteúdo PDF. No Illustrator, salve de novo com “Criar arquivo compatível com PDF” ligado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This Illustrator file was saved without PDF content. In Illustrator, save it again with “Create PDF Compatible File” turned on."
+          }
+        }
+      }
+    },
+    "Este arquivo do Silhouette Studio não pode ser regravado pelo Cutline (%@)." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This Silhouette Studio file can't be rewritten by Cutline (%@)."
+          }
+        }
+      }
+    },
+    "Este arquivo do Silhouette Studio tem uma organização que o Cutline ainda não sabe regravar. Guarde como documento do Cutline." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This Silhouette Studio file is laid out in a way Cutline can't rewrite yet. Save it as a Cutline document."
+          }
+        }
+      }
+    },
+    "Este documento foi salvo por uma versão mais nova do Cutline." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This document was saved by a newer version of Cutline."
+          }
+        }
+      }
+    },
+    "Este documento veio do Silhouette Studio. Dá para gravar por cima do arquivo .studio3, que continua abrindo no Studio, ou guardar como documento do Cutline. Antes de gravar por cima, uma cópia do original vai para o Lixo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This document came from Silhouette Studio. You can save over the .studio3 file, which still opens in Studio, or keep it as a Cutline document. Before saving over it, a copy of the original goes to the Trash."
+          }
+        }
+      }
+    },
+    "Este traço também será impresso." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This stroke will also be printed."
+          }
+        }
+      }
+    },
+    "Estilo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Style"
+          }
+        }
+      }
+    },
+    "Estilo da fonte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Font style"
+          }
+        }
+      }
+    },
+    "Estrela" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Star"
+          }
+        }
+      }
+    },
+    "Excluir sobreposição" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exclude Overlap"
+          }
+        }
+      }
+    },
+    "Exclusão" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exclusion"
+          }
+        }
+      }
+    },
+    "Externo e internos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Outer and inner"
+          }
+        }
+      }
+    },
+    "Falha ao conectar: %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t connect: %@"
+          }
+        }
+      }
+    },
+    "Falha ao enviar comandos: %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t send commands: %@"
+          }
+        }
+      }
+    },
+    "Falha no USB (código 0x%@)." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "USB error (code 0x%@)."
+          }
+        }
+      }
+    },
+    "Fechar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        }
+      }
+    },
+    "Fechar caminho" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close Path"
+          }
+        }
+      }
+    },
+    "Fechar o Silhouette Studio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quit Silhouette Studio"
+          }
+        }
+      }
+    },
+    "Feche o Silhouette Studio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close Silhouette Studio"
+          }
+        }
+      }
+    },
+    "Feche o Silhouette Studio para enviar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close Silhouette Studio to send"
+          }
+        }
+      }
+    },
+    "Feche o Silhouette Studio para enviar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close Silhouette Studio to send."
+          }
+        }
+      }
+    },
+    "Feche o Silhouette Studio: os dois não usam a máquina ao mesmo tempo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close Silhouette Studio: the two can't use the machine at the same time"
+          }
+        }
+      }
+    },
+    "Ferramenta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tool"
+          }
+        }
+      }
+    },
+    "Ferramentas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tools"
+          }
+        }
+      }
+    },
+    "Fila de trabalhos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Job queue"
+          }
+        }
+      }
+    },
+    "Fixar este painel na coluna" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pin this panel to the column"
+          }
+        }
+      }
+    },
+    "Fixar todos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pin All"
+          }
+        }
+      }
+    },
+    "Fixar todos os painéis na coluna" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pin all panels to the column"
+          }
+        }
+      }
+    },
+    "Folha no canto, reta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sheet in the corner, straight"
+          }
+        }
+      }
+    },
+    "Fonte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Font"
+          }
+        }
+      }
+    },
+    "Fonte não instalada neste Mac: o texto aparece com outra até ela ser instalada ou ativada (sem precisar fechar o Cutline)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Font not installed on this Mac: the text shows in another font until it's installed or activated (no need to quit Cutline)"
+          }
+        }
+      }
+    },
+    "Força" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Force"
+          }
+        }
+      }
+    },
+    "Força %lld, velocidade %lld, lâmina %lld, %@. Fica disponível em todos os arquivos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Force %lld, speed %lld, blade %lld, %@. Available in every file."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Força %1$lld, velocidade %2$lld, lâmina %3$lld, %4$@. Fica disponível em todos os arquivos."
+          }
+        }
+      }
+    },
+    "Força deve ficar entre 1 e 33." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Force must be between 1 and 33."
+          }
+        }
+      }
+    },
+    "Gravado em “%@”." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved to “%@”."
+          }
+        }
+      }
+    },
+    "Gravado em “%@”. %lld caminhos abertos foram fechados (o .studio3 não tem caminho aberto)." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Saved to “%@”. %lld open path was closed (a .studio3 has no open paths)."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Saved to “%@”. %lld open paths were closed (a .studio3 has no open paths)."
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Gravado em “%@”. %lld caminho aberto foi fechado (o .studio3 não tem caminho aberto)."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Gravado em “%@”. %lld caminhos abertos foram fechados (o .studio3 não tem caminho aberto)."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Gravar no .studio3" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save to .studio3"
+          }
+        }
+      }
+    },
+    "Grupo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Group"
+          }
+        }
+      }
+    },
+    "Guardados neste arquivo e lembrados pelo app para esta cor nos próximos arquivos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved in this file and remembered by the app for this color in future files."
+          }
+        }
+      }
+    },
+    "Imagem" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Image"
+          }
+        }
+      }
+    },
+    "Imagens não entram no Pathfinder." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Images can’t be used in Pathfinder."
+          }
+        }
+      }
+    },
+    "Importado de “%@”: %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imported from “%@”: %@."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Importado de “%1$@”: %2$@."
+          }
+        }
+      }
+    },
+    "Importado do Silhouette Studio: %@. ⌘S grava por cima do .studio3 ou como documento do Cutline." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imported from Silhouette Studio: %@. ⌘S saves over the .studio3 or as a Cutline document."
+          }
+        }
+      }
+    },
+    "Importar…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import…"
+          }
+        }
+      }
+    },
+    "Impressa em 100 %" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Printed at 100%"
+          }
+        }
+      }
+    },
+    "Imprimir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Print"
+          }
+        }
+      }
+    },
+    "Imprimir em tamanho real (⌘P)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Print at actual size (⌘P)"
+          }
+        }
+      }
+    },
+    "Imprimir…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Print…"
+          }
+        }
+      }
+    },
+    "Incluir dados do Cutline, do Mac e da máquina" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Include Cutline, Mac and machine details"
+          }
+        }
+      }
+    },
+    "Informações técnicas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Technical details"
+          }
+        }
+      }
+    },
+    "Inserir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Insert"
+          }
+        }
+      }
+    },
+    "Interseção" : {
+      "comment" : "Nome do objeto que sai do Pathfinder",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intersect"
+          }
+        }
+      }
+    },
+    "Kerning: vazio = o da fonte (Auto); 0 = sem kerning" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kerning: empty = the font's own (Auto); 0 = no kerning"
+          }
+        }
+      }
+    },
+    "L" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "W"
+          }
+        }
+      }
+    },
+    "Lendo as marcas de registro e cortando %@…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reading the registration marks and cutting %@…"
+          }
+        }
+      }
+    },
+    "Ler o estado da máquina de novo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check the machine status again"
+          }
+        }
+      }
+    },
+    "Ligado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On"
+          }
+        }
+      }
+    },
+    "Lim." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limit"
+          }
+        }
+      }
+    },
+    "Limite" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limit"
+          }
+        }
+      }
+    },
+    "Limite do canto vivo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miter limit"
+          }
+        }
+      }
+    },
+    "Limpar concluídos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear Finished"
+          }
+        }
+      }
+    },
+    "Luz e área livre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Light and clear area"
+          }
+        }
+      }
+    },
+    "Luz forte sobre a máquina (sol, luminária) atrapalha o sensor. Nada impresso perto das marcas (a área hachurada na tela)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strong light on the machine (sun, lamps) confuses the sensor. Nothing printed near the marks (the hatched area on screen)."
+          }
+        }
+      }
+    },
+    "Lâmina" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blade"
+          }
+        }
+      }
+    },
+    "Lâmina deve ficar entre 1 e 10." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blade must be between 1 and 10."
+          }
+        }
+      }
+    },
+    "Lâmina manual" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manual blade"
+          }
+        }
+      }
+    },
+    "Mais de uma cortadora encontrada: %@." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More than one cutter found: %@."
+          }
+        }
+      }
+    },
+    "Manter proporção" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep proportions"
+          }
+        }
+      }
+    },
+    "Marcadores" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bullets"
+          }
+        }
+      }
+    },
+    "Marcas a %@, cantoneiras de %@ mm. Muda no painel Página." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marks %1$@, %2$@ mm corner marks. Change them in the Page panel."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Marcas a %1$@, cantoneiras de %2$@ mm. Muda no painel Página."
+          }
+        }
+      }
+    },
+    "Marcas bem pretas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deep black marks"
+          }
+        }
+      }
+    },
+    "Marcas de registro" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registration marks"
+          }
+        }
+      }
+    },
+    "Marcas de registro (Print & Cut)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registration Marks (Print & Cut)"
+          }
+        }
+      }
+    },
+    "Marcas de registro (Print & Cut): imprima com elas e a máquina as lê antes de cortar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registration marks (Print & Cut): print with them and the machine reads them before cutting"
+          }
+        }
+      }
+    },
+    "Margem" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Margin"
+          }
+        }
+      }
+    },
+    "Material" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Material"
+          }
+        }
+      }
+    },
+    "Meus materiais" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My Materials"
+          }
+        }
+      }
+    },
+    "Modo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mode"
+          }
+        }
+      }
+    },
+    "Modo de entrada (o documento guarda sempre CMYK)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Input mode (the document always stores CMYK)"
+          }
+        }
+      }
+    },
+    "Modos de forma:" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shape modes:"
+          }
+        }
+      }
+    },
+    "Mostrar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show"
+          }
+        }
+      }
+    },
+    "Mostrar camada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show layer"
+          }
+        }
+      }
+    },
+    "Mostrar os registros de corte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show cut logs"
+          }
+        }
+      }
+    },
+    "Mover para a camada ativa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move to Active Layer"
+          }
+        }
+      }
+    },
+    "Mover seleção para a camada ativa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move selection to the active layer"
+          }
+        }
+      }
+    },
+    "Máquina" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Machine"
+          }
+        }
+      }
+    },
+    "Máquina e fila de trabalhos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Machine and job queue"
+          }
+        }
+      }
+    },
+    "Máquina: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Machine: %@"
+          }
+        }
+      }
+    },
+    "Mão" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hand"
+          }
+        }
+      }
+    },
+    "Mídia" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Media"
+          }
+        }
+      }
+    },
+    "Na fila: %lld trabalhos na frente." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "In the queue: %lld job ahead."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "In the queue: %lld jobs ahead."
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Na fila: %lld trabalho na frente."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Na fila: %lld trabalhos na frente."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Na fila: é o próximo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the queue: it’s next."
+          }
+        }
+      }
+    },
+    "Nada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
+          }
+        }
+      }
+    },
+    "Nada foi cortado. Se precisar acertar a folha, descarregue a base, ajuste e carregue de novo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing was cut. If you need to adjust the sheet, unload the mat, fix it and load it again."
+          }
+        }
+      }
+    },
+    "Nada na fila. Cada Enviar entra aqui; a máquina corta um trabalho por vez." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing in the queue. Each Send goes here; the machine cuts one job at a time."
+          }
+        }
+      }
+    },
+    "Nada para cortar." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing to cut."
+          }
+        }
+      }
+    },
+    "Nada selecionado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing selected"
+          }
+        }
+      }
+    },
+    "Nenhum (/)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None (/)"
+          }
+        }
+      }
+    },
+    "Nenhum caminho para importar em “%@”." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No paths to import in “%@”."
+          }
+        }
+      }
+    },
+    "Nenhum caminho para importar em “%@”: %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No paths to import in “%@”: %@."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Nenhum caminho para importar em “%1$@”: %2$@."
+          }
+        }
+      }
+    },
+    "Nenhum texto selecionado: vale para os próximos textos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No text selected: applies to the next texts."
+          }
+        }
+      }
+    },
+    "Nenhuma base carregada. Carregue a base e tente de novo." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No mat loaded. Load the mat and try again."
+          }
+        }
+      }
+    },
+    "Nenhuma conectada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None connected"
+          }
+        }
+      }
+    },
+    "Nenhuma fonte encontrada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No fonts found"
+          }
+        }
+      }
+    },
+    "No e-mail, anexo: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attached to the email: %@"
+          }
+        }
+      }
+    },
+    "Nome" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        }
+      }
+    },
+    "Nome do material" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Material name"
+          }
+        }
+      }
+    },
+    "Nova camada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New layer"
+          }
+        }
+      }
+    },
+    "Novo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New"
+          }
+        }
+      }
+    },
+    "Novo documento (⌘N)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New document (⌘N)"
+          }
+        }
+      }
+    },
+    "Numeração" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Numbering"
+          }
+        }
+      }
+    },
+    "Não achei um programa de e-mail. O relatório foi copiado; mande para %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t find an email app. The report was copied; send it to %@."
+          }
+        }
+      }
+    },
+    "Não encontrei %@. Verifique se ela está ligada." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t find %@. Check that it’s turned on."
+          }
+        }
+      }
+    },
+    "Não encontrei as marcas de registro (%@)." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t find the registration marks (%@)."
+          }
+        }
+      }
+    },
+    "Não foi possível abrir a imagem." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The image couldn’t be opened."
+          }
+        }
+      }
+    },
+    "Não foi possível abrir o arquivo como PDF." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The file couldn’t be opened as a PDF."
+          }
+        }
+      }
+    },
+    "Não foi possível abrir “%@”." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” couldn’t be opened."
+          }
+        }
+      }
+    },
+    "Não foi possível ler o EPS." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The EPS couldn’t be read."
+          }
+        }
+      }
+    },
+    "Não foi possível ler o SVG: o arquivo parece estar incompleto ou corrompido." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The SVG couldn’t be read: the file seems incomplete or damaged."
+          }
+        }
+      }
+    },
+    "Não foi possível ler o arquivo do Silhouette Studio (%@)." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Silhouette Studio file couldn’t be read (%@)."
+          }
+        }
+      }
+    },
+    "O Bluetooth do Mac está desligado." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Mac’s Bluetooth is off."
+          }
+        }
+      }
+    },
+    "O Cutline e o Silhouette Studio não conseguem usar a cortadora ao mesmo tempo. Enquanto o Studio estiver aberto, o Cutline não conecta nem envia; quando ele fechar, a conexão volta sozinha." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cutline and Silhouette Studio can't use the cutter at the same time. While Studio is open, Cutline won't connect or send; once it closes, the connection comes back on its own."
+          }
+        }
+      }
+    },
+    "O arquivo .studio3 mudou desde que foi aberto (foi gravado por outro programa?). Para não perder essas mudanças, ele não foi gravado; salve como documento do Cutline ou abra o arquivo de novo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The .studio3 file changed since it was opened (was it saved by another app?). To keep those changes, it wasn't saved; save as a Cutline document or open the file again."
+          }
+        }
+      }
+    },
+    "O arquivo do Silhouette Studio não é alterado. Use Arquivo › Salvar como… para guardar como documento do Cutline." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Silhouette Studio file isn’t changed. Use File › Save As… to keep it as a Cutline document."
+          }
+        }
+      }
+    },
+    "O arquivo está vazio." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The file is empty."
+          }
+        }
+      }
+    },
+    "O arquivo não é um PDF, AI, SVG ou EPS que o Cutline saiba ler." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The file isn’t a PDF, AI, SVG or EPS that Cutline can read."
+          }
+        }
+      }
+    },
+    "O arquivo não é um documento do Silhouette Studio (.studio3)." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The file isn’t a Silhouette Studio document (.studio3)."
+          }
+        }
+      }
+    },
+    "O dispositivo não tem o serviço Bluetooth da Silhouette." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The device doesn’t have the Silhouette Bluetooth service."
+          }
+        }
+      }
+    },
+    "O documento tem imagens novas, que o Cutline ainda não sabe pôr num .studio3. Salve como documento do Cutline." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The document has new images, which Cutline can't put in a .studio3 yet. Save it as a Cutline document."
+          }
+        }
+      }
+    },
+    "O que aconteceu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What happened"
+          }
+        }
+      }
+    },
+    "O que aconteceu?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What happened?"
+          }
+        }
+      }
+    },
+    "O que conferir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What to check"
+          }
+        }
+      }
+    },
+    "O que deveria acontecer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What should have happened"
+          }
+        }
+      }
+    },
+    "O que deveria acontecer?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What should have happened?"
+          }
+        }
+      }
+    },
+    "O que fazer com “%@”?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What to do with “%@”?"
+          }
+        }
+      }
+    },
+    "O que o Cutline deveria fazer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What Cutline should do"
+          }
+        }
+      }
+    },
+    "O que o Cutline deveria fazer?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What should Cutline do?"
+          }
+        }
+      }
+    },
+    "O que você esperava ver" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What you expected to see"
+          }
+        }
+      }
+    },
+    "O que você faria com ele (e como faz hoje, no Silhouette Studio ou em outro programa)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What you’d do with it (and how you do it today, in Silhouette Studio or another app)"
+          }
+        }
+      }
+    },
+    "O relatório foi copiado: cole no corpo do e-mail." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The report was copied: paste it into the email."
+          }
+        }
+      }
+    },
+    "O resultado ficou vazio — as formas não se sobrepõem?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The result is empty — do the shapes overlap?"
+          }
+        }
+      }
+    },
+    "O texto era longo demais para o endereço: o completo foi copiado, cole na issue." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The text was too long for the link: the full report was copied, paste it into the issue."
+          }
+        }
+      }
+    },
+    "OK" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "Objeto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Object"
+          }
+        }
+      }
+    },
+    "Ocultar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hide"
+          }
+        }
+      }
+    },
+    "Ocultar camada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hide layer"
+          }
+        }
+      }
+    },
+    "Organizar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrange"
+          }
+        }
+      }
+    },
+    "Os arquivos que usam este material continuam com os ajustes guardados neles." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Files that use this material keep the settings saved in them."
+          }
+        }
+      }
+    },
+    "Os passos, um por linha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The steps, one per line"
+          }
+        }
+      }
+    },
+    "Outro programa está usando a cortadora no USB (o Silhouette Studio?)." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Another app is using the cutter over USB (Silhouette Studio?)."
+          }
+        }
+      }
+    },
+    "Padrão: sem preenchimento, traço vermelho de 0 pt (D)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default: no fill, red 0 pt stroke (D)"
+          }
+        }
+      }
+    },
+    "Papel adesivo — corte total" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sticker paper — full cut"
+          }
+        }
+      }
+    },
+    "Papel adesivo — meio-corte" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sticker paper — kiss cut"
+          }
+        }
+      }
+    },
+    "Papel fotográfico" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo paper"
+          }
+        }
+      }
+    },
+    "Papel sulfite 75 g" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy paper 75 g"
+          }
+        }
+      }
+    },
+    "Para que serviria" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What it would be for"
+          }
+        }
+      }
+    },
+    "Para que serviria?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What would it be for?"
+          }
+        }
+      }
+    },
+    "Parte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Piece"
+          }
+        }
+      }
+    },
+    "Parágrafo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paragraph"
+          }
+        }
+      }
+    },
+    "Passadas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passes"
+          }
+        }
+      }
+    },
+    "Passadas devem ficar entre 1 e 5." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passes must be between 1 and 5."
+          }
+        }
+      }
+    },
+    "Pathfinder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pathfinder"
+          }
+        }
+      }
+    },
+    "Pathfinders:" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pathfinders:"
+          }
+        }
+      }
+    },
+    "Pede para o Studio sair; se houver algo sem salvar, ele pergunta antes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asks Studio to quit; if anything is unsaved, Studio asks first"
+          }
+        }
+      }
+    },
+    "Picotada %@ / %@ mm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dashed %@ / %@ mm"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Picotada %1$@ / %2$@ mm"
+          }
+        }
+      }
+    },
+    "Picotada: o corte é tracejado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dashed: the cut is perforated"
+          }
+        }
+      }
+    },
+    "Ponta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cap"
+          }
+        }
+      }
+    },
+    "Ponta arredondada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Round cap"
+          }
+        }
+      }
+    },
+    "Ponta projetada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Projecting cap"
+          }
+        }
+      }
+    },
+    "Ponta reta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Butt cap"
+          }
+        }
+      }
+    },
+    "Pontas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Points"
+          }
+        }
+      }
+    },
+    "Ponto de referência" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reference point"
+          }
+        }
+      }
+    },
+    "Preenchimento (X alterna)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fill (X toggles)"
+          }
+        }
+      }
+    },
+    "Preto 100 %" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "100% black"
+          }
+        }
+      }
+    },
+    "Print & Cut" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Print & Cut"
+          }
+        }
+      }
+    },
+    "Print & Cut ligado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Print & Cut on"
+          }
+        }
+      }
+    },
+    "Problema" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bug"
+          }
+        }
+      }
+    },
+    "Procurando a máquina…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Looking for the machine…"
+          }
+        }
+      }
+    },
+    "Procurar Atualizações…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check for Updates…"
+          }
+        }
+      }
+    },
+    "Pronta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ready"
+          }
+        }
+      }
+    },
+    "Proporção travada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proportions locked"
+          }
+        }
+      }
+    },
+    "Página" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Page"
+          }
+        }
+      }
+    },
+    "Quantidade de nós" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Node count"
+          }
+        }
+      }
+    },
+    "Raio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radius"
+          }
+        }
+      }
+    },
+    "Raio int." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inner radius"
+          }
+        }
+      }
+    },
+    "Recolher este painel em ícone" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collapse this panel to an icon"
+          }
+        }
+      }
+    },
+    "Recolher todos em ícones" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collapse All to Icons"
+          }
+        }
+      }
+    },
+    "Recolher todos os painéis em ícones" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collapse all panels to icons"
+          }
+        }
+      }
+    },
+    "Recortar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cut"
+          }
+        }
+      }
+    },
+    "Recuar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Backward"
+          }
+        }
+      }
+    },
+    "Recuo da primeira linha de cada parágrafo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First-line indent of each paragraph"
+          }
+        }
+      }
+    },
+    "Recuo à direita (texto alinhado à direita ou ao centro)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Right indent (right- or center-aligned text)"
+          }
+        }
+      }
+    },
+    "Recuo à esquerda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Left indent"
+          }
+        }
+      }
+    },
+    "Recurso" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feature"
+          }
+        }
+      }
+    },
+    "Reduzir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom Out"
+          }
+        }
+      }
+    },
+    "Reduzir (⌘−)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom Out (⌘−)"
+          }
+        }
+      }
+    },
+    "Refazer (⇧⌘Z)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redo (⇧⌘Z)"
+          }
+        }
+      }
+    },
+    "Registro da máquina (últimas %lld linhas)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Machine log (last %lld lines)"
+          }
+        }
+      }
+    },
+    "Relatar um Problema…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report a Bug…"
+          }
+        }
+      }
+    },
+    "Relatar um problema" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report a Bug"
+          }
+        }
+      }
+    },
+    "Relatório copiado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report copied."
+          }
+        }
+      }
+    },
+    "Resposta inesperada da cortadora: %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unexpected response from the cutter: %@"
+          }
+        }
+      }
+    },
+    "Resumo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Summary"
+          }
+        }
+      }
+    },
+    "Retângulo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rectangle"
+          }
+        }
+      }
+    },
+    "Retângulo arredondado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rounded Rectangle"
+          }
+        }
+      }
+    },
+    "Reverter" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revert"
+          }
+        }
+      }
+    },
+    "Rotação de cada letra" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Character rotation"
+          }
+        }
+      }
+    },
+    "Réguas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rulers"
+          }
+        }
+      }
+    },
+    "Réguas e guias (⌘R) — arraste da régua para criar uma guia" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rulers and guides (⌘R) — drag from a ruler to create a guide"
+          }
+        }
+      }
+    },
+    "Salvar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save"
+          }
+        }
+      }
+    },
+    "Salvar (⌘S)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save (⌘S)"
+          }
+        }
+      }
+    },
+    "Salvar ajustes como material…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save Settings as Material…"
+          }
+        }
+      }
+    },
+    "Salvar como Cutline…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save as Cutline…"
+          }
+        }
+      }
+    },
+    "Salvar como material" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save as Material"
+          }
+        }
+      }
+    },
+    "Salvar “%@”" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save “%@”"
+          }
+        }
+      }
+    },
+    "Se o problema acontece com um arquivo, anexe o documento (.cutline, .studio3, PDF…). Os registros de corte ficam em ~/Library/Logs/Cutline; no e-mail, o último vai anexado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If the problem happens with a file, attach the document (.cutline, .studio3, PDF…). Cut logs are in ~/Library/Logs/Cutline; the latest one is attached to the email."
+          }
+        }
+      }
+    },
+    "Selecionar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select"
+          }
+        }
+      }
+    },
+    "Selecionar tudo da camada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select everything in the layer"
+          }
+        }
+      }
+    },
+    "Selecione ao menos dois objetos para o Pathfinder." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select at least two objects for Pathfinder."
+          }
+        }
+      }
+    },
+    "Seleção" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selection"
+          }
+        }
+      }
+    },
+    "Seleção direta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direct Selection"
+          }
+        }
+      }
+    },
+    "Sem base" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No mat"
+          }
+        }
+      }
+    },
+    "Sem base de corte (folha direto) · muda no painel Página" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No cutting mat (sheet fed directly) · change it in the Page panel"
+          }
+        }
+      }
+    },
+    "Sem base — carregue a base" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No mat — load the mat"
+          }
+        }
+      }
+    },
+    "Sem base, a máquina puxa a folha direto: use mídia com fundo firme (adesivo, cartão) e encoste na guia." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Without a mat, the machine feeds the sheet directly: use media with a firm backing (sticker paper, card) and push it against the guide."
+          }
+        }
+      }
+    },
+    "Sem modo rascunho ou economia de tinta. Papel brilhante ou laminado reflete a luz e esconde as marcas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No draft or ink-saving mode. Glossy or laminated paper reflects the light and hides the marks."
+          }
+        }
+      }
+    },
+    "Sem permissão de Bluetooth. Libere em Ajustes do Sistema › Privacidade e Segurança › Bluetooth." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Bluetooth permission. Allow it in System Settings › Privacy & Security › Bluetooth."
+          }
+        }
+      }
+    },
+    "Sem traço: não vai para a máquina" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No stroke: not sent to the machine"
+          }
+        }
+      }
+    },
+    "Sem título" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Untitled"
+          }
+        }
+      }
+    },
+    "Sem “ajustar ao papel”. O quadrado deve ficar a 15 mm das bordas da folha — dá para conferir com uma régua." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No “scale to fit”. The square should be 15 mm from the edges of the sheet — you can check it with a ruler."
+          }
+        }
+      }
+    },
+    "Silhouette Studio aberto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silhouette Studio open"
+          }
+        }
+      }
+    },
+    "Snap" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snap"
+          }
+        }
+      }
+    },
+    "Snap: encaixar nos pontos, na página e nas guias (⌘;)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snap: snap to points, the page and guides (⌘;)"
+          }
+        }
+      }
+    },
+    "Sobrescrito" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Superscript"
+          }
+        }
+      }
+    },
+    "Suavização" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Smoothing"
+          }
+        }
+      }
+    },
+    "Sublinhado (também é cortado)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Underline (also cut)"
+          }
+        }
+      }
+    },
+    "Subscrito" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subscript"
+          }
+        }
+      }
+    },
+    "Subtrair frente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minus Front"
+          }
+        }
+      }
+    },
+    "Subtrair trás" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minus Back"
+          }
+        }
+      }
+    },
+    "Subtração" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subtraction"
+          }
+        }
+      }
+    },
+    "Sugerir um Recurso…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Request a Feature…"
+          }
+        }
+      }
+    },
+    "Sugerir um recurso" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Request a Feature"
+          }
+        }
+      }
+    },
+    "Sugestão de recurso" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feature request"
+          }
+        }
+      }
+    },
+    "Só a imagem" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Image only"
+          }
+        }
+      }
+    },
+    "Só o externo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Outer only"
+          }
+        }
+      }
+    },
+    "Tachado (também é cortado)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strikethrough (also cut)"
+          }
+        }
+      }
+    },
+    "Tamanho real" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actual Size"
+          }
+        }
+      }
+    },
+    "Tentar de novo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try Again"
+          }
+        }
+      }
+    },
+    "Tentar ler de novo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try Reading Again"
+          }
+        }
+      }
+    },
+    "Testar corte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Test Cut"
+          }
+        }
+      }
+    },
+    "Teste de corte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Test cut"
+          }
+        }
+      }
+    },
+    "Teste de corte (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Test cut (%@)"
+          }
+        }
+      }
+    },
+    "Texto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text"
+          }
+        }
+      }
+    },
+    "Tipo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type"
+          }
+        }
+      }
+    },
+    "Tirar da fila" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove from Queue"
+          }
+        }
+      }
+    },
+    "Tirar da lista" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove from List"
+          }
+        }
+      }
+    },
+    "Tolerância do fundo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Background tolerance"
+          }
+        }
+      }
+    },
+    "Tracking: espaço entre todas as letras (milésimos de em)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tracking: space between all letters (thousandths of an em)"
+          }
+        }
+      }
+    },
+    "Travar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock"
+          }
+        }
+      }
+    },
+    "Travar camada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock layer"
+          }
+        }
+      }
+    },
+    "Trazer para a frente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bring to Front"
+          }
+        }
+      }
+    },
+    "Traço" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stroke"
+          }
+        }
+      }
+    },
+    "Traço centralizado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Align stroke to center"
+          }
+        }
+      }
+    },
+    "Traço contínuo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solid stroke"
+          }
+        }
+      }
+    },
+    "Traço picotado: o corte é tracejado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dashed stroke: the cut is perforated"
+          }
+        }
+      }
+    },
+    "Traço por dentro" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Align stroke to inside"
+          }
+        }
+      }
+    },
+    "Traço por fora" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Align stroke to outside"
+          }
+        }
+      }
+    },
+    "Traço — cor de corte (X alterna)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stroke — cut color (X toggles)"
+          }
+        }
+      }
+    },
+    "Trocar de máquina" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch Machine"
+          }
+        }
+      }
+    },
+    "Trocar preenchimento e traço (⇧X)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Swap fill and stroke (⇧X)"
+          }
+        }
+      }
+    },
+    "Tudo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        }
+      }
+    },
+    "Tudo da camada ativa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All in Active Layer"
+          }
+        }
+      }
+    },
+    "Unir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unite"
+          }
+        }
+      }
+    },
+    "União" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Union"
+          }
+        }
+      }
+    },
+    "Vale para as letras selecionadas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Applies to the selected letters."
+          }
+        }
+      }
+    },
+    "Vale para o que for digitado agora. Selecione letras para mudá-las." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Applies to what you type next. Select letters to change them."
+          }
+        }
+      }
+    },
+    "Vale para o texto inteiro. Para mudar só algumas letras, selecione-as digitando (T)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Applies to the whole text. To change only some letters, select them while typing (T)."
+          }
+        }
+      }
+    },
+    "Velocidade" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speed"
+          }
+        }
+      }
+    },
+    "Velocidade deve ficar entre 1 e %lld neste modelo." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speed must be between 1 and %lld on this model."
+          }
+        }
+      }
+    },
+    "Ver o que vai junto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See what’s included"
+          }
+        }
+      }
+    },
+    "Verificando a máquina…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking the machine…"
+          }
+        }
+      }
+    },
+    "Verificar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check"
+          }
+        }
+      }
+    },
+    "Versalete (o da fonte; sem ele, maiúsculas a 70 %)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Small caps (the font's own; otherwise capitals at 70%)"
+          }
+        }
+      }
+    },
+    "Vetorizar imagem" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trace Image"
+          }
+        }
+      }
+    },
+    "Vetorizar “%@”" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trace “%@”"
+          }
+        }
+      }
+    },
+    "Vinil adesivo" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adhesive vinyl"
+          }
+        }
+      }
+    },
+    "Voltar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back"
+          }
+        }
+      }
+    },
+    "Voltar ao valor do material (%lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back to the material’s value (%lld)"
+          }
+        }
+      }
+    },
+    "X" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "X"
+          }
+        }
+      }
+    },
+    "Y" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Y"
+          }
+        }
+      }
+    },
+    "Zoom" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom"
+          }
+        }
+      }
+    },
+    "a cortadora escolhida no cabo USB" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the chosen cutter on the USB cable"
+          }
+        }
+      }
+    },
+    "a interface USB da cortadora" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the cutter’s USB interface"
+          }
+        }
+      }
+    },
+    "aberto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "open"
+          }
+        }
+      }
+    },
+    "ao centro (horizontal e vertical)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "center (horizontal and vertical)"
+          }
+        }
+      }
+    },
+    "ao centro (horizontal)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "center (horizontal)"
+          }
+        }
+      }
+    },
+    "ao centro (vertical)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "center (vertical)"
+          }
+        }
+      }
+    },
+    "ao topo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "top"
+          }
+        }
+      }
+    },
+    "cm/s" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "cm/s"
+          }
+        }
+      }
+    },
+    "cor %lld de %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "color %lld of %lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "cor %1$lld de %2$lld"
+          }
+        }
+      }
+    },
+    "cor %lld de %lld — passada %lld de %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "color %lld of %lld — pass %lld of %lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "cor %1$lld de %2$lld — passada %3$lld de %4$lld"
+          }
+        }
+      }
+    },
+    "cores misturadas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "mixed colors"
+          }
+        }
+      }
+    },
+    "cortado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "cut"
+          }
+        }
+      }
+    },
+    "em movimento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "moving"
+          }
+        }
+      }
+    },
+    "erro: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "error: %@"
+          }
+        }
+      }
+    },
+    "fechado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "closed"
+          }
+        }
+      }
+    },
+    "fundo sólido detectado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "solid background detected"
+          }
+        }
+      }
+    },
+    "fundo transparente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "transparent background"
+          }
+        }
+      }
+    },
+    "hex" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "hex"
+          }
+        }
+      }
+    },
+    "margens de %@, %@, %@ e %@ mm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "margins of %1$@, %2$@, %3$@ and %4$@ mm"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "margens de %1$@, %2$@, %3$@ e %4$@ mm"
+          }
+        }
+      }
+    },
+    "material %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "material %lld"
+          }
+        }
+      }
+    },
+    "mm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "mm"
+          }
+        }
+      }
+    },
+    "modificado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "modified"
+          }
+        }
+      }
+    },
+    "motivo desconhecido" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "unknown reason"
+          }
+        }
+      }
+    },
+    "nenhum" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "none"
+          }
+        }
+      }
+    },
+    "nenhuma usada ainda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "none used yet"
+          }
+        }
+      }
+    },
+    "nº %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "S/N %@"
+          }
+        }
+      }
+    },
+    "não conectada (última: %@ · %@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "not connected (last: %@ · %@)"
+          }
+        }
+      }
+    },
+    "não corta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "doesn't cut"
+          }
+        }
+      }
+    },
+    "operação Bluetooth interrompida" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth operation interrupted"
+          }
+        }
+      }
+    },
+    "pressão" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pressure"
+          }
+        }
+      }
+    },
+    "profundidade" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "depth"
+          }
+        }
+      }
+    },
+    "pronta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ready"
+          }
+        }
+      }
+    },
+    "pt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pt"
+          }
+        }
+      }
+    },
+    "repetições" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "repeats"
+          }
+        }
+      }
+    },
+    "sem base" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "no mat"
+          }
+        }
+      }
+    },
+    "sem folha ou base" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "no sheet or mat loaded"
+          }
+        }
+      }
+    },
+    "sem resposta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "no response"
+          }
+        }
+      }
+    },
+    "textos não importados (converta em contornos no Illustrator)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "text not imported (convert it to outlines in Illustrator)"
+          }
+        }
+      }
+    },
+    "uma cortadora Silhouette" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a Silhouette cutter"
+          }
+        }
+      }
+    },
+    "uma cortadora Silhouette no cabo USB" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a Silhouette cutter on the USB cable"
+          }
+        }
+      }
+    },
+    "· do arquivo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "· from file"
+          }
+        }
+      }
+    },
+    "· do material" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "· from material"
+          }
+        }
+      }
+    },
+    "· modificado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "· modified"
+          }
+        }
+      }
+    },
+    "À direita" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Right"
+          }
+        }
+      }
+    },
+    "À esquerda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Left"
+          }
+        }
+      }
+    },
+    "à base" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "bottom"
+          }
+        }
+      }
+    },
+    "à direita" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "right"
+          }
+        }
+      }
+    },
+    "à esquerda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "left"
+          }
+        }
+      }
+    },
+    "é o próximo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "next"
+          }
+        }
+      }
+    },
+    "→ Caminho" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "→ Path"
+          }
+        }
+      }
+    },
+    "≈ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "≈ %@"
+          }
+        }
+      }
+    },
+    "≈ %@ em %lld passadas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "≈ %@ in %lld passes"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "≈ %1$@ em %2$lld passadas"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

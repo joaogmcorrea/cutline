@@ -1,0 +1,11 @@
+# Sistema e compilação
+.DS_Store
+.build/
+.swiftpm/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+
+# Arquivos de usuários (nunca vão para o repositório)
+*.studio3
+*.cutline

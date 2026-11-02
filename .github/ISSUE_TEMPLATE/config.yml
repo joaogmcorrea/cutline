@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Email (no GitHub account)
+    url: mailto:cutline@joaocorrea.design
+    about: No GitHub account? Send the report by email — in the app, Help › Report a Bug… › Send by Email.
