@@ -1,5 +1,5 @@
-// Formas fixas do teste de corte (cartela de adesivo) e folha de Print & Cut.
-// Porte de formas.py e pnc.py, do protótipo em Python que conferiu o driver (fora do repositório) — mesmos pontos.
+// Fixed shapes of the test cut (sticker card) and the Print & Cut sheet.
+// Port of formas.py and pnc.py, from the Python prototype that checked the driver (outside the repository) — same points.
 import CoreGraphics
 import Foundation
 
@@ -7,43 +7,43 @@ public enum TestShapes {
     public struct Shape: Sendable {
         public let id: String
         public let name: String
-        /// Em mm, origem no canto superior esquerdo da cartela.
+        /// In mm, origin at the card's top-left corner.
         public let paths: [[CGPoint]]
         public let defaults: CutSettings
     }
 
-    /// Resolução dos arcos arredondados.
+    /// Resolution of the rounded arcs.
     static let arcStepDegrees = 6.0
 
-    // MARK: Cartela de adesivo
+    // MARK: Sticker card
 
     static let squareSide = 60.0
     static let center = squareSide / 2
 
-    /// Ordem = ordem de corte: primeiro o meio-corte de dentro, por último o corte total de fora
-    /// (cortar o contorno externo antes deixaria a peça solta na base).
+    /// Order = cut order: first the inner kiss cut, last the outer die cut
+    /// (cutting the outer contour first would leave the piece loose on the mat).
     public static let sticker: [Shape] = [
-        Shape(id: "estrela", name: "Estrela — meio-corte (só o adesivo)",
+        Shape(id: "star", name: "Star — kiss cut (sticker only)",
               paths: [roundedStar(cx: center, cy: center + 1.5, outerRadius: 23, innerRadius: 10.5,
                                   tipRadius: 3.0, valleyRadius: 1.5)],
               defaults: CutSettings(speed: 5, force: 8, blade: 1, passes: 1)),
-        Shape(id: "quadrado", name: "Quadrado — corte total (adesivo + fundo)",
+        Shape(id: "square", name: "Square — die cut (sticker + backing)",
               paths: [square(x: 0, y: 0, side: squareSide)],
               defaults: CutSettings(speed: 3, force: 25, blade: 5, passes: 2)),
     ]
 
-    /// Posição padrão da cartela na base A4.
+    /// Default position of the card on the A4 mat.
     public static let stickerPosition = CGPoint(x: 20, y: 20)
 
     // MARK: Print & Cut
 
-    /// Marcas no padrão Silhouette: origem 15/15 mm, 180 × 267 mm entre marcas.
+    /// Marks in the Silhouette standard: origin 15/15 mm, 180 × 267 mm between marks.
     public static let printAndCutRegistration = Cutter.Registration(originX: 15, originY: 15, width: 210 - 2 * 15,
                                                                     length: 297 - 2 * 15)
-    /// Canto superior esquerdo de cada cópia da cartela na folha (em diagonal).
+    /// Top-left corner of each copy of the card on the sheet (diagonally).
     public static let printAndCutCopies = [CGPoint(x: 35, y: 40), CGPoint(x: 75, y: 118), CGPoint(x: 115, y: 196)]
 
-    /// Caminhos de uma forma em todas as cópias da folha.
+    /// Paths of a shape in all the copies on the sheet.
     public static func printAndCutPaths(_ shape: Shape) -> [[CGPoint]] {
         printAndCutCopies.flatMap { translated(shape.paths, by: $0) }
     }
@@ -66,15 +66,15 @@ public enum TestShapes {
         for i in 0..<(points * 2) {
             let outer = i % 2 == 0
             let r = outer ? outerRadius : innerRadius
-            let a = -Double.pi / 2 + Double(i) * Double.pi / Double(points)   // primeira ponta para cima
+            let a = -Double.pi / 2 + Double(i) * Double.pi / Double(points)   // first point up
             vertices.append((cx + r * cos(a), cy + r * sin(a)))
             radii.append(outer ? tipRadius : valleyRadius)
         }
         return roundPolygon(vertices, radii: radii)
     }
 
-    /// Troca cada vértice por um arco tangente às duas arestas (raio por vértice).
-    /// Funciona para vértices convexos e côncavos. Retorna o polígono fechado.
+    /// Replaces each vertex with an arc tangent to both edges (radius per vertex).
+    /// Works for convex and concave vertices. Returns the closed polygon.
     static func roundPolygon(_ vertices: [(Double, Double)], radii: [Double]) -> [CGPoint] {
         let n = vertices.count
         var points: [CGPoint] = []
@@ -82,7 +82,7 @@ public enum TestShapes {
             let (px, py) = vertices[i]
             let (ax, ay) = vertices[(i - 1 + n) % n]
             let (bx, by) = vertices[(i + 1) % n]
-            // vetores unitários do vértice para os vizinhos
+            // unit vectors from the vertex to the neighbors
             var ux = ax - px, uy = ay - py
             var vx = bx - px, vy = by - py
             let lu = hypot(ux, uy), lv = hypot(vx, vy)
@@ -93,8 +93,8 @@ public enum TestShapes {
                 points.append(CGPoint(x: px, y: py))
                 continue
             }
-            var d = r / tan(angle / 2)                 // distância do vértice ao ponto de tangência
-            d = min(d, lu * 0.49, lv * 0.49)           // não ultrapassar metade da aresta
+            var d = r / tan(angle / 2)                 // distance from the vertex to the tangent point
+            d = min(d, lu * 0.49, lv * 0.49)           // don't go past half the edge
             r = d * tan(angle / 2)
             let bxs = ux + vx, bys = uy + vy           // bissetriz
             let lb = hypot(bxs, bys)
@@ -115,7 +115,7 @@ public enum TestShapes {
         return points
     }
 
-    /// `%` do Python para floats: o resultado tem o sinal do divisor.
+    /// Python's `%` for floats: the result has the divisor's sign.
     static func pythonModulo(_ x: Double, _ m: Double) -> Double {
         var r = fmod(x, m)
         if r != 0 {

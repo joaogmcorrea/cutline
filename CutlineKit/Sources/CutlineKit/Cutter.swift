@@ -1,13 +1,13 @@
-// Cortadora Silhouette: estado, configuração (setup) e envio dos caminhos (plot).
-// Porte da classe SilhouetteCameo de Graphtec.py (inkscape-silhouette, GPLv2). A ordem e o conteúdo
-// dos comandos são os mesmos do driver Python — os testes comparam as transcrições byte a byte.
+// Silhouette cutter: status, configuration (setup) and sending the paths (plot).
+// Port of the SilhouetteCameo class from Graphtec.py (inkscape-silhouette, GPLv2). The order and content
+// of the commands are the same as the Python driver's — the tests compare the transcripts byte by byte.
 import CoreGraphics
 import Foundation
 
 public actor Cutter {
     public enum Status: Sendable, Equatable, CustomStringConvertible {
         case ready, moving, unloaded
-        /// A máquina não respondeu ao pedido de estado.
+        /// The machine didn't answer the status request.
         case noResponse
         case other(String)
 
@@ -16,27 +16,27 @@ public actor Cutter {
             case .ready: "ready"
             case .moving: "moving"
             case .unloaded: "unloaded"
-            case .noResponse: "sem resposta"
+            case .noResponse: "no response"
             case .other(let raw): raw
             }
         }
     }
 
-    /// Onde a mídia para no fim: abaixo do desenho ou de volta à origem.
+    /// Where the media stops at the end: below the drawing or back at the origin.
     public enum EndPosition: Sendable { case below, start }
 
-    /// Marcas de registro (Print & Cut), em mm. `origin` = canto externo do quadrado;
-    /// `width`/`length` = distância até o canto externo das cantoneiras.
+    /// Registration marks (Print & Cut), in mm. `origin` = the square's outer corner;
+    /// `width`/`length` = distance to the corner marks' outer corner.
     public struct Registration: Sendable, Equatable {
         public var originX: Double
         public var originY: Double
         public var width: Double
         public var length: Double
-        /// Busca automática pelo sensor (TB123); falso = posicionamento manual (TB23).
+        /// Automatic search by the sensor (TB123); false = manual positioning (TB23).
         public var search: Bool
-        /// 4 marcas (só Cameo 5 Alpha / Pro MK II).
+        /// 4 marks (only Cameo 5 Alpha / Pro MK II).
         public var quad: Bool
-        /// Comprimento das cantoneiras e espessura das marcas impressas (TB51/TB53).
+        /// Length of the corner marks and width of the printed marks (TB51/TB53).
         public var markLength: Double
         public var markThickness: Double
 
@@ -54,7 +54,7 @@ public actor Cutter {
     }
 
     public struct SetupOptions: Sendable {
-        /// Código de mídia do protocolo antigo (300 = "Custom": usa só os valores abaixo).
+        /// Media code of the old protocol (300 = "Custom": uses only the values below).
         public var media: Int? = 300
         public var speed: Int?
         public var pressure: Int?
@@ -74,7 +74,7 @@ public actor Cutter {
         public var leftAligned: Bool?
         public var mediaWidth = 210.0
         public var mediaHeight = 297.0
-        /// A partir da 2ª configuração do mesmo trabalho: só reenvia velocidade/força/lâmina.
+        /// From the 2nd configuration of the same job on: only resends speed/force/blade.
         public var skipInit = false
 
         public init() {}
@@ -90,13 +90,13 @@ public actor Cutter {
         public var endPosition = EndPosition.below
         public var registration: Registration?
         public var skipInit = false
-        /// Não voltar à origem no fim (passadas extras e Print & Cut).
+        /// Don't go back to the origin at the end (extra passes and Print & Cut).
         public var skipReset = false
 
         public init() {}
     }
 
-    /// Caixa dos pontos enviados (mm, antes do recorte à área da mídia).
+    /// Box of the points sent (mm, before clipping to the media area).
     public struct BoundingBox: Sendable, Equatable {
         public var minX: Double?
         public var minY: Double?
@@ -128,10 +128,10 @@ public actor Cutter {
     private var recording: Data?
     let log: @Sendable (String) -> Void
 
-    /// Tudo o que foi enviado (comandos e consultas), como o `cmdfile` do driver Python.
+    /// Everything that was sent (commands and queries), like the Python driver's `cmdfile`.
     public var transcript: Data { recording ?? Data() }
 
-    /// Recomeça a transcrição (um arquivo por trabalho).
+    /// Restarts the transcript (one file per job).
     public func clearTranscript() {
         if recording != nil { recording = Data() }
     }
@@ -147,19 +147,19 @@ public actor Cutter {
         self.log = log
     }
 
-    /// Sem máquina: grava os comandos que seriam enviados.
+    /// No machine: records the commands that would be sent.
     public static func simulated(_ hardware: Hardware, log: @escaping @Sendable (String) -> Void = { _ in }) -> Cutter {
         Cutter(transport: SimulatedTransport(), hardware: hardware, log: log)
     }
 
-    /// Procura as cortadoras ao alcance, sem conectar (para o usuário escolher quando houver mais de uma).
+    /// Looks for cutters in range, without connecting (for the user to choose when there's more than one).
     public static func findBluetooth(timeout: TimeInterval = 15,
                                      log: @escaping @Sendable (String) -> Void = { _ in }) async throws -> [DiscoveredCutter] {
         try await BLETransport.discover(timeout: timeout, log: log)
     }
 
-    /// Procura a cortadora pelo nome anunciado (ou uma já encontrada, por `identifier`), conecta
-    /// e identifica o modelo pelo firmware (FG).
+    /// Looks for the cutter by its advertised name (or one already found, by `identifier`), connects
+    /// and identifies the model by the firmware (FG).
     public static func connectBluetooth(name: String? = nil, identifier: UUID? = nil, timeout: TimeInterval = 20,
                                         attempts: Int = 2, recordTranscript: Bool = true,
                                         log: @escaping @Sendable (String) -> Void = { _ in }) async throws -> Cutter {
@@ -173,9 +173,9 @@ public actor Cutter {
                 await cutter.identify()
                 return cutter
             } catch {
-                // A conexão às vezes cai no handshake; uma nova tentativa resolve.
+                // The connection sometimes drops during the handshake; another attempt fixes it.
                 guard attempt < attempts, (error as? CutterError).map(Self.isRetryable) ?? true else { throw error }
-                log("Bluetooth falhou (\(error.localizedDescription)); tentando de novo…")
+                log("Bluetooth failed (\(error.localizedDescription)); trying again…")
                 attempt += 1
                 try await Task.sleep(for: .seconds(2))
             }
@@ -189,13 +189,13 @@ public actor Cutter {
         }
     }
 
-    /// Cortadoras ligadas no cabo USB agora (a busca é imediata e não precisa de permissão).
+    /// Cutters on the USB cable now (the search is immediate and needs no permission).
     public static func findUSB(log: @escaping @Sendable (String) -> Void = { _ in }) -> [DiscoveredCutter] {
         USBTransport.discover(log: log)
     }
 
-    /// Conecta pelo cabo USB (a escolhida numa busca, por `identifier`, ou a única ligada). O modelo vem do
-    /// product id do USB, como no driver Python.
+    /// Connects over the USB cable (the one chosen in a search, by `identifier`, or the only one plugged in). The model comes from
+    /// the USB product id, as in the Python driver.
     public static func connectUSB(identifier: UUID? = nil, recordTranscript: Bool = true,
                                   log: @escaping @Sendable (String) -> Void = { _ in }) async throws -> Cutter {
         let transport = try await USBTransport.connect(identifier: identifier, log: log)
@@ -204,18 +204,18 @@ public actor Cutter {
         return cutter
     }
 
-    /// Lê o firmware (FG) e, sem `known`, deduz o modelo por ele.
+    /// Reads the firmware (FG) and, without `known`, deduces the model from it.
     private func identify(known: Hardware? = nil) async {
         var model: String?
-        do { model = try await firmwareVersion() } catch { log("Falha ao ler o firmware: \(error.localizedDescription)") }
+        do { model = try await firmwareVersion() } catch { log("Couldn’t read the firmware: \(error.localizedDescription)") }
         if let found = known ?? Hardware.match(firmware: model) {
             hardware = found
             leftAligned = found.widthMM != nil
-            log("\(found.name) (firmware '\(model ?? "")') conectada em \(transport.location)")
+            log("\(found.name) (firmware '\(model ?? "")') connected at \(transport.location)")
         } else {
             let detail = model.map { " (\($0.trimmingCharacters(in: .whitespaces)))" } ?? ""
             hardware = .unknown("Unknown Bluetooth LE Graphtec device" + detail)
-            log("Dispositivo não reconhecido (firmware '\(model ?? "None")') em \(transport.location)")
+            log("Unrecognized device (firmware '\(model ?? "None")') at \(transport.location)")
         }
     }
 
@@ -223,12 +223,12 @@ public actor Cutter {
         await transport.close()
     }
 
-    // MARK: Entrada e saída
+    // MARK: Input and output
 
     func write(_ data: Data, isQuery: Bool = false, timeout: TimeInterval = 10) async throws {
         recording?.append(data)
         if !isSimulated, let stale = try? await transport.read(maxLength: 64, timeout: 0.01), !stale.isEmpty {
-            log("resposta antes de enviar \(Self.printable(data)): \(Self.printable(stale))")
+            log("response before sending \(Self.printable(data)): \(Self.printable(stale))")
         }
         do {
             try await transport.write(data, timeout: timeout)
@@ -255,22 +255,22 @@ public actor Cutter {
         try await transport.read(maxLength: maxLength, timeout: timeout)
     }
 
-    /// Envia uma consulta e devolve a resposta sem o ETX (nil se não vier nada).
+    /// Sends a query and returns the response without the ETX (nil if nothing comes).
     func query(_ command: String, txTimeout: TimeInterval = 10, rxTimeout: TimeInterval = 1) async throws -> String? {
         try await send(command, isQuery: true, timeout: txTimeout)
         guard let response = try? await read(timeout: rxTimeout), response.count > 1 else { return nil }
         return String(decoding: response.dropLast(), as: UTF8.self)
     }
 
-    /// Comandos longos vão em blocos de até 1 KB (como o Silhouette Studio), cortados no último ETX,
-    /// esperando a máquina ficar pronta depois de cada bloco.
+    /// Long commands go in blocks of up to 1 KB (like Silhouette Studio), cut at the last ETX,
+    /// waiting for the machine to be ready after each block.
     func safeWrite(_ data: Data) async throws {
         let bytes = [UInt8](data)
         var start = 0
         while start < bytes.count {
             let end = min(start + 1024, bytes.count)
             guard let lastETX = bytes[start..<end].lastIndex(of: GPGL.etx) else {
-                throw CutterError.writeFailed("comando maior que 1 KB")
+                throw CutterError.writeFailed("command larger than 1 KB")
             }
             try await write(Data(bytes[start...lastETX]))
             try await waitForReady(timeout: 120, pollInterval: 0.05)
@@ -303,7 +303,7 @@ public actor Cutter {
         do {
             response = try await read(timeout: 5)
         } catch CutterError.timeout {
-            log("sem resposta ao pedido de estado")
+            log("no response to the status request")
             return .noResponse
         }
         guard response.last == GPGL.etx else { throw CutterError.badResponse(Self.printable(response)) }
@@ -320,7 +320,7 @@ public actor Cutter {
         try await query("FG", rxTimeout: 10)
     }
 
-    /// Ferramentas instaladas (só Cameo 4 em diante), ex.: "2,0".
+    /// Installed tools (Cameo 4 onward only), e.g. "2,0".
     public func toolSetup() async throws -> String? {
         guard hardware.isCameo4Line else { return nil }
         try await sendEscape(GPGL.nak, isQuery: true)
@@ -335,7 +335,7 @@ public actor Cutter {
         let polls = Int(timeout / pollInterval)
         var poll = 1
         while poll < polls, state != .ready {
-            if state == .unloaded, poll == 1 { log("carregue a base…") }
+            if state == .unloaded, poll == 1 { log("load the mat…") }
             try await Task.sleep(for: .seconds(pollInterval))
             state = try await status()
             poll += 1
@@ -343,14 +343,14 @@ public actor Cutter {
         return state
     }
 
-    // MARK: Configuração
+    // MARK: Configuration
 
     func initialize() async throws {
         try await sendEscape(GPGL.eot)
         let version = try await firmwareVersion()
-        log("Versão do firmware: '\(version ?? "None")'")
+        log("Firmware version: '\(version ?? "None")'")
         if hardware.isCameo3On {
-            // Calibração do sensor de marcas e dos rolos (o Studio também pergunta).
+            // Calibration of the marks sensor and the rollers (Studio asks too).
             if let response = try await query("TB71") { log("TB71: '\(response)'") }
             if let response = try await query("FA") { log("FA: '\(response)'") }
         }
@@ -361,7 +361,7 @@ public actor Cutter {
         try await send(["\\\(top),\(left)", "Z\(bottom),\(right)"])
     }
 
-    /// Base de corte (só Cameo 3 em diante).
+    /// Cutting mat (Cameo 3 onward only).
     func setCuttingMat(_ mat: CuttingMat?, mediaWidth: Double, mediaHeight: Double) async throws {
         guard hardware.isCameo3On else { return }
         let mat = (mat ?? CuttingMat.none).resolved(for: hardware)
@@ -395,26 +395,26 @@ public actor Cutter {
             return Int(parts[o.toolholder - 1].trimmingCharacters(in: .whitespaces))
         }
         if hardware.hasTwoTools { try await send(tool.select) }
-        log("porta-ferramenta: \(o.toolholder)")
+        log("tool holder: \(o.toolholder)")
 
-        // Cantos vivos: início e fim vão em décimos de milímetro, não em SU.
+        // Sharp corners: start and end go in tenths of a millimeter, not in SU.
         let sharpen = o.pen
             ? tool.sharpenCorners(start: 0, end: 0)
             : tool.sharpenCorners(start: Int((o.sharpenCornersStart + 0.05) * 10.0),
                                   end: Int((o.sharpenCornersEnd + 0.05) * 10.0))
 
         if hardware.isCameo4Line {
-            // A Cameo 4 recebe força, aceleração e offset duas vezes (reproduzindo o Studio).
+            // The Cameo 4 receives force, acceleration and offset twice (reproducing Studio).
             if let pressure = o.pressure {
                 let value = min(pressure, hardware.maxPressure ?? 33)
                 try await send(tool.pressure(value))
-                log("força: \(value)")
+                log("force: \(value)")
                 try await send(GPGL.acceleration(0))
             }
             if let speed = o.speed {
                 let value = max(1, min(30, speed))
                 try await send(tool.speed(value))
-                log("velocidade: \(value)")
+                log("speed: \(value)")
             }
             try await send(tool.cutterOffset(xmm: 0, ymm: 0.05))
             try await send(tool.lift(o.sharpenCorners))
@@ -429,15 +429,15 @@ public actor Cutter {
             if let speed = o.speed {
                 let value = max(1, min(10, speed))
                 try await send(hardware.isCameo3 ? tool.speed(value) : "!\(value)")
-                log("velocidade: \(value)")
+                log("speed: \(value)")
             }
             if let pressure = o.pressure {
                 let value = max(1, min(33, pressure))
                 try await send(hardware.isCameo3 ? tool.pressure(value) : "FX\(value)")
-                log("força: \(value)")
+                log("force: \(value)")
             }
             if hardware.isCameo3, o.pen { try await send(tool.cutterOffset(xmm: 0, ymm: 0.05)) }
-            log(leftAligned ? "Mídia alinhada à esquerda." : "Mídia alinhada à direita.")
+            log(leftAligned ? "Media aligned to the left." : "Media aligned to the right.")
             if hardware.isCameo3 {
                 try await send(tool.lift(o.sharpenCorners))
                 try await send(sharpen)
@@ -446,27 +446,27 @@ public actor Cutter {
                                     tool.cutterOffset(xmm: o.bladeDiameter, ymm: 0.05)])
                 }
             } else {
-                // Diâmetro do círculo que reorienta a lâmina nos cantos (0 para caneta).
+                // Diameter of the circle that reorients the blade at corners (0 for a pen).
                 try await send(o.pen ? "FC0" : "FC\(GPGL.su(mm: o.bladeDiameter))")
             }
         }
 
         if hardware.isCameo3On, o.autoblade, let depth = o.depth {
             if let current = currentTool, current != Self.toolAutoblade, current != Self.toolEmpty {
-                log("Esperava uma AutoBlade, encontrei a ferramenta \(current). Lâmina não ajustada.")
+                log("Expected an AutoBlade, found tool \(current). Blade not set.")
             } else if o.toolholder != 1 {
-                log("A AutoBlade só ajusta no porta-ferramenta 1, não no \(o.toolholder).")
+                log("The AutoBlade only adjusts in tool holder 1, not in \(o.toolholder).")
             } else {
                 let value = max(0, min(10, depth))
                 try await send(tool.depth(value))
-                log("lâmina: \(value)")
+                log("blade: \(value)")
             }
         }
 
         swClipping = o.swClipping
         clipFuzz = o.clipFuzz
 
-        // Reforço de tração: rolos 3× para a frente e para trás (precisa de força ≥ 19).
+        // Track enhancing: rollers 3× forward and back (needs force ≥ 19).
         if let trackEnhancing = o.trackEnhancing, !o.skipInit {
             if trackEnhancing {
                 try await send("FY0")
@@ -477,14 +477,14 @@ public actor Cutter {
 
         if !o.skipInit, !hardware.isCameo3On {
             if let landscape = o.landscape { try await send(["FN0", landscape ? "TB50,1" : "TB50,0"]) }
-            // Não levantar a ferramenta entre caminhos.
+            // Don't lift the tool between paths.
             try await send("FE0,0")
         }
     }
 
-    // MARK: Corte
+    // MARK: Cut
 
-    /// Envia os caminhos (mm). Cada caminho é cortado de uma vez; entre caminhos a ferramenta sobe.
+    /// Sends the paths (mm). Each path is cut in one go; between paths the tool goes up.
     @discardableResult
     public func plot(_ paths: [[CGPoint]], _ options: PlotOptions = PlotOptions()) async throws -> BoundingBox {
         let o = options
@@ -492,7 +492,7 @@ public actor Cutter {
         let left = o.marginLeft ?? hardware.marginLeftMM ?? 0
         var mediaWidth = o.mediaWidth
         if leftAligned, let width = hardware.widthMM { mediaWidth = width }
-        log("área: (\(left), \(top)) – (\(mediaWidth), \(o.mediaHeight)) mm")
+        log("area: (\(left), \(top)) – (\(mediaWidth), \(o.mediaHeight)) mm")
 
         var width = max(mediaWidth, left)
         var height = max(o.mediaHeight, top)
@@ -500,8 +500,8 @@ public actor Cutter {
         var offsetY = Double(o.offset.y)
 
         if let reg = o.registration {
-            // Depois do registro, (0, 0) é o canto da marca: compensa a posição dela na página
-            // e limita a área ao espaço entre as marcas.
+            // After registration, (0, 0) is the mark's corner: compensates for its position on the page
+            // and limits the area to the space between the marks.
             offsetX -= reg.originX
             offsetY -= reg.originY
             height = reg.length
@@ -510,12 +510,12 @@ public actor Cutter {
             if !o.skipInit {
                 try await send("TB50,0")
                 try await send("TB99")
-                try await send("TB52,2")    // tipo de marca: 2 = Cameo/Portrait
-                try await send("TB51,\(GPGL.su(mm: reg.markLength))")      // comprimento das marcas (20 mm = 400)
-                try await send("TB53,\(GPGL.su(mm: reg.markThickness))")   // espessura das marcas (0,5 mm = 10)
+                try await send("TB52,2")    // mark type: 2 = Cameo/Portrait
+                try await send("TB51,\(GPGL.su(mm: reg.markLength))")      // marks length (20 mm = 400)
+                try await send("TB53,\(GPGL.su(mm: reg.markThickness))")   // marks width (0.5 mm = 10)
                 try await send("TB55,1")
                 if reg.search {
-                    // busca automática, com 10 mm de folga
+                    // automatic search, with 10 mm of slack
                     try await send(GPGL.automaticRegmarkTest(height: reg.length, width: reg.width,
                                                              top: max(reg.originY - 10, 0),
                                                              left: max(reg.originX - 10, 0),
@@ -525,7 +525,7 @@ public actor Cutter {
                 }
                 let response = try? await read(timeout: 40)
                 guard response == Data("    0".utf8) + [GPGL.etx] else {
-                    throw CutterError.registrationMarksNotFound(response.map(Self.printable) ?? localized("sem resposta"))
+                    throw CutterError.registrationMarksNotFound(response.map(Self.printable) ?? localized("no response"))
                 }
             }
         }
@@ -571,7 +571,7 @@ public actor Cutter {
                 bbox.extend(x, y)
                 bbox.count += 1
                 let p = clipPoint(x, y, clip)
-                // Fora da área só move, sem cortar.
+                // Outside the area it only moves, without cutting.
                 commands.append(!swClipping || (p.inside && lastInside) ? GPGL.draw(y: p.y, x: p.x) : GPGL.move(y: p.y, x: p.x))
                 lastInside = p.inside
             }

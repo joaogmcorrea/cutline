@@ -1,7 +1,7 @@
-// Fluxo de bytes GPGL pelo cabo USB (IOUSBHost).
-// O caminho é o mesmo do Silhouette Studio (estudado com a REA, sem copiar código): configuração 1 da máquina,
-// primeira interface, primeiro endpoint bulk de saída e primeiro de entrada; cada envio vai inteiro num pedido só,
-// e há sempre uma leitura de 8 KB pendente, guardando as respostas até o driver pedir.
+// GPGL byte stream over the USB cable (IOUSBHost).
+// The path is the same as Silhouette Studio's (studied with REA, without copying code): the machine's configuration 1,
+// first interface, first bulk out endpoint and first bulk in endpoint; each send goes whole in a single request,
+// and there is always an 8 KB read pending, keeping the responses until the driver asks for them.
 import CryptoKit
 import Foundation
 import IOKit
@@ -10,20 +10,20 @@ import IOUSBHost
 public final class USBTransport: CutterTransport, @unchecked Sendable {
     static let vendors = [Hardware.vendorGraphtec, Hardware.vendorCameo5Alpha]
     static let readSize = 8192
-    /// Endpoints fixos do driver Python, se a interface não descrever os seus.
+    /// The Python driver's fixed endpoints, if the interface doesn't describe its own.
     static let fallbackOut = 0x01
     static let fallbackIn = 0x82
-    /// Depois de configurar a máquina, o macOS leva um instante para publicar a interface.
+    /// After configuring the machine, macOS takes a moment to publish the interface.
     static let interfaceWait: TimeInterval = 2
 
-    // Códigos do IOKit que são macros em C (não chegam ao Swift).
+    // IOKit codes that are C macros (they don't reach Swift).
     static let messageTerminated: UInt32 = 0xE000_0010
     static let returnAborted = IOReturn(bitPattern: 0xE000_02EB)
     static let returnTimeout = IOReturn(bitPattern: 0xE000_02D6)
     static let returnExclusiveAccess = IOReturn(bitPattern: 0xE000_02C5)
     static let returnPipeStalled = IOReturn(bitPattern: 0xE000_404F)
 
-    /// Uma cortadora no cabo, com o serviço do IOKit (retido) para abrir.
+    /// A cutter on the cable, with the (retained) IOKit service to open.
     private struct Found {
         let cutter: DiscoveredCutter
         let hardware: Hardware
@@ -36,7 +36,7 @@ public final class USBTransport: CutterTransport, @unchecked Sendable {
         let timeout: DispatchWorkItem
     }
 
-    // Todo o estado abaixo só é tocado na fila `queue`, onde o IOUSBHost entrega os callbacks.
+    // All the state below is only touched on the `queue` queue, where IOUSBHost delivers the callbacks.
     private let queue = DispatchQueue(label: "cutline.usb")
     private let log: @Sendable (String) -> Void
     private var interface: IOUSBHostInterface?
@@ -46,9 +46,9 @@ public final class USBTransport: CutterTransport, @unchecked Sendable {
     private var reader: Reader?
     private var connected = false
 
-    /// O modelo pelo product id do USB.
+    /// The model by the USB product id.
     public let hardware: Hardware
-    public private(set) var location = "usb (não conectado)"
+    public private(set) var location = "usb (not connected)"
 
     private init(hardware: Hardware, log: @escaping @Sendable (String) -> Void) {
         self.hardware = hardware
@@ -59,14 +59,14 @@ public final class USBTransport: CutterTransport, @unchecked Sendable {
         interface?.destroy()
     }
 
-    /// As cortadoras ligadas no cabo agora (só os modelos da tabela de `Hardware`). Não abre nenhuma.
+    /// The cutters on the cable now (only the models in the `Hardware` table). Opens none.
     public static func discover(log: @escaping @Sendable (String) -> Void = { _ in }) -> [DiscoveredCutter] {
         let found = scan(log: log)
         defer { found.forEach { IOObjectRelease($0.service) } }
         return found.map(\.cutter)
     }
 
-    /// Abre a cortadora escolhida (`identifier`, de uma busca anterior) ou a única ligada.
+    /// Opens the chosen cutter (`identifier`, from an earlier search) or the only one plugged in.
     public static func connect(identifier: UUID? = nil,
                                log: @escaping @Sendable (String) -> Void = { _ in }) async throws -> USBTransport {
         let found = scan(log: log)
@@ -74,8 +74,8 @@ public final class USBTransport: CutterTransport, @unchecked Sendable {
         let candidates = identifier.map { id in found.filter { $0.cutter.id == id } } ?? found
         guard candidates.count == 1, let chosen = candidates.first else {
             if candidates.isEmpty {
-                throw CutterError.notFound(identifier == nil ? localized("uma cortadora Silhouette no cabo USB")
-                                                             : localized("a cortadora escolhida no cabo USB"))
+                throw CutterError.notFound(identifier == nil ? localized("a Silhouette cutter on the USB cable")
+                                                             : localized("the chosen cutter on the USB cable"))
             }
             throw CutterError.ambiguous(candidates.map(\.cutter.name))
         }
@@ -102,7 +102,7 @@ public final class USBTransport: CutterTransport, @unchecked Sendable {
                     case kIOReturnSuccess where sent == expected:
                         continuation.resume()
                     case kIOReturnSuccess:
-                        continuation.resume(throwing: CutterError.writeFailed(localized("\(sent) de \(expected) bytes enviados")))
+                        continuation.resume(throwing: CutterError.writeFailed(localized("\(sent) of \(expected) bytes sent")))
                     case Self.returnTimeout:
                         continuation.resume(throwing: CutterError.timeout)
                     default:
@@ -142,7 +142,7 @@ public final class USBTransport: CutterTransport, @unchecked Sendable {
     }
 
     public func close() async {
-        // destroy() cancela a leitura pendente e espera os callbacks, que rodam na fila: chamar fora dela.
+        // destroy() cancels the pending read and waits for the callbacks, which run on the queue: call it off the queue.
         nonisolated(unsafe) let open = queue.sync { () -> IOUSBHostInterface? in
             connected = false
             failReader(.disconnected)
@@ -154,7 +154,7 @@ public final class USBTransport: CutterTransport, @unchecked Sendable {
 
     // MARK: Busca
 
-    /// Todos os dispositivos USB, filtrados aqui: o casamento do IOKit não aceita só o fabricante.
+    /// All USB devices, filtered here: IOKit matching doesn't accept the vendor alone.
     private static func scan(log: @Sendable (String) -> Void) -> [Found] {
         var iterator: io_iterator_t = 0
         guard IOServiceGetMatchingServices(kIOMainPortDefault, IOServiceMatching(kIOUSBHostDeviceClassName), &iterator)
@@ -171,11 +171,11 @@ public final class USBTransport: CutterTransport, @unchecked Sendable {
             let serial = (property(service, "USB Serial Number") as? String)?
                 .trimmingCharacters(in: .whitespaces).nilIfEmpty
             let location = (property(service, "locationID") as? NSNumber)?.uint32Value ?? 0
-            // Mesmo formato do nome anunciado no Bluetooth: modelo + "-" + número de série.
+            // Same format as the name advertised over Bluetooth: model + "-" + serial number.
             let name = [hardware.modelName, serial].compactMap(\.self).joined(separator: "-")
             let key = "usb:\(vendor):\(product):" + (serial ?? String(location))
             let cutter = DiscoveredCutter(id: stableID(key), name: name, link: .usb)
-            log("encontrada no USB: \(name)")
+            log("found on USB: \(name)")
             found.append(Found(cutter: cutter, hardware: hardware, service: service))
         }
         return found.sorted { $0.cutter.name.localizedStandardCompare($1.cutter.name) == .orderedAscending }
@@ -185,7 +185,7 @@ public final class USBTransport: CutterTransport, @unchecked Sendable {
         IORegistryEntryCreateCFProperty(service, key as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue()
     }
 
-    /// UUID fixo para a mesma máquina (número de série; sem ele, a porta), para lembrar a última usada.
+    /// Fixed UUID for the same machine (serial number; without it, the port), to remember the last one used.
     private static func stableID(_ key: String) -> UUID {
         var bytes = Array(SHA256.hash(data: Data(key.utf8)).prefix(16))
         bytes[6] = (bytes[6] & 0x0F) | 0x50
@@ -199,7 +199,7 @@ public final class USBTransport: CutterTransport, @unchecked Sendable {
     private func open(_ found: Found) async throws {
         var service = Self.firstInterface(of: found.service)
         if service == nil {
-            // Ninguém configurou a máquina ainda: escolhe a primeira configuração, como o Studio.
+            // Nobody configured the machine yet: picks the first configuration, like Studio.
             try Self.configure(found.service)
             let deadline = Date().addingTimeInterval(Self.interfaceWait)
             while service == nil, Date() < deadline {
@@ -207,9 +207,9 @@ public final class USBTransport: CutterTransport, @unchecked Sendable {
                 service = Self.firstInterface(of: found.service)
             }
         }
-        guard let service else { throw CutterError.notFound(localized("a interface USB da cortadora")) }
+        guard let service else { throw CutterError.notFound(localized("the cutter’s USB interface")) }
         defer { IOObjectRelease(service) }
-        // Abrir a interface dá acesso exclusivo a ela (falha se outro programa estiver com a máquina).
+        // Opening the interface gives exclusive access to it (fails if another app has the machine).
         let opened: IOUSBHostInterface
         let pipes: (out: IOUSBHostPipe, in: IOUSBHostPipe)
         let (out, inp): (Int, Int)
@@ -238,7 +238,7 @@ public final class USBTransport: CutterTransport, @unchecked Sendable {
         }
     }
 
-    /// A interface de menor número da máquina (o Studio usa a primeira), se o macOS já a publicou.
+    /// The machine's lowest-numbered interface (Studio uses the first), if macOS already published it.
     private static func firstInterface(of device: io_service_t) -> io_service_t? {
         var iterator: io_iterator_t = 0
         guard IORegistryEntryGetChildIterator(device, kIOServicePlane, &iterator) == KERN_SUCCESS else { return nil }
@@ -267,7 +267,7 @@ public final class USBTransport: CutterTransport, @unchecked Sendable {
         }
     }
 
-    /// O primeiro endpoint bulk de saída e o primeiro de entrada da interface (como o `getpipe` do Studio).
+    /// The interface's first bulk out endpoint and first bulk in endpoint (like Studio's `getpipe`).
     private static func bulkEndpoints(_ interface: IOUSBHostInterface) -> (out: Int, in: Int) {
         var out: Int?
         var inp: Int?
@@ -283,9 +283,9 @@ public final class USBTransport: CutterTransport, @unchecked Sendable {
         return (out ?? fallbackOut, inp ?? fallbackIn)
     }
 
-    // MARK: Leitura contínua
+    // MARK: Continuous reading
 
-    /// Deixa um pedido de leitura pendente; cada resposta vai para `incoming` e um novo pedido sai.
+    /// Leaves a read request pending; each response goes to `incoming` and a new request goes out.
     private func startReading() {
         guard connected, let input else { return }
         nonisolated(unsafe) let buffer = NSMutableData(length: Self.readSize)!
@@ -294,7 +294,7 @@ public final class USBTransport: CutterTransport, @unchecked Sendable {
                 self?.received(status, buffer, count)
             }
         } catch {
-            log("leitura USB falhou: \(error.localizedDescription)")
+            log("USB read failed: \(error.localizedDescription)")
             connected = false
             failReader(.disconnected)
         }
@@ -309,12 +309,12 @@ public final class USBTransport: CutterTransport, @unchecked Sendable {
         case Self.returnAborted:
             break
         case Self.returnPipeStalled:
-            log("USB: leitura travada; limpando")
+            log("USB: read stalled; clearing")
             try? input?.clearStall()
             startReading()
         default:
             guard connected else { return }
-            log("USB: leitura falhou (0x\(String(UInt32(bitPattern: status), radix: 16)))")
+            log("USB: read failed (0x\(String(UInt32(bitPattern: status), radix: 16)))")
             connected = false
             failReader(.disconnected)
         }
@@ -322,7 +322,7 @@ public final class USBTransport: CutterTransport, @unchecked Sendable {
 
     private func unplugged() {
         guard connected else { return }
-        log("cabo USB desconectado")
+        log("USB cable unplugged")
         connected = false
         failReader(.disconnected)
     }
@@ -334,7 +334,7 @@ public final class USBTransport: CutterTransport, @unchecked Sendable {
         pending.continuation.resume(throwing: error)
     }
 
-    /// Uma resposta terminada em ETX, ou `maxLength` bytes se já houver tantos.
+    /// A response ending in ETX, or `maxLength` bytes if there are already that many.
     private func takeReply(_ maxLength: Int) -> Data? {
         guard !incoming.isEmpty else { return nil }
         if let etx = incoming.firstIndex(of: GPGL.etx) {
@@ -366,11 +366,11 @@ public final class USBTransport: CutterTransport, @unchecked Sendable {
     private static func failure(_ status: IOReturn) -> CutterError {
         switch status {
         case returnExclusiveAccess:
-            .usbUnavailable(localized("Outro programa está usando a cortadora no USB (o Silhouette Studio?)."))
+            .usbUnavailable(localized("Another app is using the cutter over USB (Silhouette Studio?)."))
         case returnTimeout:
             .timeout
         default:
-            .usbUnavailable(localized("Falha no USB (código 0x\(String(UInt32(bitPattern: status), radix: 16)))."))
+            .usbUnavailable(localized("USB error (code 0x\(String(UInt32(bitPattern: status), radix: 16)))."))
         }
     }
 }

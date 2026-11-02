@@ -203,7 +203,7 @@
 				INFOPLIST_FILE = "Cutline-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Cutline;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.graphics-design";
-				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "O Cutline usa o Bluetooth para conversar com a sua cortadora Silhouette.";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Cutline uses Bluetooth to talk to your Silhouette cutter.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -234,7 +234,7 @@
 				INFOPLIST_FILE = "Cutline-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Cutline;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.graphics-design";
-				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "O Cutline usa o Bluetooth para conversar com a sua cortadora Silhouette.";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Cutline uses Bluetooth to talk to your Silhouette cutter.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

@@ -1,5 +1,5 @@
-// Modelos de cortadora e bases de corte.
-// Porte das tabelas DEVICE, CAMEO_MATS e BLUETOOTH_NAME_TO_PRODUCT_ID de Graphtec.py (GPLv2).
+// Cutter models and cutting mats.
+// Port of the DEVICE, CAMEO_MATS and BLUETOOTH_NAME_TO_PRODUCT_ID tables from Graphtec.py (GPLv2).
 import Foundation
 
 public struct Hardware: Sendable, Hashable {
@@ -29,7 +29,7 @@ public struct Hardware: Sendable, Hashable {
         self.maxPressure = maxPressure
     }
 
-    /// Modelo não reconhecido (sem product id): usa os comandos do protocolo antigo.
+    /// Unrecognized model (no product id): uses the old protocol's commands.
     public static func unknown(_ name: String) -> Hardware { Hardware(name, product: nil) }
 
     // MARK: IDs USB
@@ -57,7 +57,7 @@ public struct Hardware: Sendable, Hashable {
     public static let idPortrait3: UInt16 = 0x113A
     public static let idPortrait4: UInt16 = 0x113F
 
-    /// Protocolo novo (velocidade 1–30, AutoBlade): Cameo 4/5 e Portrait 3/4.
+    /// New protocol (speed 1–30, AutoBlade): Cameo 4/5 and Portrait 3/4.
     static let cameo4Line: Set<UInt16> = [
         idCameo4, idCameo4Plus, idCameo4Pro, idCameo5, idCameo5Plus, idCameoProMkII,
         idCameo5Alpha, idCameo5AlphaPlus, idPortrait3, idPortrait4,
@@ -70,7 +70,7 @@ public struct Hardware: Sendable, Hashable {
     var hasTwoTools: Bool { productID.map(Self.twoTools.contains) ?? false }
     var isCameo3: Bool { productID == Self.idCameo3 }
 
-    // MARK: Tabela de modelos
+    // MARK: Model table
 
     public static let all: [Hardware] = [
         Hardware("Silhouette_Portrait", product: idPortrait, width: 206, length: 3000, regmark: true),
@@ -111,7 +111,7 @@ public struct Hardware: Sendable, Hashable {
         all.first { $0.vendorID == vendor && $0.productID == product }
     }
 
-    /// "Silhouette_Cameo4_Plus" → "Cameo 4 Plus" (sem hífen: o nome da máquina usa o hífen antes do nº de série).
+    /// "Silhouette_Cameo4_Plus" → "Cameo 4 Plus" (no hyphen: the machine name uses the hyphen before the serial number).
     public var modelName: String {
         name.replacingOccurrences(of: "Silhouette_", with: "")
             .replacingOccurrences(of: #"[_-]"#, with: " ", options: .regularExpression)
@@ -123,8 +123,8 @@ public struct Hardware: Sendable, Hashable {
 
     // MARK: Bluetooth
 
-    /// As máquinas Bluetooth se identificam pelo nome anunciado e pela resposta do FG
-    /// (ex.: "Portrait 4-0000001", "CAMEO 5 ALPHA V1.02"). Mais específicos primeiro.
+    /// Bluetooth machines identify themselves by the advertised name and the FG response
+    /// (e.g. "Portrait 4-0000001", "CAMEO 5 ALPHA V1.02"). Most specific first.
     static let bluetoothNames: [(String, UInt16)] = [
         ("CAMEO 5 ALPHA PLUS", idCameo5AlphaPlus),
         ("CAMEO 5 ALPHA", idCameo5Alpha),
@@ -140,8 +140,8 @@ public struct Hardware: Sendable, Hashable {
         ("PORTRAIT2", idPortrait2),
     ]
 
-    /// Nome anunciado no Bluetooth: modelo + "-" + número de série da máquina ("Portrait 4-0000001").
-    /// Como o Studio: só o que vem antes do 1º hífen, comparado por inteiro (sem espaços, sem diferenciar maiúsculas).
+    /// Name advertised over Bluetooth: model + "-" + the machine's serial number ("Portrait 4-0000001").
+    /// Like Studio: only what comes before the 1st hyphen, compared whole (without spaces, case-insensitive).
     public static func match(bluetoothName: String?) -> Hardware? {
         guard let name = bluetoothName else { return nil }
         let key = modelKey(String(name.split(separator: "-", maxSplits: 1, omittingEmptySubsequences: false)[0]))
@@ -149,13 +149,13 @@ public struct Hardware: Sendable, Hashable {
         return withProductID(entry.1)
     }
 
-    /// O modelo de uma cortadora encontrada: pelo nome anunciado no Bluetooth ou, no USB, pelo nome do modelo.
+    /// The model of a cutter found: by the name advertised over Bluetooth or, over USB, by the model name.
     public static func match(_ cutter: DiscoveredCutter?) -> Hardware? {
         guard let cutter else { return nil }
         return cutter.link == .usb ? all.first { $0.modelName == cutter.model } : match(bluetoothName: cutter.name)
     }
 
-    /// Resposta do FG: modelo + versão ("Portrait 4 V1.05", "CAMEO 5 ALPHA PLUS V1.00").
+    /// FG response: model + version ("Portrait 4 V1.05", "CAMEO 5 ALPHA PLUS V1.00").
     public static func match(firmware: String?) -> Hardware? {
         guard let firmware else { return nil }
         let key = modelKey(firmware)
@@ -168,9 +168,9 @@ public struct Hardware: Sendable, Hashable {
     }
 }
 
-/// Bases de corte (TG<código>) com o tamanho em polegadas (comprimento × largura). As do Silhouette Studio 5:
-/// quais cada máquina aceita, a padrão de cada uma e o código que cada base manda em cada máquina (as bases
-/// "de outra máquina" viram uma que ela conhece, como o Studio faz) — ver `_docs/MEMORIA.md` (31/10/2026).
+/// Cutting mats (TG<code>) with the size in inches (length × width). Silhouette Studio 5's:
+/// which each machine accepts, each one's default and the code each mat sends on each machine (mats
+/// "from another machine" become one it knows, as Studio does).
 public enum CuttingMat: String, Sendable, CaseIterable, Codable {
     case none = "no_mat"
     case cameo12x12 = "cameo_12x12"
@@ -185,7 +185,7 @@ public enum CuttingMat: String, Sendable, CaseIterable, Codable {
     case pixscanCameo = "pixscan_cameo"
     case pixscanPortrait = "pixscan_portrait"
 
-    /// Número do TG (a 6 × 8 não tem: vira a 8 × 12 ou a 8,5 × 12, conforme a máquina).
+    /// TG number (the 6 × 8 has none: it becomes the 8 × 12 or the 8.5 × 12, depending on the machine).
     var code: String {
         switch self {
         case .none: "0"
@@ -215,9 +215,9 @@ public enum CuttingMat: String, Sendable, CaseIterable, Codable {
         }
     }
 
-    /// A base que a máquina recebe no TG (como o `make_carrier_id_compatible_with_cutter` do Studio): a Portrait
-    /// 2/3 só conhece a 8 × 12; a Portrait 4, a 8,5 × 12 (além da eletrostática e da PixScan); nas Cameo, as de
-    /// papel (6 × 8, 8 × 12) viram a 8 × 12, e as grandes só valem nos modelos Plus/Pro (senão, 12 × 12).
+    /// The mat the machine receives in the TG (like Studio's `make_carrier_id_compatible_with_cutter`): the Portrait
+    /// 2/3 only knows the 8 × 12; the Portrait 4, the 8.5 × 12 (besides the electrostatic and PixScan ones); on the Cameos, the
+    /// paper ones (6 × 8, 8 × 12) become the 8 × 12, and the large ones only apply to the Plus/Pro models (otherwise, 12 × 12).
     public func resolved(for hardware: Hardware) -> CuttingMat {
         guard self != .none else { return .none }
         switch hardware.productID {
@@ -226,9 +226,9 @@ public enum CuttingMat: String, Sendable, CaseIterable, Codable {
         case Hardware.idPortrait4:
             return [.pixscanPortrait, .electrostatic8_5x12].contains(self) ? self : .portrait8_5x12
         default:
-            let modelos = hardware.supportedCuttingMats
+            let models = hardware.supportedCuttingMats
             if self == .mini6x8 { return .portrait8x12 }
-            if [.cameoPlus15x15, .cameoPro24x24].contains(self) { return modelos.contains(self) ? self : .cameo12x12 }
+            if [.cameoPlus15x15, .cameoPro24x24].contains(self) { return models.contains(self) ? self : .cameo12x12 }
             return [.cameo12x12, .cameo12x24, .portrait8x12, .pixscanCameo, .pixscanPortrait, .portrait8_5x12,
                     .electrostatic12x12].contains(self) ? self : .cameo12x12
         }
@@ -236,7 +236,7 @@ public enum CuttingMat: String, Sendable, CaseIterable, Codable {
 }
 
 extension Hardware {
-    /// As bases que o Studio oferece para a máquina, na ordem dele (a primeira é "sem base").
+    /// The mats Studio offers for the machine, in its order (the first is "no mat").
     public var supportedCuttingMats: [CuttingMat] {
         let cameo: [CuttingMat] = [.none, .cameo12x12, .cameo12x24, .portrait8x12, .mini6x8, .pixscanCameo]
         let cameo5: [CuttingMat] = [.electrostatic12x12, .cameo12x12, .cameo12x24, .portrait8_5x12, .mini6x8, .pixscanCameo]
@@ -254,8 +254,8 @@ extension Hardware {
         }
     }
 
-    /// A base de cada máquina quando o usuário não escolheu outra (a "A4" não existe no protocolo; a mídia vai
-    /// como 210 × 297 mm).
+    /// Each machine's mat when the user didn't choose another ("A4" doesn't exist in the protocol; the media goes
+    /// as 210 × 297 mm).
     public var defaultCuttingMat: CuttingMat? {
         switch productID {
         case Self.idPortrait, Self.idPortrait2, Self.idPortrait3: .portrait8x12

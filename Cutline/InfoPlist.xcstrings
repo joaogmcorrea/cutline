@@ -1,5 +1,5 @@
 {
-  "sourceLanguage" : "pt-BR",
+  "sourceLanguage" : "en",
   "strings" : {
     "CFBundleDisplayName" : {
       "comment" : "Bundle display name",
@@ -25,15 +25,9 @@
         }
       }
     },
-    "Documento do Cutline" : {
+    "Cutline Document" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cutline Document"
-          }
-        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
@@ -42,36 +36,30 @@
         }
       }
     },
-    "Documento do Silhouette Studio" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Silhouette Studio Document"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Documento do Silhouette Studio"
-          }
-        }
-      }
-    },
     "NSBluetoothAlwaysUsageDescription" : {
       "extractionState" : "manual",
       "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Cutline usa o Bluetooth para conversar com a sua cortadora Silhouette."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cutline uses Bluetooth to talk to your Silhouette cutter."
           }
-        },
+        }
+      }
+    },
+    "Silhouette Studio Document" : {
+      "extractionState" : "manual",
+      "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Cutline usa o Bluetooth para conversar com a sua cortadora Silhouette."
+            "value" : "Documento do Silhouette Studio"
           }
         }
       }

@@ -1,44 +1,44 @@
-// Cutline — editor e corte para cortadoras Silhouette (macOS, SwiftUI, Liquid Glass).
+// Cutline — editor and cutter for Silhouette machines (macOS, SwiftUI, Liquid Glass).
 import SwiftUI
 
 @main
 struct CutlineApp: App {
-    /// Uma conexão com a cortadora para o app todo.
-    @State private var maquina = Maquina()
+    /// One connection to the cutter for the whole app.
+    @State private var machine = Machine()
 
     init() {
-        // Ao abrir o app, um documento novo em branco (e não o painel de abrir arquivo).
+        // On launch, a new blank document (not the open-file panel).
         UserDefaults.standard.register(defaults: ["NSShowAppCentricOpenPanelInsteadOfUntitledFile": false])
-        // Documentos em abas, como no Illustrator e no Silhouette Studio: a preferência do sistema
-        // ("Preferir abas ao abrir documentos") vale só para este app.
+        // Documents in tabs, as in Illustrator and Silhouette Studio: the system setting
+        // ("Prefer tabs when opening documents") applies to this app only.
         UserDefaults.standard.set("always", forKey: "AppleWindowTabbingMode")
-        // Fontes ativadas com o app aberto (Adobe Fonts) passam a valer nos textos já desenhados.
-        Fontes.observarMudancas()
-        // O Sparkle procura versões novas desde a abertura (na depuração, nunca).
-        _ = Atualizacoes.controlador
+        // Fonts activated while the app is open (Adobe Fonts) apply to text already drawn.
+        Fonts.observeChanges()
+        // Sparkle checks for new versions from launch (never in debug builds).
+        _ = Updates.controller
         #if DEBUG
-        Depuracao.esconderJanelas()
+        DebugHooks.hideWindows()
         #endif
     }
 
     var body: some Scene {
-        // Arquivo › Novo, Abrir (também .studio3), Abrir Recente, Salvar, Duplicar, Reverter… vêm do sistema.
-        DocumentGroup(newDocument: { Documento() }) { arquivo in
-            JanelaPrincipal(doc: arquivo.document)
-                .environment(maquina)
+        // File › New, Open (also .studio3), Open Recent, Save, Duplicate, Revert… come from the system.
+        DocumentGroup(newDocument: { Document() }) { file in
+            MainWindow(doc: file.document)
+                .environment(machine)
         }
         .defaultSize(width: 1400, height: 900)
         .windowToolbarStyle(.unified)
         .commands {
-            ComandosEditor()
-            ComandoAtualizacoes()
-            ComandosAjuda()
+            EditorCommands()
+            UpdatesCommand()
+            HelpCommands()
         }
 
-        // Ajuda › Relatar um Problema… / Sugerir um Recurso… (uma janela de cada; sem itens no menu Arquivo).
-        WindowGroup(for: TipoRelatorio.self) { $tipo in
-            JanelaRelatorio(tipo: tipo ?? .problema)
-                .environment(maquina)
+        // Help › Report a Bug… / Request a Feature… (one window each; no items in the File menu).
+        WindowGroup(for: ReportKind.self) { $kind in
+            ReportWindow(kind: kind ?? .bug)
+                .environment(machine)
         }
         .defaultSize(width: 600, height: 760)
         .windowResizability(.contentMinSize)

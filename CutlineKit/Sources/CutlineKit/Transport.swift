@@ -1,19 +1,19 @@
-// Camada de transporte: Bluetooth LE (BLETransport), cabo USB (USBTransport) ou simulação.
+// Transport layer: Bluetooth LE (BLETransport), USB cable (USBTransport) or simulation.
 import Foundation
 
 public protocol CutterTransport: AnyObject, Sendable {
-    /// Descrição da conexão, para log ("bluetooth-le Portrait 4-0000001 (…)").
+    /// Connection description, for the log ("bluetooth-le Portrait 4-0000001 (…)").
     var location: String { get }
-    /// Envia todos os bytes; `timeout` vale para cada pacote.
+    /// Sends all the bytes; `timeout` applies to each packet.
     func write(_ data: Data, timeout: TimeInterval) async throws
-    /// Lê uma resposta terminada em ETX (ou até `maxLength` bytes).
-    /// Lança `CutterError.timeout` se nada chegar no prazo.
+    /// Reads a response ending in ETX (or up to `maxLength` bytes).
+    /// Throws `CutterError.timeout` if nothing arrives in time.
     func read(maxLength: Int, timeout: TimeInterval) async throws -> Data
     func close() async
 }
 
-/// Mensagens para o usuário: traduzidas pelo catálogo do app (Localizable.xcstrings do Cutline, chaves
-/// "manuais"); fora do app (CLI `cutline`), ficam em português.
+/// Messages for the user: translated by the app's catalog (Cutline's Localizable.xcstrings, "manual"
+/// keys); outside the app (the `cutline` CLI), they stay in English.
 func localized(_ value: String.LocalizationValue) -> String { String(localized: value, bundle: .main) }
 
 public enum CutterError: Error, Equatable, LocalizedError {
@@ -33,26 +33,26 @@ public enum CutterError: Error, Equatable, LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case .timeout: localized("A cortadora não respondeu a tempo.")
-        case .disconnected: localized("A cortadora desconectou.")
-        case .bluetoothUnavailable(let motivo), .usbUnavailable(let motivo): motivo
-        case .notFound(let alvo): localized("Não encontrei \(alvo). Verifique se ela está ligada.")
-        case .ambiguous(let nomes): localized("Mais de uma cortadora encontrada: \(nomes.joined(separator: ", ")).")
-        case .missingService: localized("O dispositivo não tem o serviço Bluetooth da Silhouette.")
-        case .writeFailed(let motivo): localized("Falha ao enviar comandos: \(motivo)")
-        case .badResponse(let resposta): localized("Resposta inesperada da cortadora: \(resposta)")
-        case .registrationMarksNotFound(let resposta): localized("Não encontrei as marcas de registro (\(resposta)).")
-        case .mediaNotLoaded: localized("Nenhuma base carregada. Carregue a base e tente de novo.")
-        case .invalidSettings(let motivo): motivo
-        case .outOfBounds(let motivo): motivo
+        case .timeout: localized("The cutter didn’t respond in time.")
+        case .disconnected: localized("The cutter disconnected.")
+        case .bluetoothUnavailable(let reason), .usbUnavailable(let reason): reason
+        case .notFound(let target): localized("Couldn’t find \(target). Check that it’s turned on.")
+        case .ambiguous(let names): localized("More than one cutter found: \(names.joined(separator: ", ")).")
+        case .missingService: localized("The device doesn’t have the Silhouette Bluetooth service.")
+        case .writeFailed(let reason): localized("Couldn’t send commands: \(reason)")
+        case .badResponse(let reply): localized("Unexpected response from the cutter: \(reply)")
+        case .registrationMarksNotFound(let reply): localized("Couldn’t find the registration marks (\(reply)).")
+        case .mediaNotLoaded: localized("No mat loaded. Load the mat and try again.")
+        case .invalidSettings(let reason): reason
+        case .outOfBounds(let reason): reason
         }
     }
 }
 
-/// Sem máquina: responde como o modo simulação (dry run) do driver Python — estado "pronta",
-/// firmware "None " e marcas de registro "encontradas". Não guarda nada; a transcrição fica no `Cutter`.
+/// No machine: answers like the Python driver's simulation (dry run) mode — status "ready",
+/// firmware "None " and registration marks "found". Stores nothing; the transcript stays in the `Cutter`.
 public final class SimulatedTransport: CutterTransport, @unchecked Sendable {
-    public let location = "simulação"
+    public let location = "simulation"
     private let lock = NSLock()
     private var pending: Data?
 

@@ -1,13 +1,13 @@
-// Leitura dos arquivos .studio3 do Silhouette Studio (formato fechado, sem documentação pública).
-// Estrutura deduzida só dos dados dos arquivos (interoperabilidade), sem usar o programa do Studio. A gravação
-// (que refaz só a lista de objetos) fica em Studio3Escrita.swift.
+// Reading Silhouette Studio's .studio3 files (a closed format, with no public documentation).
+// Structure deduced only from the files' data (interoperability), without using Studio's program. Writing
+// (which rebuilds only the object list) is in Studio3Writer.swift.
 //
-// Arquivo: "silhouette05;" + 16 tamanhos (u64) a partir de 0x10; as seções começam em 0x400.
-//   0 = documento (árvore de objetos) · 1 = imagens (PNG) · 2 = miniatura 512 × 512
-//   5/6 = últimos comandos enviados à máquina (GPGL com XOR 0xA9) · 9 = condições de corte (CSV)
-// Documento: blocos [marca u8][tamanho u32, contado a partir do próprio campo]; listas guardam
-// "quantidade − 1". Objeto = corpo (tipo + estilo + dados) + matriz 3 × 3 + caixa + caminho já na
-// página (cache) + nome. Unidade: mm; origem no canto superior esquerdo da página, y para baixo.
+// File: "silhouette05;" + 16 sizes (u64) from 0x10; the sections start at 0x400.
+//   0 = document (object tree) · 1 = images (PNG) · 2 = 512 × 512 thumbnail
+//   5/6 = last commands sent to the machine (GPGL with XOR 0xA9) · 9 = cut conditions (CSV)
+// Document: blocks [marker u8][size u32, counted from the field itself]; lists store
+// "count − 1". Object = body (type + style + data) + 3 × 3 matrix + box + path already on the
+// page (cache) + name. Unit: mm; origin at the page's top-left corner, y down.
 import CoreGraphics
 import Foundation
 import ImageIO
@@ -20,14 +20,14 @@ public struct StudioDocument: Sendable {
             (self.red, self.green, self.blue, self.alpha) = (red, green, blue, alpha)
         }
 
-        /// "RRGGBB", como o Studio nomeia as cores de linha no painel de envio.
+        /// "RRGGBB", as Studio names the line colors in its send panel.
         public var hex: String {
-            let canal = { (v: Double) in Int((min(max(v, 0), 1) * 255).rounded()) }
-            return String(format: "%02X%02X%02X", canal(red), canal(green), canal(blue))
+            let channel = { (v: Double) in Int((min(max(v, 0), 1) * 255).rounded()) }
+            return String(format: "%02X%02X%02X", channel(red), channel(green), channel(blue))
         }
     }
 
-    /// Nó de Bézier em mm da página; os pontos de controle são absolutos (nil = sem alça).
+    /// Bézier node in page mm; the control points are absolute (nil = no handle).
     public struct Node: Sendable, Equatable {
         public var point: CGPoint
         public var controlIn: CGPoint?
@@ -41,21 +41,21 @@ public struct StudioDocument: Sendable {
     public enum Fill: Sendable {
         case none
         case color(Color)
-        /// `transform` leva o pixel da imagem para mm da página; a imagem fica recortada pelo contorno.
+        /// `transform` takes the image pixel to page mm; the image is clipped by the outline.
         case image(key: String, transform: CGAffineTransform)
     }
 
     public struct Object: Sendable {
-        /// Nome no Studio: "Polygon", "Rectangle", "Ellipse", "Rounded Rectangle"…
+        /// Name in Studio: "Polygon", "Rectangle", "Ellipse", "Rounded Rectangle"…
         public var kind: String
-        /// Subcaminhos sempre fechados (o formato não marca caminhos abertos).
+        /// Subpaths always closed (the format doesn't mark open paths).
         public var subpaths: [[Node]]
-        /// A cor da linha define o corte (como no Cutline).
+        /// The line color defines the cut (as in Cutline).
         public var line: Color
         public var fill: Fill
-        /// Falso quando o objeto está marcado para não cortar no Studio (provável; ver MEMORIA.md).
+        /// False when the object is marked not to cut in Studio (likely).
         public var cuts: Bool
-        /// Onde ele está na árvore do arquivo: o índice na lista de cima e, dentro dos grupos, nos filhos.
+        /// Where it is in the file's tree: the index in the top-level list and, inside groups, in the children.
         public var source: [Int] = []
 
         public var path: CGPath {
@@ -77,24 +77,24 @@ public struct StudioDocument: Sendable {
     }
 
     public struct Image: Sendable {
-        /// PNG ou JPEG, como veio no arquivo.
+        /// PNG or JPEG, as it came in the file.
         public var data: Data
         public var pixelWidth: Int
         public var pixelHeight: Int
     }
 
-    /// Marcas de registro do Print & Cut, como o Studio guarda na página (mm).
+    /// Print & Cut registration marks, as Studio stores them in the page (mm).
     public struct RegistrationMarks: Sendable, Equatable {
         public init(on: Bool, left: Double, top: Double, right: Double, bottom: Double, length: Double, thickness: Double) {
             (self.on, self.left, self.top, self.right, self.bottom) = (on, left, top, right, bottom)
             (self.length, self.thickness) = (length, thickness)
         }
 
-        /// Ligadas no documento (o Studio lê as marcas antes de cortar).
+        /// On in the document (Studio reads the marks before cutting).
         public var on: Bool
-        /// Da borda da página ao canto externo das marcas.
+        /// From the page edge to the marks' outer corner.
         public var left, top, right, bottom: Double
-        /// Comprimento das cantoneiras e espessura das linhas.
+        /// Length of the corner marks and width of the lines.
         public var length, thickness: Double
     }
 
@@ -102,10 +102,10 @@ public struct StudioDocument: Sendable {
     public var registrationMarks: RegistrationMarks?
     public var objects: [Object]
     public var images: [String: Image]
-    /// Objetos que não deu para ler (tipo sem contorno conhecido, imagem ausente…).
+    /// Objects that couldn't be read (a type with no known outline, a missing image…).
     public var skipped: Int
-    /// Cores de linha ligadas (true) ou desligadas no painel de envio do Studio, por `Color.hex`.
-    /// Só aparecem as cores que o arquivo guarda.
+    /// Line colors turned on (true) or off in Studio's send panel, by `Color.hex`.
+    /// Only the colors the file stores show up.
     public var lineColorCuts: [String: Bool]
 
     public init(data: Data) throws {
@@ -115,16 +115,16 @@ public struct StudioDocument: Sendable {
         var offset = 0x400
         for i in 0..<16 {
             let size = try file.u64(0x10 + 8 * i)
-            guard offset + size <= file.count else { throw StudioError.damaged("seção \(i) passa do fim do arquivo") }
+            guard offset + size <= file.count else { throw StudioError.damaged("section \(i) runs past the end of the file") }
             sections.append(Bytes(Array(file.b[offset..<(offset + size)])))
             offset += size
         }
         let doc = sections[0]
-        guard doc.starts(with: Self.magic) else { throw StudioError.damaged("documento sem cabeçalho") }
+        guard doc.starts(with: Self.magic) else { throw StudioError.damaged("document without a header") }
 
-        let pagina = try? doc.pageSetup()
-        pageSize = pagina?.size ?? CGSize(width: 210, height: 297)
-        registrationMarks = pagina?.marks
+        let page = try? doc.pageSetup()
+        pageSize = page?.size ?? CGSize(width: 210, height: 297)
+        registrationMarks = page?.marks
         images = (try? sections[1].images()) ?? [:]
         objects = []
         skipped = 0
@@ -135,15 +135,15 @@ public struct StudioDocument: Sendable {
 
     static let magic = Array("silhouette05;".utf8)
 
-    /// Desfaz os grupos (compondo as matrizes) e leva tudo para mm da página.
+    /// Undoes the groups (composing the matrices) and takes everything to page mm.
     private mutating func flatten(_ list: [RawObject], in doc: Bytes, transform parent: CGAffineTransform, path: [Int]) {
-        for (indice, raw) in list.enumerated() {
+        for (index, raw) in list.enumerated() {
             let t = raw.matrix.concatenating(parent)
             switch raw.type {
             case 5:   // grupo
-                flatten(raw.children, in: doc, transform: t, path: path + [indice])
+                flatten(raw.children, in: doc, transform: t, path: path + [index])
                 continue
-            case 36:  // marcadores internos do Studio, sem desenho
+            case 36:  // Studio's internal markers, with no drawing
                 continue
             default:
                 break
@@ -154,7 +154,7 @@ public struct StudioDocument: Sendable {
             }
             let subpaths: [[Node]]
             if raw.type == 1 || raw.type == 2 {
-                // 1 = forma de ferramenta (retângulo, elipse), 2 = polígono/caminho: contorno local × matriz.
+                // 1 = tool shape (rectangle, ellipse), 2 = polygon/path: local outline × matrix.
                 guard let local = try? doc.localPath(at: raw.base.upperBound, limit: raw.bodyEnd) else {
                     skipped += 1
                     continue
@@ -167,8 +167,8 @@ public struct StudioDocument: Sendable {
                     }
                 }
             } else if let cache = raw.cache, let cached = try? doc.cachedPath(at: cache.lowerBound, limit: cache.upperBound) {
-                // Outros tipos (ex.: retângulo arredondado guarda só parâmetros): o caminho que o Studio
-                // deixou pronto, já na página. Nos tipos 1 e 2 ele bate com o calculado (< 0,0001 mm).
+                // Other types (e.g. a rounded rectangle stores only parameters): the path Studio
+                // left ready, already on the page. For types 1 and 2 it matches the computed one (< 0.0001 mm).
                 subpaths = cached
             } else {
                 skipped += 1
@@ -183,7 +183,7 @@ public struct StudioDocument: Sendable {
                 if images[key] != nil { fill = .image(key: key, transform: toLocal.concatenating(t)) }
             }
             objects.append(Object(kind: raw.name, subpaths: subpaths, line: style.line, fill: fill, cuts: raw.flag != 1,
-                                  source: path + [indice]))
+                                  source: path + [index]))
         }
     }
 }
@@ -194,24 +194,24 @@ public enum StudioError: Error, LocalizedError, Equatable {
 
     public var errorDescription: String? {
         switch self {
-        case .notStudio: localized("O arquivo não é um documento do Silhouette Studio (.studio3).")
-        case .damaged(let detalhe): localized("Não foi possível ler o arquivo do Silhouette Studio (\(detalhe)).")
+        case .notStudio: localized("The file isn’t a Silhouette Studio document (.studio3).")
+        case .damaged(let detail): localized("The Silhouette Studio file couldn’t be read (\(detail)).")
         }
     }
 }
 
-// MARK: - Leitura dos bytes
+// MARK: - Reading the bytes
 
-/// Objeto como está no arquivo, antes de achatar grupos e aplicar matrizes.
+/// Object as it is in the file, before flattening groups and applying matrices.
 struct RawObject {
-    /// O objeto inteiro no documento.
+    /// The whole object in the document.
     var range: Range<Int>
     var type: UInt8
-    /// Bloco de base (tipo + estilo); o conteúdo próprio do tipo vem logo depois, até `bodyEnd`.
+    /// Base block (type + style); the type's own content comes right after, up to `bodyEnd`.
     var base: Range<Int>
     var bodyEnd: Int
     var matrix: CGAffineTransform
-    /// 1 nos objetos que não cortam (fundo, peças fora da página…), 2 nos demais.
+    /// 1 for objects that don't cut (background, pieces off the page…), 2 for the others.
     var flag: Int
     var cache: Range<Int>?
     var name: String
@@ -220,7 +220,7 @@ struct RawObject {
 
 struct LocalNode {
     var point: CGPoint
-    /// Alças relativas ao ponto.
+    /// Handles relative to the point.
     var controlIn: CGPoint?
     var controlOut: CGPoint?
 }
@@ -228,7 +228,7 @@ struct LocalNode {
 enum RawFill {
     case none
     case color(StudioDocument.Color)
-    /// Pixel da imagem → coordenadas locais do objeto.
+    /// Image pixel → the object's local coordinates.
     case image(key: String, toLocal: CGAffineTransform)
 }
 
@@ -241,7 +241,7 @@ struct Bytes {
     func starts(with prefix: [UInt8]) -> Bool { b.count >= prefix.count && Array(b[0..<prefix.count]) == prefix }
 
     func check(_ o: Int, _ n: Int) throws {
-        guard o >= 0, n >= 0, o + n <= b.count else { throw StudioError.damaged("leitura fora do lugar em \(o)") }
+        guard o >= 0, n >= 0, o + n <= b.count else { throw StudioError.damaged("read out of bounds at \(o)") }
     }
 
     func u8(_ o: Int) throws -> UInt8 {
@@ -258,7 +258,7 @@ struct Bytes {
         try check(o, 8)
         var v: UInt64 = 0
         for i in 0..<8 { v |= UInt64(b[o + i]) << (8 * UInt64(i)) }
-        guard v <= UInt64(Int32.max) else { throw StudioError.damaged("tamanho inválido em \(o)") }
+        guard v <= UInt64(Int32.max) else { throw StudioError.damaged("invalid size at \(o)") }
         return Int(v)
     }
 
@@ -268,52 +268,52 @@ struct Bytes {
         StudioDocument.Color(red: try f32(o), green: try f32(o + 4), blue: try f32(o + 8), alpha: try f32(o + 12))
     }
 
-    /// Texto com tamanho u32 na frente; devolve também onde termina.
+    /// String with a u32 size in front; also returns where it ends.
     func string(_ o: Int) throws -> (String, Int) {
         let n = try u32(o)
         try check(o + 4, n)
         return (String(decoding: b[(o + 4)..<(o + 4 + n)], as: UTF8.self), o + 4 + n)
     }
 
-    /// Bloco [marca][tamanho u32]: devolve o fim (exclusivo). O tamanho conta a partir do próprio campo.
+    /// Block [marker][size u32]: returns the end (exclusive). The size counts from the field itself.
     func block(_ o: Int, marker: UInt8 = 1, limit: Int) throws -> Int {
-        guard try u8(o) == marker else { throw StudioError.damaged("bloco esperado em \(o)") }
+        guard try u8(o) == marker else { throw StudioError.damaged("block expected at \(o)") }
         let end = o + 1 + (try u32(o + 1))
-        guard end >= o + 5, end <= limit else { throw StudioError.damaged("bloco com tamanho inválido em \(o)") }
+        guard end >= o + 5, end <= limit else { throw StudioError.damaged("block with an invalid size at \(o)") }
         return end
     }
 
-    /// Matriz 3 × 3 por linhas (x' = m0·x + m1·y + m2; y' = m3·x + m4·y + m5).
+    /// 3 × 3 matrix by rows (x' = m0·x + m1·y + m2; y' = m3·x + m4·y + m5).
     func matrix(_ o: Int) throws -> CGAffineTransform {
         let m = try (0..<9).map { try f32(o + 4 * $0) }
         return CGAffineTransform(a: m[0], b: m[3], c: m[1], d: m[4], tx: m[2], ty: m[5])
     }
 
     func firstIndex(of pattern: [UInt8], from start: Int = 0, to end: Int? = nil) -> Int? {
-        let fim = min(end ?? b.count, b.count) - pattern.count
-        guard start <= fim else { return nil }
-        for i in start...fim where b[i] == pattern[0] && b[i..<(i + pattern.count)].elementsEqual(pattern) { return i }
+        let endPos = min(end ?? b.count, b.count) - pattern.count
+        guard start <= endPos else { return nil }
+        for i in start...endPos where b[i] == pattern[0] && b[i..<(i + pattern.count)].elementsEqual(pattern) { return i }
         return nil
     }
 
-    // MARK: Documento (seção 0)
+    // MARK: Document (section 0)
 
-    /// Onde começam os campos da página: no segundo bloco do cabeçalho, depois do bloco de 60 bytes da base
-    /// e do nome do tamanho de papel (texto, vazio nos arquivos vistos).
+    /// Where the page fields start: in the header's second block, after the base's 60-byte block
+    /// and the paper size name (a string, empty in the files seen).
     func pageFields() throws -> Int {
         let doc = try block(13, limit: count)
-        let primeiro = try block(18, limit: doc)
-        _ = try block(primeiro, limit: doc)
-        return try string(primeiro + 5).1
+        let first = try block(18, limit: doc)
+        _ = try block(first, limit: doc)
+        return try string(first + 5).1
     }
 
-    /// Página (o mesmo que o Studio lê, na ordem): [u8 marcas ligadas] [f32 margens esquerda, topo, direita,
-    /// baixo] [i32] [i32] [f32 comprimento] [f32 espessura] [f32 borda] [f32 largura] [f32 altura].
+    /// Page (the same Studio reads, in order): [u8 marks on] [f32 margins left, top, right,
+    /// bottom] [i32] [i32] [f32 length] [f32 thickness] [f32 border] [f32 width] [f32 height].
     func pageSetup() throws -> (size: CGSize, marks: StudioDocument.RegistrationMarks) {
         let p = try pageFields()
         let size = CGSize(width: try f32(p + 37), height: try f32(p + 41))
         guard (10...3000).contains(size.width), (10...3000).contains(size.height) else {
-            throw StudioError.damaged("tamanho de página inesperado")
+            throw StudioError.damaged("unexpected page size")
         }
         let marks = StudioDocument.RegistrationMarks(
             on: try u8(p) != 0, left: try f32(p + 1), top: try f32(p + 5), right: try f32(p + 9), bottom: try f32(p + 13),
@@ -321,58 +321,58 @@ struct Bytes {
         return (size, marks)
     }
 
-    /// Cortes por cor de linha: ["@line:RRGGBB"][texto de 16–64 caracteres (material)][u8 ligado].
+    /// Cuts by line color: ["@line:RRGGBB"][16–64 character string (material)][u8 on].
     func lineColorCuts() -> [String: Bool] {
-        let marca = Array("@line:".utf8)
-        var cores: [String: Bool] = [:]
+        let markerBytes = Array("@line:".utf8)
+        var colors: [String: Bool] = [:]
         var i = 4
-        while let j = firstIndex(of: marca, from: i) {
+        while let j = firstIndex(of: markerBytes, from: i) {
             i = j + 1
             guard (try? u32(j - 4)) == 12, j + 16 <= count else { continue }
             let hex = String(decoding: b[(j + 6)..<(j + 12)], as: UTF8.self)
             guard hex.allSatisfy(\.isHexDigit), let n = try? u32(j + 12), (16...64).contains(n), j + 16 + n < count,
                   b[(j + 16)..<(j + 16 + n)].allSatisfy({ (0x30..<0x7F).contains($0) }), b[j + 16 + n] <= 1 else { continue }
-            cores[hex.uppercased()] = b[j + 16 + n] == 1
+            colors[hex.uppercased()] = b[j + 16 + n] == 1
         }
-        return cores
+        return colors
     }
 
-    /// A lista de objetos vem depois dos ajustes do documento, que terminam com "auto", "auto".
+    /// The object list comes after the document settings, which end with "auto", "auto".
     func findObjectList() throws -> Int {
         let auto = Array("auto".utf8)
-        let marca = [4, 0, 0, 0] + auto + [4, 0, 0, 0] + auto
-        if let i = firstIndex(of: marca, to: 1 << 16), (try? objectList(at: i + marca.count)) != nil {
-            return i + marca.count
+        let markerBytes = [4, 0, 0, 0] + auto + [4, 0, 0, 0] + auto
+        if let i = firstIndex(of: markerBytes, to: 1 << 16), (try? objectList(at: i + markerBytes.count)) != nil {
+            return i + markerBytes.count
         }
-        // Plano B: o primeiro bloco do começo do arquivo que se lê inteiro como lista de objetos.
+        // Plan B: the first block from the start of the file that reads whole as an object list.
         for p in 18..<min(count, 1 << 16) where b[p] == 1 {
             if (try? objectList(at: p)) != nil { return p }
         }
-        throw StudioError.damaged("lista de objetos não encontrada")
+        throw StudioError.damaged("object list not found")
     }
 
     func objectList(at p: Int, limit: Int? = nil, depth: Int = 0) throws -> [RawObject] {
-        guard depth < 64 else { throw StudioError.damaged("grupos aninhados demais") }
+        guard depth < 64 else { throw StudioError.damaged("groups nested too deeply") }
         let end = try block(p, limit: limit ?? count)
-        let quantidade = (try u32(p + 5) + 1) & 0xFFFF_FFFF
-        var objetos: [RawObject] = []
+        let itemCount = (try u32(p + 5) + 1) & 0xFFFF_FFFF
+        var rawObjects: [RawObject] = []
         var q = p + 9
         while q < end {
-            let (objeto, fim) = try object(at: q, limit: end, depth: depth)
-            objetos.append(objeto)
-            q = fim
+            let (rawObject, endPos) = try object(at: q, limit: end, depth: depth)
+            rawObjects.append(rawObject)
+            q = endPos
         }
-        guard q == end, objetos.count == quantidade else { throw StudioError.damaged("lista de objetos inconsistente em \(p)") }
-        return objetos
+        guard q == end, rawObjects.count == itemCount else { throw StudioError.damaged("inconsistent object list at \(p)") }
+        return rawObjects
     }
 
     func object(at p: Int, limit: Int, depth: Int) throws -> (RawObject, Int) {
         let end = try block(p, limit: limit)
-        let q = p + 6                                   // [01][tamanho][u8]
+        let q = p + 6                                   // [01][size][u8]
         let bodyEnd = try block(q, limit: end)
         let type = try u8(q + 5)
-        let baseEnd = q + 6 + (try u32(q + 6))          // [tipo][tamanho]
-        guard baseEnd <= bodyEnd else { throw StudioError.damaged("objeto inconsistente em \(p)") }
+        let baseEnd = q + 6 + (try u32(q + 6))          // [type][size]
+        guard baseEnd <= bodyEnd else { throw StudioError.damaged("inconsistent object at \(p)") }
         let children = type == 5 ? try objectList(at: baseEnd, limit: bodyEnd, depth: depth + 1) : []
         let matrix = try matrix(bodyEnd)
         var k = bodyEnd + 36 + 24                       // matriz + caixa (centro e semieixos)
@@ -380,41 +380,41 @@ struct Bytes {
         k += 5
         var cache: Range<Int>?
         if try u8(k) == 1 {
-            let fim = try block(k, limit: end)
-            cache = k..<fim
-            k = fim
+            let endPos = try block(k, limit: end)
+            cache = k..<endPos
+            k = endPos
         } else {
             k += 1
         }
-        // [01 id][u32][01 tamanho 12 …][nome]
+        // [01 id][u32][01 size 12 …][name]
         var name = ""
-        if (try? u8(k)) == 1, (try? u8(k + 9)) == 1, let fim = try? block(k + 9, limit: end) {
-            name = (try? string(fim).0) ?? ""
+        if (try? u8(k)) == 1, (try? u8(k + 9)) == 1, let endPos = try? block(k + 9, limit: end) {
+            name = (try? string(endPos).0) ?? ""
         }
         return (RawObject(range: p..<end, type: type, base: (q + 5)..<baseEnd, bodyEnd: bodyEnd, matrix: matrix, flag: flag,
                           cache: cache, name: name, children: children), end)
     }
 
-    /// Estilo no bloco de base: cor da linha, estilo de corte, junção/ponta e preenchimento.
+    /// Style in the base block: line color, cut style, join/cap and fill.
     func style(at base: Int, limit: Int) throws -> (line: StudioDocument.Color, fill: RawFill) {
-        let st = base + 6                               // [tipo][tamanho][u8] → bloco do estilo
-        let fim = try block(st, limit: limit)
+        let st = base + 6                               // [type][size][u8] → style block
+        let endPos = try block(st, limit: limit)
         let line = try color(st + 7)
-        var k = try block(st + 31, limit: fim)          // estilo de corte ("cut", "Cut", "0", cor)
+        var k = try block(st + 31, limit: endPos)          // cut style ("cut", "Cut", "0", color)
         k += 1
-        k = try string(k).1                             // junção ("rounded")
+        k = try string(k).1                             // join ("rounded")
         if try u8(k) == 1 { k = try string(k + 1).1 } else { k += 1 }   // ponta
-        let tipo = try u8(k)
-        switch tipo {
+        let styleKind = try u8(k)
+        switch styleKind {
         case 0:
             return (line, .none)
         case 1:
             return (line, .color(try color(k + 1)))
         case 5:
-            let (key, depois) = try string(k + 1)
-            // Três matrizes depois de [01 00 01]: a 2ª leva o pixel da imagem para o objeto.
-            guard let j = firstIndex(of: [1, 0, 1], from: depois, to: fim), try u8(j + 39) == 1 else {
-                throw StudioError.damaged("posição da imagem não encontrada")
+            let (key, afterString) = try string(k + 1)
+            // Three matrices after [01 00 01]: the 2nd takes the image pixel to the object.
+            guard let j = firstIndex(of: [1, 0, 1], from: afterString, to: endPos), try u8(j + 39) == 1 else {
+                throw StudioError.damaged("image position not found")
             }
             return (line, .image(key: key, toLocal: try matrix(j + 40)))
         default:
@@ -422,63 +422,63 @@ struct Bytes {
         }
     }
 
-    /// Contorno em coordenadas locais: [01 tam][u32 subcaminhos − 1] { [01 tam][01 pontos − 1] { [01 tam] x y alças flags } }.
+    /// Outline in local coordinates: [01 size][u32 subpaths − 1] { [01 size][01 points − 1] { [01 size] x y handles flags } }.
     func localPath(at p: Int, limit: Int) throws -> [[LocalNode]] {
         let end = try block(p, limit: limit)
-        let quantidade = try u32(p + 5) + 1
+        let itemCount = try u32(p + 5) + 1
         var q = p + 9
-        var subcaminhos: [[LocalNode]] = []
-        for _ in 0..<quantidade {
-            let fimSub = try block(q, limit: end)
+        var subpathList: [[LocalNode]] = []
+        for _ in 0..<itemCount {
+            let subEnd = try block(q, limit: end)
             q += 5
-            guard try u8(q) == 1 else { throw StudioError.damaged("subcaminho inválido em \(q)") }
-            let pontos = try u32(q + 1) + 1
+            guard try u8(q) == 1 else { throw StudioError.damaged("invalid subpath at \(q)") }
+            let pointCount = try u32(q + 1) + 1
             q += 5
-            var nos: [LocalNode] = []
-            nos.reserveCapacity(pontos)
-            for _ in 0..<pontos {
-                let fimPonto = try block(q, limit: fimSub)
+            var nodeList: [LocalNode] = []
+            nodeList.reserveCapacity(pointCount)
+            for _ in 0..<pointCount {
+                let pointEnd = try block(q, limit: subEnd)
                 var x = q + 5
-                let ponto = CGPoint(x: try f32(x), y: try f32(x + 4))
+                let pt = CGPoint(x: try f32(x), y: try f32(x + 4))
                 x += 8
-                let entrada = try handle(&x), saida = try handle(&x)
-                nos.append(LocalNode(point: ponto, controlIn: entrada, controlOut: saida))
-                q = fimPonto
+                let handleIn = try handle(&x), handleOut = try handle(&x)
+                nodeList.append(LocalNode(point: pt, controlIn: handleIn, controlOut: handleOut))
+                q = pointEnd
             }
-            guard q == fimSub else { throw StudioError.damaged("subcaminho inconsistente em \(q)") }
-            subcaminhos.append(nos)
+            guard q == subEnd else { throw StudioError.damaged("inconsistent subpath at \(q)") }
+            subpathList.append(nodeList)
         }
-        guard q == end else { throw StudioError.damaged("caminho inconsistente em \(p)") }
-        return subcaminhos
+        guard q == end else { throw StudioError.damaged("inconsistent path at \(p)") }
+        return subpathList
     }
 
-    /// Caminho já na página (sem marcas nem tamanhos por ponto): [01 tam][u32 n − 1] { [u32 tam][01 pontos − 1] { x y alças } }.
+    /// Path already on the page (without markers or per-point sizes): [01 size][u32 n − 1] { [u32 size][01 points − 1] { x y handles } }.
     func cachedPath(at p: Int, limit: Int) throws -> [[StudioDocument.Node]] {
         let end = try block(p, limit: limit)
-        let quantidade = try u32(p + 5) + 1
+        let itemCount = try u32(p + 5) + 1
         var q = p + 9
-        var subcaminhos: [[StudioDocument.Node]] = []
-        for _ in 0..<quantidade {
-            let fimSub = q + (try u32(q))
-            guard fimSub <= end, try u8(q + 4) == 1 else { throw StudioError.damaged("subcaminho inválido em \(q)") }
-            let pontos = try u32(q + 5) + 1
+        var subpathList: [[StudioDocument.Node]] = []
+        for _ in 0..<itemCount {
+            let subEnd = q + (try u32(q))
+            guard subEnd <= end, try u8(q + 4) == 1 else { throw StudioError.damaged("invalid subpath at \(q)") }
+            let pointCount = try u32(q + 5) + 1
             q += 9
-            var nos: [StudioDocument.Node] = []
-            for _ in 0..<pontos {
-                let ponto = CGPoint(x: try f32(q), y: try f32(q + 4))
+            var nodeList: [StudioDocument.Node] = []
+            for _ in 0..<pointCount {
+                let pt = CGPoint(x: try f32(q), y: try f32(q + 4))
                 q += 8
-                let entrada = try handle(&q), saida = try handle(&q)
-                nos.append(StudioDocument.Node(point: ponto,
-                                               controlIn: entrada.map { CGPoint(x: ponto.x + $0.x, y: ponto.y + $0.y) },
-                                               controlOut: saida.map { CGPoint(x: ponto.x + $0.x, y: ponto.y + $0.y) }))
+                let handleIn = try handle(&q), handleOut = try handle(&q)
+                nodeList.append(StudioDocument.Node(point: pt,
+                                               controlIn: handleIn.map { CGPoint(x: pt.x + $0.x, y: pt.y + $0.y) },
+                                               controlOut: handleOut.map { CGPoint(x: pt.x + $0.x, y: pt.y + $0.y) }))
             }
-            guard q == fimSub else { throw StudioError.damaged("subcaminho inconsistente em \(q)") }
-            subcaminhos.append(nos)
+            guard q == subEnd else { throw StudioError.damaged("inconsistent subpath at \(q)") }
+            subpathList.append(nodeList)
         }
-        return subcaminhos
+        return subpathList
     }
 
-    /// Alça opcional: [00] ou [01 dx dy].
+    /// Optional handle: [00] or [01 dx dy].
     private func handle(_ o: inout Int) throws -> CGPoint? {
         switch try u8(o) {
         case 0:
@@ -489,39 +489,39 @@ struct Bytes {
             o += 9
             return h
         default:
-            throw StudioError.damaged("alça inválida em \(o)")
+            throw StudioError.damaged("invalid handle at \(o)")
         }
     }
 
-    // MARK: Imagens (seção 1)
+    // MARK: Images (section 1)
 
-    /// [01 tam][u32][u64 n − 1] { [u64 tam][u64 + chave][…][u64 tamanho][PNG/JPEG][…] }
+    /// [01 size][u32][u64 n − 1] { [u64 size][u64 + key][…][u64 size][PNG/JPEG][…] }
     func images() throws -> [String: StudioDocument.Image] {
         guard count > 17 else { return [:] }
-        let quantidade = try u64(9) + 1
+        let itemCount = try u64(9) + 1
         var q = 17
-        var saida: [String: StudioDocument.Image] = [:]
-        for _ in 0..<quantidade {
-            let fim = q + (try u64(q))
-            guard fim > q, fim <= count else { throw StudioError.damaged("imagem inconsistente em \(q)") }
-            let tamanhoChave = try u64(q + 8)
-            try check(q + 16, tamanhoChave)
-            let chave = String(decoding: b[(q + 16)..<(q + 16 + tamanhoChave)], as: UTF8.self)
+        var output: [String: StudioDocument.Image] = [:]
+        for _ in 0..<itemCount {
+            let endPos = q + (try u64(q))
+            guard endPos > q, endPos <= count else { throw StudioError.damaged("inconsistent image at \(q)") }
+            let keyLength = try u64(q + 8)
+            try check(q + 16, keyLength)
+            let imageKey = String(decoding: b[(q + 16)..<(q + 16 + keyLength)], as: UTF8.self)
             let png: [UInt8] = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A], jpeg: [UInt8] = [0xFF, 0xD8, 0xFF]
-            if let inicio = firstIndex(of: png, from: q + 16, to: fim) ?? firstIndex(of: jpeg, from: q + 16, to: fim) {
-                let tamanho = try u64(inicio - 8)
-                if inicio + tamanho <= fim {
-                    let dados = Data(b[inicio..<(inicio + tamanho)])
-                    if let fonte = CGImageSourceCreateWithData(dados as CFData, nil),
-                       let props = CGImageSourceCopyPropertiesAtIndex(fonte, 0, nil) as? [CFString: Any],
-                       let largura = props[kCGImagePropertyPixelWidth] as? Int,
-                       let altura = props[kCGImagePropertyPixelHeight] as? Int {
-                        saida[chave] = StudioDocument.Image(data: dados, pixelWidth: largura, pixelHeight: altura)
+            if let startPos = firstIndex(of: png, from: q + 16, to: endPos) ?? firstIndex(of: jpeg, from: q + 16, to: endPos) {
+                let byteCount = try u64(startPos - 8)
+                if startPos + byteCount <= endPos {
+                    let imageData = Data(b[startPos..<(startPos + byteCount)])
+                    if let imageSource = CGImageSourceCreateWithData(imageData as CFData, nil),
+                       let props = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as? [CFString: Any],
+                       let width = props[kCGImagePropertyPixelWidth] as? Int,
+                       let height = props[kCGImagePropertyPixelHeight] as? Int {
+                        output[imageKey] = StudioDocument.Image(data: imageData, pixelWidth: width, pixelHeight: height)
                     }
                 }
             }
-            q = fim
+            q = endPos
         }
-        return saida
+        return output
     }
 }

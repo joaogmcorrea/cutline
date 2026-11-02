@@ -1,15 +1,15 @@
-// Fluxo de bytes GPGL pelo serviço GATT da Silhouette (Bluetooth LE).
-// Porte de BLETransport.py (inkscape-silhouette, GPLv2): mesmos UUIDs, handshake e pacotes de 20 bytes.
+// GPGL byte stream through Silhouette's GATT service (Bluetooth LE).
+// Port of BLETransport.py (inkscape-silhouette, GPLv2): same UUIDs, handshake and 20-byte packets.
 import CoreBluetooth
 import Foundation
 
-/// Cortadora vista na busca, antes de conectar.
+/// Cutter seen in the search, before connecting.
 public struct DiscoveredCutter: Sendable, Hashable, Identifiable, Codable {
     public enum Link: String, Sendable, Codable { case bluetooth, usb }
 
-    /// Identificador do periférico neste Mac (estável entre as buscas).
+    /// The peripheral's identifier on this Mac (stable across searches).
     public let id: UUID
-    /// Nome anunciado: modelo + "-" + número de série ("Portrait 4-0000001"); no USB, montado igual.
+    /// Advertised name: model + "-" + serial number ("Portrait 4-0000001"); over USB, built the same way.
     public let name: String
     public let link: Link
 
@@ -19,7 +19,7 @@ public struct DiscoveredCutter: Sendable, Hashable, Identifiable, Codable {
         self.link = link
     }
 
-    // A última máquina gravada antes do USB não tem `link`: era Bluetooth.
+    // The last machine saved before USB support has no `link`: it was Bluetooth.
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(UUID.self, forKey: .id)
@@ -33,7 +33,7 @@ public struct DiscoveredCutter: Sendable, Hashable, Identifiable, Codable {
             .trimmingCharacters(in: .whitespaces)
     }
 
-    /// Número de série da máquina (o mesmo do USB), se o nome tiver.
+    /// The machine's serial number (the same as over USB), if the name has one.
     public var serial: String? {
         let parts = name.split(separator: "-", maxSplits: 1, omittingEmptySubsequences: false)
         guard parts.count == 2 else { return nil }
@@ -45,9 +45,9 @@ public struct DiscoveredCutter: Sendable, Hashable, Identifiable, Codable {
 public final class BLETransport: NSObject, CutterTransport, @unchecked Sendable {
     nonisolated(unsafe) static let serviceUUID = CBUUID(string: "E2088282-4FDE-42F9-BB22-6EC3C7ED8F91")
     nonisolated(unsafe) static let writeUUID = CBUUID(string: "6D92661D-F429-4D67-929B-28E7A9780912")
-    /// Respostas às consultas chegam aqui.
+    /// Query responses arrive here.
     nonisolated(unsafe) static let readUUID = CBUUID(string: "8DCF199A-30E7-4BD4-BEB6-BEB57DCA866C")
-    /// Eventos de movimento ("1␃", "0␃") — ignorados, para não se misturarem às respostas.
+    /// Movement events ("1␃", "0␃") — ignored, so they don't mix with the responses.
     nonisolated(unsafe) static let controlUUID = CBUUID(string: "61490654-B5B4-458C-A867-9E15BC1471E0")
 
     static let initBytes = Data([GPGL.esc, GPGL.eot])
@@ -55,12 +55,12 @@ public final class BLETransport: NSObject, CutterTransport, @unchecked Sendable 
     static let handshakeSettle: TimeInterval = 1
     static let backpressureRetries = 3
     static let backpressureDelay: TimeInterval = 0.1
-    /// Depois da primeira cortadora encontrada, continua ouvindo um pouco para notar uma segunda.
+    /// After the first cutter found, keeps listening a little to notice a second one.
     static let discoveryGrace: TimeInterval = 2
 
     private enum Phase { case idle, poweringOn, scanning, connecting, discovering, subscribing, writing, closing }
 
-    /// As três características do serviço (enum para poder ser capturado entre filas).
+    /// The service's three characteristics (an enum so it can be captured across queues).
     private enum Channel {
         case write, read, control
         var uuid: CBUUID {
@@ -84,7 +84,7 @@ public final class BLETransport: NSObject, CutterTransport, @unchecked Sendable 
         let timeout: DispatchWorkItem
     }
 
-    // Todo o estado abaixo só é tocado na fila `queue`, onde o CoreBluetooth entrega os callbacks.
+    // All the state below is only touched on the `queue` queue, where CoreBluetooth delivers the callbacks.
     private let queue = DispatchQueue(label: "cutline.bluetooth")
     private let log: @Sendable (String) -> Void
     private var central: CBCentralManager?
@@ -93,29 +93,29 @@ public final class BLETransport: NSObject, CutterTransport, @unchecked Sendable 
     private var incoming = Data()
     private var connected = false
 
-    // Uma operação por vez (o driver é sequencial).
+    // One operation at a time (the driver is sequential).
     private var phase = Phase.idle
     private var waiter: CheckedContinuation<Void, Error>?
     private var waiterTimeout: DispatchWorkItem?
     private var reader: Reader?
 
     private var scanFilter: (@Sendable (String) -> Bool)?
-    /// Só aceita este periférico (uma cortadora escolhida numa busca anterior).
+    /// Only accepts this peripheral (a cutter chosen in an earlier search).
     private var wantedIdentifier: UUID?
-    /// Ao fim da busca, escolhe a única cortadora (conectar) ou só guarda a lista (`discover`).
+    /// At the end of the search, picks the only cutter (connect) or just keeps the list (`discover`).
     private var pickOne = true
     private var found: [UUID: Found] = [:]
     private var graceTimer: DispatchWorkItem?
     private var notifyPending: Set<CBUUID> = []
 
-    public private(set) var location = "bluetooth-le (não conectado)"
+    public private(set) var location = "bluetooth-le (not connected)"
 
     private init(log: @escaping @Sendable (String) -> Void) {
         self.log = log
     }
 
-    /// Procura (pelo nome anunciado), conecta, assina as notificações e faz o handshake.
-    /// Sem `name`, aceita qualquer modelo da tabela de `Hardware`; com `identifier`, só aquela cortadora.
+    /// Searches (by the advertised name), connects, subscribes to the notifications and does the handshake.
+    /// Without `name`, accepts any model in the `Hardware` table; with `identifier`, only that cutter.
     public static func connect(name: String? = nil, identifier: UUID? = nil, timeout: TimeInterval = 20,
                                log: @escaping @Sendable (String) -> Void = { _ in }) async throws -> BLETransport {
         let transport = BLETransport(log: log)
@@ -137,7 +137,7 @@ public final class BLETransport: NSObject, CutterTransport, @unchecked Sendable 
         }
     }
 
-    /// Procura as cortadoras ao alcance sem conectar. Termina um pouco depois da primeira encontrada.
+    /// Looks for cutters in range without connecting. Ends a little after the first one found.
     public static func discover(timeout: TimeInterval = 15,
                                 log: @escaping @Sendable (String) -> Void = { _ in }) async throws -> [DiscoveredCutter] {
         let transport = BLETransport(log: log)
@@ -205,7 +205,7 @@ public final class BLETransport: NSObject, CutterTransport, @unchecked Sendable 
         }
     }
 
-    // MARK: Etapas da conexão
+    // MARK: Connection steps
 
     private func powerOn() async throws {
         try await step(.poweringOn, timeout: 10) { [self] in
@@ -215,7 +215,7 @@ public final class BLETransport: NSObject, CutterTransport, @unchecked Sendable 
 
     private func scan(name: String?, identifier: UUID?, pickOne: Bool, timeout: TimeInterval) async throws {
         let wanted = name?.lowercased()
-        let target = name ?? (identifier == nil ? "uma cortadora Silhouette" : "a cortadora escolhida")
+        let target = name ?? (identifier == nil ? localized("a Silhouette cutter") : localized("the chosen cutter"))
         try await step(.scanning, timeout: timeout, onTimeout: { [self] in
             central?.stopScan()
             return .notFound(target)
@@ -227,7 +227,7 @@ public final class BLETransport: NSObject, CutterTransport, @unchecked Sendable 
             wantedIdentifier = identifier
             self.pickOne = pickOne
             found = [:]
-            // A Portrait não anuncia o UUID do serviço; o filtro é pelo nome.
+            // The Portrait doesn't advertise the service UUID; the filter is by name.
             central?.scanForPeripherals(withServices: nil, options: nil)
         }
     }
@@ -237,7 +237,7 @@ public final class BLETransport: NSObject, CutterTransport, @unchecked Sendable 
             if let peripheral { central?.cancelPeripheralConnection(peripheral) }
             return .timeout
         }) { [self] in
-            guard let peripheral else { throw CutterError.notFound(localized("uma cortadora Silhouette")) }
+            guard let peripheral else { throw CutterError.notFound(localized("a Silhouette cutter")) }
             central?.connect(peripheral)
         }
     }
@@ -261,7 +261,7 @@ public final class BLETransport: NSObject, CutterTransport, @unchecked Sendable 
         }
     }
 
-    /// Escrita com confirmação; se a máquina responder "ocupada" (ATT 0x0E), espera e tenta de novo.
+    /// Write with confirmation; if the machine answers "busy" (ATT 0x0E), waits and tries again.
     private func writeValue(_ data: Data, to channel: Channel, timeout: TimeInterval) async throws {
         var attempt = 0
         while true {
@@ -287,14 +287,14 @@ public final class BLETransport: NSObject, CutterTransport, @unchecked Sendable 
 
     // MARK: Espera pelos callbacks
 
-    /// Inicia uma operação na fila do Bluetooth e espera o callback que a conclui (ou o tempo esgotar).
+    /// Starts an operation on the Bluetooth queue and waits for the callback that completes it (or the timeout).
     private func step(_ phase: Phase, timeout: TimeInterval, onTimeout: (@Sendable () -> CutterError)? = nil,
                       start: @escaping @Sendable () throws -> Void) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             queue.async { [self] in
                 if let previous = waiter {
                     waiter = nil
-                    previous.resume(throwing: CutterError.writeFailed(localized("operação Bluetooth interrompida")))
+                    previous.resume(throwing: CutterError.writeFailed(localized("Bluetooth operation interrupted")))
                 }
                 self.phase = phase
                 waiter = continuation
@@ -329,7 +329,7 @@ public final class BLETransport: NSObject, CutterTransport, @unchecked Sendable 
         }
     }
 
-    /// Uma resposta terminada em ETX, ou `maxLength` bytes se já houver tantos.
+    /// A response ending in ETX, or `maxLength` bytes if there are already that many.
     private func takeReply(_ maxLength: Int) -> Data? {
         guard !incoming.isEmpty else { return nil }
         if let etx = incoming.firstIndex(of: GPGL.etx) {
@@ -351,7 +351,7 @@ public final class BLETransport: NSObject, CutterTransport, @unchecked Sendable 
         pending.continuation.resume(returning: data)
     }
 
-    /// As encontradas; se alguma anuncia o serviço da Silhouette, só essas.
+    /// The ones found; if any advertises Silhouette's service, only those.
     private func candidates() -> [Found] {
         let all = Array(found.values)
         let advertising = all.filter(\.advertisesService)
@@ -365,7 +365,7 @@ public final class BLETransport: NSObject, CutterTransport, @unchecked Sendable 
         let candidates = self.candidates()
         guard candidates.count == 1, let chosen = candidates.first else {
             finish(.failure(candidates.isEmpty
-                ? CutterError.notFound(localized("uma cortadora Silhouette"))
+                ? CutterError.notFound(localized("a Silhouette cutter"))
                 : CutterError.ambiguous(candidates.map { "\($0.name) (\($0.peripheral.identifier))" })))
             return
         }
@@ -382,12 +382,12 @@ extension BLETransport: CBCentralManagerDelegate {
             if phase == .poweringOn { finish(.success(())) }
         case .unauthorized:
             failAll(.bluetoothUnavailable(
-                localized("Sem permissão de Bluetooth. Libere em Ajustes do Sistema › Privacidade e Segurança › Bluetooth.")))
+                localized("No Bluetooth permission. Allow it in System Settings › Privacy & Security › Bluetooth.")))
         case .poweredOff:
             connected = false
-            failAll(.bluetoothUnavailable(localized("O Bluetooth do Mac está desligado.")))
+            failAll(.bluetoothUnavailable(localized("The Mac’s Bluetooth is off.")))
         case .unsupported:
-            failAll(.bluetoothUnavailable(localized("Este Mac não tem Bluetooth LE.")))
+            failAll(.bluetoothUnavailable(localized("This Mac doesn’t have Bluetooth LE.")))
         default:
             break
         }
@@ -402,7 +402,7 @@ extension BLETransport: CBCentralManagerDelegate {
         let services = advertisementData[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID] ?? []
         found[peripheral.identifier] = Found(peripheral: peripheral, name: name,
                                              advertisesService: services.contains(Self.serviceUUID))
-        log("encontrada: \(name)")
+        log("found: \(name)")
         if wantedIdentifier != nil { return finishScan() }
         if graceTimer == nil {
             let item = DispatchWorkItem { [self] in finishScan() }
@@ -419,7 +419,7 @@ extension BLETransport: CBCentralManagerDelegate {
     public func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         guard phase == .connecting else { return }
         finish(.failure(CutterError.bluetoothUnavailable(
-            localized("Falha ao conectar: \(error?.localizedDescription ?? localized("motivo desconhecido"))"))))
+            localized("Couldn’t connect: \(error?.localizedDescription ?? localized("unknown reason"))"))))
     }
 
     public func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral,
@@ -429,7 +429,7 @@ extension BLETransport: CBCentralManagerDelegate {
             finish(.success(()))
             return
         }
-        log("desconectada" + (error.map { ": \($0.localizedDescription)" } ?? ""))
+        log("disconnected" + (error.map { ": \($0.localizedDescription)" } ?? ""))
         failAll(.disconnected)
     }
 }

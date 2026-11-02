@@ -1,10 +1,10 @@
-// Trabalho de corte: várias camadas, cada uma com sua força/velocidade/lâmina/passadas.
-// Porte de `nucleo.cortar()`, do protótipo em Python que conferiu o driver (fora do repositório).
+// Cut job: several layers, each with its own force/speed/blade/passes.
+// Port of `nucleo.cortar()`, from the Python prototype that checked the driver (outside the repository).
 import CoreGraphics
 import Foundation
 
-/// Ajustes de um corte. Faixas da Portrait 3/4: velocidade 1–30 (1–10 nas antigas),
-/// força 1–33, lâmina (AutoBlade) 1–10, passadas 1–5.
+/// Settings of one cut. Portrait 3/4 ranges: speed 1–30 (1–10 on the older ones),
+/// force 1–33, blade (AutoBlade) 1–10, passes 1–5.
 public struct CutSettings: Sendable, Hashable, Codable {
     public var speed: Int
     public var force: Int
@@ -23,10 +23,10 @@ public struct CutSettings: Sendable, Hashable, Codable {
     public static let passesRange = 1...5
 }
 
-/// Caminhos cortados com os mesmos ajustes (no app: uma cor de linha).
+/// Paths cut with the same settings (in the app: one line color).
 public struct CutLayer: Sendable {
     public var name: String
-    /// Em mm, coordenadas da página (origem no canto superior esquerdo).
+    /// In mm, page coordinates (origin at the top-left corner).
     public var paths: [[CGPoint]]
     public var settings: CutSettings
 
@@ -37,7 +37,7 @@ public struct CutLayer: Sendable {
     }
 }
 
-/// Onde o corte está: camada (1…n) e passada (1…n), para mostrar o andamento.
+/// Where the cut is: layer (1…n) and pass (1…n), to show progress.
 public struct CutProgress: Sendable {
     public let layer: Int
     public let layerCount: Int
@@ -50,7 +50,7 @@ public struct MachineInfo: Sendable {
     public let model: String
     public let firmware: String
     public let status: Cutter.Status
-    /// Protocolo novo (Portrait 3/4, Cameo 4/5): lâmina ajustada pela máquina.
+    /// New protocol (Portrait 3/4, Cameo 4/5): blade set by the machine.
     public let autoblade: Bool
     public let maxSpeed: Int
 }
@@ -68,35 +68,35 @@ extension Cutter {
 
     public nonisolated func validate(_ settings: CutSettings, maxSpeed: Int) throws {
         guard (1...maxSpeed).contains(settings.speed) else {
-            throw CutterError.invalidSettings(localized("Velocidade deve ficar entre 1 e \(maxSpeed) neste modelo."))
+            throw CutterError.invalidSettings(localized("Speed must be between 1 and \(maxSpeed) on this model."))
         }
         guard CutSettings.forceRange.contains(settings.force) else {
-            throw CutterError.invalidSettings(localized("Força deve ficar entre 1 e 33."))
+            throw CutterError.invalidSettings(localized("Force must be between 1 and 33."))
         }
         guard CutSettings.bladeRange.contains(settings.blade) else {
-            throw CutterError.invalidSettings(localized("Lâmina deve ficar entre 1 e 10."))
+            throw CutterError.invalidSettings(localized("Blade must be between 1 and 10."))
         }
         guard CutSettings.passesRange.contains(settings.passes) else {
-            throw CutterError.invalidSettings(localized("Passadas devem ficar entre 1 e 5."))
+            throw CutterError.invalidSettings(localized("Passes must be between 1 and 5."))
         }
     }
 
-    /// Corta as camadas na ordem dada (no adesivo: primeiro o meio-corte de dentro, por último
-    /// o corte total de fora). Com `registration`, lê as marcas antes e só volta à origem no fim,
-    /// para não perder o registro. `cuttingMat` falso = sem base de corte (a máquina puxa a folha direto, `TG0`);
-    /// `mat` escolhe a base (nil = a padrão da máquina).
+    /// Cuts the layers in the given order (on stickers: first the inner kiss cut, last
+    /// the outer die cut). With `registration`, reads the marks first and only goes back to the origin at the end,
+    /// so the registration isn't lost. `cuttingMat` false = no cutting mat (the machine pulls the sheet directly, `TG0`);
+    /// `mat` picks the mat (nil = the machine's default).
     @discardableResult
     public func cut(_ layers: [CutLayer], info: MachineInfo, media: CGSize = Cutter.a4,
                     registration: Registration? = nil, cuttingMat: Bool = true, mat: CuttingMat? = nil,
                     onProgress: (@Sendable (CutProgress) -> Void)? = nil) async throws -> Status {
-        guard !layers.isEmpty else { throw CutterError.invalidSettings(localized("Nada para cortar.")) }
+        guard !layers.isEmpty else { throw CutterError.invalidSettings(localized("Nothing to cut.")) }
         for layer in layers { try validate(layer.settings, maxSpeed: info.maxSpeed) }
 
         if registration == nil {
             let points = layers.flatMap(\.paths).flatMap { $0 }
             let outside = points.contains { $0.x < 0 || $0.y < 0 || $0.x > media.width || $0.y > media.height }
             if outside {
-                throw CutterError.outOfBounds(localized("As formas saem da base (\(Int(media.width)) × \(Int(media.height)) mm)."))
+                throw CutterError.outOfBounds(localized("The shapes go past the mat (\(Int(media.width)) × \(Int(media.height)) mm)."))
             }
         }
         if info.status == .unloaded, !isSimulated { throw CutterError.mediaNotLoaded }
@@ -105,9 +105,9 @@ extension Cutter {
         var count = 0
         for (index, layer) in layers.enumerated() {
             let s = layer.settings
-            log("== \(layer.name): velocidade=\(s.speed) força=\(s.force) lâmina=\(s.blade) passadas=\(s.passes)")
-            if !info.autoblade { log("! Lâmina manual: confira se está no nível \(s.blade).") }
-            // Termina a camada anterior antes de trocar a configuração.
+            log("== \(layer.name): speed=\(s.speed) force=\(s.force) blade=\(s.blade) passes=\(s.passes)")
+            if !info.autoblade { log("! Manual blade: check that it is set to \(s.blade).") }
+            // Finishes the previous layer before changing the configuration.
             if index > 0, !isSimulated { try await waitForReady(timeout: 300) }
 
             var setup = SetupOptions()
@@ -132,7 +132,7 @@ extension Cutter {
                 plot.registration = registration
                 plot.skipInit = count > 1
                 plot.skipReset = registration != nil ? count < total : pass < s.passes - 1
-                if registration != nil, count == 1 { log("Lendo as marcas de registro (até ~40 s)…") }
+                if registration != nil, count == 1 { log("Reading the registration marks (up to ~40 s)…") }
                 try await self.plot(layer.paths, plot)
             }
         }

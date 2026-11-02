@@ -1,4 +1,4 @@
-# Sistema e compilação
+# System and build
 .DS_Store
 .build/
 .swiftpm/
@@ -6,6 +6,6 @@ DerivedData/
 xcuserdata/
 *.xcuserstate
 
-# Arquivos de usuários (nunca vão para o repositório)
+# User files (never go into the repository)
 *.studio3
 *.cutline

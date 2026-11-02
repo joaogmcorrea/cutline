@@ -1,11 +1,11 @@
-// Contornos (curvas) → polilinhas para o corte. A máquina só anda em linha reta (comandos D),
-// então curvas viram sequências de segmentos curtos.
+// Outlines (curves) → polylines for cutting. The machine only moves in straight lines (D commands),
+// so curves become sequences of short segments.
 import CoreGraphics
 
 extension CGPath {
-    /// Polilinhas em que cada subcaminho vira uma lista de pontos; subcaminhos fechados repetem o
-    /// primeiro ponto no fim (para a lâmina fechar o corte). `tolerance` = desvio máximo da curva, nas
-    /// unidades do caminho (em mm: 0,02 mm, abaixo da resolução da máquina, que é 0,05 mm).
+    /// Polylines where each subpath becomes a list of points; closed subpaths repeat the
+    /// first point at the end (so the blade closes the cut). `tolerance` = maximum deviation from the curve, in the
+    /// path's units (in mm: 0.02 mm, below the machine's resolution, which is 0.05 mm).
     public func cutPolylines(tolerance: CGFloat = 0.02) -> [[CGPoint]] {
         var result: [[CGPoint]] = []
         var current: [CGPoint] = []
@@ -25,7 +25,7 @@ extension CGPath {
                 if let first = current.first, current.last != first { current.append(first) }
                 finish()
             default:
-                // `flattened` só devolve retas; curvas não chegam aqui.
+                // `flattened` only returns lines; curves don't get here.
                 break
             }
         }
@@ -35,8 +35,8 @@ extension CGPath {
 }
 
 extension Array where Element == CGPoint {
-    /// Corte picotado: a polilinha vira trechos de `pattern[0]` com corte, `pattern[1]` sem corte, e assim
-    /// por diante (unidades do caminho — mm). Sem padrão válido, devolve a polilinha inteira.
+    /// Dashed cut: the polyline becomes pieces of `pattern[0]` with a cut, `pattern[1]` without, and so
+    /// on (path units — mm). Without a valid pattern, returns the whole polyline.
     public func dashed(_ pattern: [CGFloat]) -> [[CGPoint]] {
         guard count >= 2 else { return [] }
         guard pattern.count >= 2, pattern.allSatisfy({ $0 > 0 }) else { return [self] }
