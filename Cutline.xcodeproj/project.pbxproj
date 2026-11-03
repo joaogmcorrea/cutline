@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A5E00000000000000000030 /* CutlineKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1A5E00000000000000000031 /* CutlineKit */; };
+		1A5E00000000000000000032 /* CutlineThumbnail.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1A5E00000000000000000026 /* CutlineThumbnail.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1A5E00000000000000000020 /* CutlineKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1A5E00000000000000000021 /* CutlineKit */; };
 		1A5E00000000000000000022 /* CutlinePreview.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1A5E00000000000000000016 /* CutlinePreview.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1A5E00000000000000000010 /* CutlineKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1A5E00000000000000000011 /* CutlineKit */; };
@@ -21,6 +23,13 @@
 			remoteGlobalIDString = 1A5E00000000000000000019;
 			remoteInfo = CutlinePreview;
 		};
+		1A5E00000000000000000034 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1A5E0000000000000000000A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1A5E00000000000000000029;
+			remoteInfo = CutlineThumbnail;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -31,6 +40,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				1A5E00000000000000000022 /* CutlinePreview.appex in Embed Foundation Extensions */,
+				1A5E00000000000000000032 /* CutlineThumbnail.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -40,6 +50,7 @@
 /* Begin PBXFileReference section */
 		1A5E00000000000000000001 /* Cutline.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cutline.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A5E00000000000000000016 /* CutlinePreview.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CutlinePreview.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A5E00000000000000000026 /* CutlineThumbnail.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CutlineThumbnail.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -62,6 +73,25 @@
 			);
 			target = 1A5E00000000000000000019 /* CutlinePreview */;
 		};
+		1A5E00000000000000000028 /* Exceptions for "Cutline" folder in "CutlineThumbnail" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Model/Cutting.swift,
+				Model/ColorConversion.swift,
+				Model/Document.swift,
+				Model/DocumentFile.swift,
+				Model/Geometry.swift,
+				Model/GlobalSettings.swift,
+				Model/Groups.swift,
+				Model/Layers.swift,
+				Model/Pathfinder.swift,
+				Model/RegistrationMarks.swift,
+				Model/TextEditing.swift,
+				PagePreview.swift,
+				Printing.swift,
+			);
+			target = 1A5E00000000000000000029 /* CutlineThumbnail */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -69,6 +99,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				1A5E00000000000000000018 /* Exceptions for "Cutline" folder in "CutlinePreview" target */,
+				1A5E00000000000000000028 /* Exceptions for "Cutline" folder in "CutlineThumbnail" target */,
 			);
 			path = Cutline;
 			sourceTree = "<group>";
@@ -76,6 +107,11 @@
 		1A5E00000000000000000017 /* CutlinePreview */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = CutlinePreview;
+			sourceTree = "<group>";
+		};
+		1A5E00000000000000000027 /* CutlineThumbnail */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = CutlineThumbnail;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -98,6 +134,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		1A5E0000000000000000002B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A5E00000000000000000030 /* CutlineKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -106,6 +150,7 @@
 			children = (
 				1A5E00000000000000000002 /* Cutline */,
 				1A5E00000000000000000017 /* CutlinePreview */,
+				1A5E00000000000000000027 /* CutlineThumbnail */,
 				1A5E00000000000000000005 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -115,6 +160,7 @@
 			children = (
 				1A5E00000000000000000001 /* Cutline.app */,
 				1A5E00000000000000000016 /* CutlinePreview.appex */,
+				1A5E00000000000000000026 /* CutlineThumbnail.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -135,6 +181,7 @@
 			);
 			dependencies = (
 				1A5E00000000000000000024 /* PBXTargetDependency */,
+				1A5E00000000000000000033 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				1A5E00000000000000000002 /* Cutline */,
@@ -171,6 +218,29 @@
 			productReference = 1A5E00000000000000000016 /* CutlinePreview.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		1A5E00000000000000000029 /* CutlineThumbnail */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A5E0000000000000000002D /* Build configuration list for PBXNativeTarget "CutlineThumbnail" */;
+			buildPhases = (
+				1A5E0000000000000000002A /* Sources */,
+				1A5E0000000000000000002B /* Frameworks */,
+				1A5E0000000000000000002C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				1A5E00000000000000000027 /* CutlineThumbnail */,
+			);
+			name = CutlineThumbnail;
+			packageProductDependencies = (
+				1A5E00000000000000000031 /* CutlineKit */,
+			);
+			productName = CutlineThumbnail;
+			productReference = 1A5E00000000000000000026 /* CutlineThumbnail.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -185,6 +255,9 @@
 						CreatedOnToolsVersion = 27.0;
 					};
 					1A5E00000000000000000019 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					1A5E00000000000000000029 = {
 						CreatedOnToolsVersion = 27.0;
 					};
 				};
@@ -210,6 +283,7 @@
 			targets = (
 				1A5E00000000000000000006 /* Cutline */,
 				1A5E00000000000000000019 /* CutlinePreview */,
+				1A5E00000000000000000029 /* CutlineThumbnail */,
 			);
 		};
 /* End PBXProject section */
@@ -223,6 +297,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		1A5E0000000000000000001C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A5E0000000000000000002C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -246,6 +327,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		1A5E0000000000000000002A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -253,6 +341,11 @@
 			isa = PBXTargetDependency;
 			target = 1A5E00000000000000000019 /* CutlinePreview */;
 			targetProxy = 1A5E00000000000000000025 /* PBXContainerItemProxy */;
+		};
+		1A5E00000000000000000033 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1A5E00000000000000000029 /* CutlineThumbnail */;
+			targetProxy = 1A5E00000000000000000034 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -278,7 +371,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.2.1;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
@@ -301,7 +394,7 @@
 				GCC_NO_COMMON_BLOCKS = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.2.1;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
@@ -419,6 +512,58 @@
 			};
 			name = Release;
 		};
+		1A5E0000000000000000002E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)";
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "CutlineThumbnail-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Cutline;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.joaogmcorrea.cutline.thumbnail;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		1A5E0000000000000000002F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)";
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "CutlineThumbnail-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Cutline;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.joaogmcorrea.cutline.thumbnail;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -445,6 +590,15 @@
 			buildConfigurations = (
 				1A5E0000000000000000001E /* Debug */,
 				1A5E0000000000000000001F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1A5E0000000000000000002D /* Build configuration list for PBXNativeTarget "CutlineThumbnail" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A5E0000000000000000002E /* Debug */,
+				1A5E0000000000000000002F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -480,6 +634,10 @@
 			productName = Sparkle;
 		};
 		1A5E00000000000000000021 /* CutlineKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CutlineKit;
+		};
+		1A5E00000000000000000031 /* CutlineKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = CutlineKit;
 		};
