@@ -22,6 +22,7 @@ struct MainWindow: View {
     @Environment(Machine.self) private var machine
     @Environment(\.openWindow) private var openWindowAction
     @Environment(\.openSettings) private var openSettings
+    @Environment(\.dismissWindow) private var dismissWindow
     @State private var control = ViewControl()
     @State private var canvasSize = CGSize.zero
     @AppStorage("paineisRecolhidos") private var collapsedPanels = Panel.defaultCollapsed
@@ -110,9 +111,25 @@ struct MainWindow: View {
             DebugHooks.saveForTest(nsWindow)
             #endif
         })
-        .onAppear { doc.use(manager) }
+        .onAppear {
+            doc.use(manager)
+            // A document took the start screen's place; what was picked there (Print & Cut, an image) comes in now.
+            StartScreen.opener = openWindowAction
+            dismissWindow(id: StartScreen.id)
+            switch doc.objects.isEmpty ? StartScreen.takeSetup() : nil {
+            case .printAndCut: doc.marks = true
+            case .importing(let url): openImported(url)
+            case nil: break
+            }
+        }
         .onChange(of: manager) { _, updated in doc.use(updated) }
-        .onDisappear { doc.use(nil) }
+        .onDisappear {
+            doc.use(nil)
+            // The last document closed: the start screen comes back.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                if StartScreen.enabled, NSDocumentController.shared.documents.isEmpty { StartScreen.show() }
+            }
+        }
         #if DEBUG
         .onAppear {
             DebugHooks.fillDemo(doc)

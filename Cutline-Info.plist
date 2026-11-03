@@ -7,7 +7,7 @@
 	<!-- Sparkle: the appcast of the latest version published on GitHub Releases (made by the distribution script) and the
 	     public key that checks each update's signature. The private key stays outside the repository. -->
 	<key>SUFeedURL</key>
-	<string>https://github.com/joaogmcorrea/cutline/releases/latest/download/appcast.xml</string>
+	<string>https://github.com/joaogmcorrea/cutline/releases/latest/download/appcast-$(MARKETING_VERSION).xml</string>
 	<key>SUPublicEDKey</key>
 	<string>T5Q5e1wRXo+JCL5xSr09EyRzb/bcQ37hULV4HC4K5PE=</string>
 	<key>SUEnableAutomaticChecks</key>

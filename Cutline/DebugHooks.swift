@@ -14,7 +14,9 @@
 //   keyboard, one every 0.3 s; CUTLINE_TEST_CONTEXT_MENU=/x.txt dumps the right-click menu (of the selection then);
 //   in the keys, offset:2 (mm; < 0 inside) offsets the selection with round corners, hover:x,y (mm) puts the pointer
 //   there (the Eyedropper's loupe shows in a photo) and log writes the document's state (NSLog "CUTLINE_TEST state");
-//   CUTLINE_TEST_SETTINGS=1 opens Cutline › Settings;
+//   CUTLINE_TEST_SETTINGS=1 opens Cutline › Settings; CUTLINE_START=1 keeps the start screen on in a hidden test, and
+//   CUTLINE_TEST_RECENT=/a.cutline:/b.studio3 shows those files as its recent ones (the owner's list stays untouched),
+//   CUTLINE_TEST_START=blank|printAndCut picks that way to start 1 s after it opens;
 //   CUTLINE_MARKS=1 turns on the Print & Cut marks; CUTLINE_TEST_PRINT=/x.pdf writes the print to a PDF;
 //   CUTLINE_TEST_SEND=1 (with CUTLINE_SIMULATE) sends by itself when the Send window opens;
 //   CUTLINE_TEST_TEST_CUT=x,y (with CUTLINE_SIMULATE) sends the test cut at x,y mm when the Send window opens;
@@ -210,6 +212,12 @@ enum DebugHooks {
         if handle.contains("shift") { flags.insert(.shift) }
         if handle.contains("option") { flags.insert(.option) }
         return flags
+    }
+
+    static var startAction: String? { ProcessInfo.processInfo.environment["CUTLINE_TEST_START"] }
+
+    static var recentForTest: [URL]? {
+        ProcessInfo.processInfo.environment["CUTLINE_TEST_RECENT"].map { $0.split(separator: ":").map { URL(fileURLWithPath: String($0)) } }
     }
 
     /// CUTLINE_TEST_SETTINGS=1: opens Cutline › Settings at launch.

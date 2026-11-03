@@ -1,4 +1,4 @@
-// App settings (Cutline › Settings…, ⌘,): appearance, length unit, guide color, how far the arrows move, the Trace
+// App settings (Cutline › Settings…, ⌘,): appearance, start screen, length unit, guide color, how far the arrows move, the Trace
 // defaults, the preferred connection and the updates. Stored in UserDefaults; the document keeps everything in mm.
 import Sparkle
 import SwiftUI
@@ -150,6 +150,7 @@ extension Color {
 struct SettingsView: View {
     @AppStorage(LengthUnit.key) private var unit = LengthUnit.mm
     @AppStorage(AppAppearance.key) private var appearance = AppAppearance.automatic
+    @AppStorage(StartScreen.key) private var startScreen = true
     @AppStorage(Preferences.guideColor) private var guideColor = Preferences.defaultGuideColor
     @AppStorage(Preferences.arrowStep) private var arrowStep = 1.0
     @AppStorage(Preferences.arrowStepShift) private var arrowStepShift = 10.0
@@ -161,12 +162,15 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section("Appearance") {
+            Section("General") {
                 Picker("Appearance", selection: $appearance) {
                     ForEach(AppAppearance.allCases) { Text($0.name).tag($0) }
                 }
                 .pickerStyle(.segmented)
                 .onChange(of: appearance) { _, chosen in chosen.apply() }
+                Toggle("Show the start screen", isOn: $startScreen)
+                Text("When Cutline opens with no document and when the last one closes; off, it opens a blank document.")
+                    .font(.caption).foregroundStyle(.secondary)
             }
             Section("Units") {
                 Picker("Length", selection: $unit) {

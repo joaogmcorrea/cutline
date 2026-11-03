@@ -922,6 +922,26 @@
         }
       }
     },
+    "A4 with the registration marks" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A4 com as marcas de registro"
+          }
+        }
+      }
+    },
+    "A4, ready to draw or import" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A4, pronta para desenhar ou importar"
+          }
+        }
+      }
+    },
     "Above" : {
       "localizations" : {
         "pt-BR" : {
@@ -1324,6 +1344,16 @@
         }
       }
     },
+    "Blank sheet" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Folha em branco"
+          }
+        }
+      }
+    },
     "Bluetooth" : {
       "localizations" : {
         "pt-BR" : {
@@ -1702,6 +1732,16 @@
         }
       }
     },
+    "Connecting…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectando…"
+          }
+        }
+      }
+    },
     "Control Bar" : {
       "localizations" : {
         "pt-BR" : {
@@ -1882,6 +1922,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cortar por cor de linha"
+          }
+        }
+      }
+    },
+    "Cutline" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cutline"
           }
         }
       }
@@ -2196,6 +2246,16 @@
         }
       }
     },
+    "Drop a file anywhere on this window to open it." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solte um arquivo em qualquer lugar desta janela para abrir."
+          }
+        }
+      }
+    },
     "Duplicate" : {
       "localizations" : {
         "pt-BR" : {
@@ -2443,6 +2503,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Achou as três marcas: aí ela corta em cima da impressão."
+          }
+        }
+      }
+    },
+    "General" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geral"
           }
         }
       }
@@ -2978,6 +3048,16 @@
         }
       }
     },
+    "MACHINE" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MÁQUINA"
+          }
+        }
+      }
+    },
     "Machine" : {
       "localizations" : {
         "pt-BR" : {
@@ -3219,6 +3299,16 @@
         }
       }
     },
+    "New Document" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Novo documento"
+          }
+        }
+      }
+    },
     "New document (⌘N)" : {
       "localizations" : {
         "pt-BR" : {
@@ -3276,6 +3366,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nenhuma fonte encontrada"
+          }
+        }
+      }
+    },
+    "No machine connected" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma máquina conectada"
           }
         }
       }
@@ -3552,6 +3652,26 @@
         }
       }
     },
+    "Opens a .studio3" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre um .studio3"
+          }
+        }
+      }
+    },
+    "Open…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir…"
+          }
+        }
+      }
+    },
     "Outer and inner" : {
       "localizations" : {
         "pt-BR" : {
@@ -3598,6 +3718,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Por fora"
+          }
+        }
+      }
+    },
+    "PNG or JPEG → cut line" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PNG ou JPEG → linha de corte"
           }
         }
       }
@@ -3971,6 +4101,16 @@
         }
       }
     },
+    "RECENT" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RECENTES"
+          }
+        }
+      }
+    },
     "Radius" : {
       "localizations" : {
         "pt-BR" : {
@@ -4247,6 +4387,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "nº %@"
+          }
+        }
+      }
+    },
+    "START WITH" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "COMEÇAR COM"
           }
         }
       }
@@ -4541,6 +4691,16 @@
         }
       }
     },
+    "Settings…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes…"
+          }
+        }
+      }
+    },
     "Shape modes:" : {
       "localizations" : {
         "pt-BR" : {
@@ -4591,6 +4751,16 @@
         }
       }
     },
+    "Show at launch" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar ao abrir"
+          }
+        }
+      }
+    },
     "Show cut logs" : {
       "localizations" : {
         "pt-BR" : {
@@ -4611,12 +4781,42 @@
         }
       }
     },
+    "Show the start screen" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar a tela de início"
+          }
+        }
+      }
+    },
     "Side" : {
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lado"
+          }
+        }
+      }
+    },
+    "Silhouette Studio" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silhouette Studio"
+          }
+        }
+      }
+    },
+    "Silhouette Studio file" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arquivo do Silhouette Studio"
           }
         }
       }
@@ -5098,6 +5298,16 @@
         }
       }
     },
+    "The files you open show up here." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os arquivos que você abrir aparecem aqui."
+          }
+        }
+      }
+    },
     "The image couldn’t be opened." : {
       "localizations" : {
         "pt-BR" : {
@@ -5357,6 +5567,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vetorizar imagem"
+          }
+        }
+      }
+    },
+    "Trace an image" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vetorizar uma imagem"
           }
         }
       }
@@ -5660,6 +5880,16 @@
         }
       }
     },
+    "Welcome to Cutline" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bem-vindo ao Cutline"
+          }
+        }
+      }
+    },
     "What Cutline should do" : {
       "localizations" : {
         "pt-BR" : {
@@ -5786,6 +6016,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "O que você faria com ele (e como faz hoje, no Silhouette Studio ou em outro programa)"
+          }
+        }
+      }
+    },
+    "When Cutline opens with no document and when the last one closes; off, it opens a blank document." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quando o Cutline abre sem documento e quando o último é fechado; desligada, ele abre um documento em branco."
           }
         }
       }

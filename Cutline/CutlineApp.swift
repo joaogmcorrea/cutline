@@ -5,6 +5,8 @@ import SwiftUI
 struct CutlineApp: App {
     /// One connection to the cutter for the whole app.
     @State private var machine = Machine()
+    /// The start screen instead of a blank document (StartScreen.swift).
+    @NSApplicationDelegateAdaptor private var delegate: AppDelegate
 
     init() {
         // On launch, a new blank document (not the open-file panel).
@@ -36,6 +38,16 @@ struct CutlineApp: App {
             UpdatesCommand()
             HelpCommands()
         }
+
+        // Start screen, as Illustrator's Home: at launch with no document and when the last one closes (Window menu too).
+        Window("Welcome to Cutline", id: StartScreen.id) {
+            StartView()
+                .environment(machine)
+        }
+        .windowStyle(.hiddenTitleBar)
+        .defaultSize(width: 1180, height: 760)
+        .restorationBehavior(.disabled)
+        .defaultLaunchBehavior(StartScreen.enabled ? .presented : .suppressed)
 
         // Cutline › Settings… (⌘,).
         Settings {
