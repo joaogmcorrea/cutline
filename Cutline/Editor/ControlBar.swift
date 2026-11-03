@@ -37,6 +37,7 @@ struct ControlBar: View {
     @AppStorage("travaProporcao") private var lockAspect = false
     @AppStorage("reguas") private var rulersOn = true
     @AppStorage("snap") private var snapOn = true
+    @AppStorage(LengthUnit.key) private var unit = LengthUnit.mm
 
     static let height = 32.0
 
@@ -190,7 +191,7 @@ struct ControlBar: View {
                     }
                 }
             } else {
-                Text("A4 sheet · 210 × 297 mm").foregroundStyle(.secondary)
+                Text("A4 sheet · \(unit.text(Document.page))").foregroundStyle(.secondary)
             }
             separator
             // A group aligns to the sheet, like a single object.
@@ -243,13 +244,13 @@ struct ControlBar: View {
 
     private func positionAndSize(_ box: CGRect) -> some View {
         HStack(spacing: 6) {
-            field("X", box.minX + box.width * referenceX, unit: "") { v in
+            field("X", box.minX + box.width * referenceX, length: true, unit: "") { v in
                 doc.fitSelection(to: box.offsetBy(dx: v - (box.minX + box.width * referenceX), dy: 0))
             }
-            field("Y", box.minY + box.height * referenceY, unit: "") { v in
+            field("Y", box.minY + box.height * referenceY, length: true, unit: "") { v in
                 doc.fitSelection(to: box.offsetBy(dx: 0, dy: v - (box.minY + box.height * referenceY)))
             }
-            field("W", box.width, minimum: 0.1, unit: "") { v in
+            field("W", box.width, minimum: 0.1, length: true, unit: "") { v in
                 resize(box, width: v, height: lockAspect ? box.height * v / max(box.width, 0.001) : box.height)
             }
             Button {
@@ -265,10 +266,10 @@ struct ControlBar: View {
             }
             .buttonStyle(.plain)
             .help(lockAspect ? "Proportions locked" as LocalizedStringKey : "Keep proportions")
-            field("H", box.height, minimum: 0.1, unit: "") { v in
+            field("H", box.height, minimum: 0.1, length: true, unit: "") { v in
                 resize(box, width: lockAspect ? box.width * v / max(box.height, 0.001) : box.width, height: v)
             }
-            Text("mm").foregroundStyle(.secondary)
+            Text(verbatim: unit.symbol).foregroundStyle(.secondary).fixedSize()
         }
     }
 
@@ -304,7 +305,7 @@ struct ControlBar: View {
     private func parameters(_ object: CanvasObject) -> some View {
         switch object.shape {
         case .rectangle(let radius):
-            field("Radius", radius, minimum: 0) { v in doc.modifySelection { $0.shape = .rectangle(radius: v) } }
+            field("Radius", radius, minimum: 0, length: true) { v in doc.modifySelection { $0.shape = .rectangle(radius: v) } }
         case .star(let points, let inner):
             field("Points", Double(points), minimum: 3, maximum: 40, unit: "") { v in
                 doc.modifySelection { $0.shape = .star(points: Int(v.rounded()), innerRadius: inner) }
@@ -321,22 +322,25 @@ struct ControlBar: View {
                 Button("Close") { doc.closePaths() }
                     .controlSize(.small)
             }
+            SmoothButton(doc: doc)
         case .ellipse:
             EmptyView()
         }
     }
 
-    /// Numeric field: applies on confirm (Enter or leaving the field), as in Illustrator.
+    /// Numeric field: applies on confirm (Enter or leaving the field), as in Illustrator. A `length` is in mm and shows
+    /// in the Settings unit (with its symbol, unless `unit` says otherwise).
     private func field(_ label: LocalizedStringKey?, _ value: Double, minimum: Double = -10_000, maximum: Double = 10_000,
-                       unit: String = "mm", width: Double = 42, apply: @escaping (Double) -> Void) -> some View {
-        HStack(spacing: 4) {
+                       length: Bool = false, unit symbol: String? = nil, width: Double = 42, apply: @escaping (Double) -> Void) -> some View {
+        let factor = length ? unit.mmPer : 1
+        return HStack(spacing: 4) {
             if let label { Text(label).foregroundStyle(.secondary).fixedSize() }
             // The field confirms the value again on losing focus: it only applies (and registers the undo) if it changed.
-            TextField(label ?? "", value: Binding(get: { value }, set: { updated in
-                let v = min(max(updated, minimum), maximum)
-                if v != value { apply(v) }
+            TextField(label ?? "", value: Binding(get: { value / factor }, set: { updated in
+                let v = min(max(updated * factor, minimum), maximum)
+                if abs(v - value) > 1e-9 { apply(v) }
             }),
-                      format: .number.precision(.fractionLength(0...2)))
+                      format: .number.precision(.fractionLength(0...(length ? unit.fractionDigits : 2))))
                 .textFieldStyle(.plain)
                 .multilineTextAlignment(.trailing)
                 .monospacedDigit()
@@ -344,7 +348,8 @@ struct ControlBar: View {
                 .padding(.horizontal, 6)
                 .padding(.vertical, 3)
                 .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 6))
-            if !unit.isEmpty { Text(unit).foregroundStyle(.secondary).fixedSize() }
+            let shown = symbol ?? (length ? unit.symbol : "")
+            if !shown.isEmpty { Text(verbatim: shown).foregroundStyle(.secondary).fixedSize() }
         }
     }
 }
@@ -405,5 +410,42 @@ private struct ReferenceGrid: View {
             }
         }
         .help("Reference point")
+    }
+}
+
+/// Smooth… (a path selected): the nodes round off like the Trace window's smoothing, live, from how the paths were when
+/// it opened (0 % = all corners — a polyline, as after tracing with 0 %; 100 % = all smooth).
+private struct SmoothButton: View {
+    @Bindable var doc: Document
+    @State private var open = false
+    @State private var smoothing = 50.0
+    @State private var originals: [CanvasObject.ID: [Subpath]] = [:]
+
+    var body: some View {
+        Button("Smooth…") {
+            originals = doc.pathsToSmooth
+            open = true
+        }
+        .controlSize(.small)
+        .help("Round off the nodes of the selected paths")
+        .popover(isPresented: $open, arrowEdge: .bottom) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Smoothing")
+                    Spacer()
+                    Text(verbatim: "\(Int(smoothing.rounded())) %").monospacedDigit().foregroundStyle(.secondary)
+                }
+                Slider(value: Binding(get: { smoothing }, set: {
+                    smoothing = $0.rounded()
+                    doc.smoothNodes(smoothing, from: originals)
+                }), in: 0...100)
+                Text("How sharp a turn can be and still become a smooth node. The nodes stay where they are.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(14)
+            .frame(width: 260)
+        }
     }
 }

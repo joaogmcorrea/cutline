@@ -154,3 +154,60 @@ struct PathfinderSection: View {
         }
     }
 }
+
+/// Offset, as Silhouette Studio's panel: a new outline at a distance from the selected shapes, outside or inside, with
+/// round or sharp corners (the originals stay; images are left out — offset their contour).
+struct OffsetSection: View {
+    @Bindable var doc: Document
+    @AppStorage("offsetDistance") private var distance = 2.0
+    @AppStorage("offsetInside") private var inside = false
+    @AppStorage("offsetCorner") private var corner = OffsetCorner.round
+    @AppStorage(LengthUnit.key) private var unit = LengthUnit.mm
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Picker("Side", selection: $inside) {
+                Text("Outside").tag(false)
+                Text("Inside").tag(true)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            HStack(spacing: 6) {
+                Text("Distance").foregroundStyle(.secondary)
+                Spacer(minLength: 0)
+                TextField("Distance", value: Binding(get: { unit.show(distance) }, set: { distance = min(max(unit.mm($0), 0.05), 100) }),
+                          format: .number.precision(.fractionLength(0...unit.fractionDigits)))
+                    .labelsHidden()
+                    .multilineTextAlignment(.trailing)
+                    .frame(width: 60)
+                Text(verbatim: unit.symbol).foregroundStyle(.secondary)
+                Stepper("", value: $distance, in: 0.05...100, step: 0.5)
+                    .labelsHidden()
+                    .controlSize(.mini)
+            }
+            HStack(spacing: 6) {
+                Text("Corners").foregroundStyle(.secondary)
+                Spacer(minLength: 0)
+                Picker("Corners", selection: $corner) {
+                    ForEach(OffsetCorner.allCases) { Text($0.name).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .fixedSize()
+            }
+            Button {
+                if let notice = doc.offsetSelection(inside ? -distance : distance, corner: corner) {
+                    withAnimation(.snappy(duration: 0.2)) { doc.notice = notice }
+                }
+            } label: {
+                Text("Apply").frame(maxWidth: .infinity)
+            }
+            .disabled(doc.selection.isEmpty)
+            Text("Makes a new cut line around the selected shapes (or inside them); the shapes stay.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .controlSize(.small)
+    }
+}

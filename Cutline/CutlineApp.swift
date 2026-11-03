@@ -12,6 +12,8 @@ struct CutlineApp: App {
         // Documents in tabs, as in Illustrator and Silhouette Studio: the system setting
         // ("Prefer tabs when opening documents") applies to this app only.
         UserDefaults.standard.set("always", forKey: "AppleWindowTabbingMode")
+        // Settings › Appearance: light, dark or as the system.
+        AppAppearance.current.apply()
         // Fonts activated while the app is open (Adobe Fonts) apply to text already drawn.
         Fonts.observeChanges()
         // Sparkle checks for new versions from launch (never in debug builds).
@@ -33,6 +35,11 @@ struct CutlineApp: App {
             EditorCommands()
             UpdatesCommand()
             HelpCommands()
+        }
+
+        // Cutline › Settings… (⌘,).
+        Settings {
+            SettingsView()
         }
 
         // Help › Report a Bug… / Request a Feature… (one window each; no items in the File menu).

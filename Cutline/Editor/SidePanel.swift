@@ -7,7 +7,7 @@ import SwiftUI
 
 /// Side menu panels, in the order they appear.
 enum Panel: String, CaseIterable, Identifiable {
-    case page = "pagina", color = "cor", stroke = "traco", character = "caractere", paragraph = "paragrafo", pathfinder, layers = "camadas"
+    case page = "pagina", color = "cor", stroke = "traco", character = "caractere", paragraph = "paragrafo", pathfinder, offset, layers = "camadas"
 
     var id: Self { self }
 
@@ -19,6 +19,7 @@ enum Panel: String, CaseIterable, Identifiable {
         case .character: String(localized: "Character")
         case .paragraph: String(localized: "Paragraph")
         case .pathfinder: String(localized: "Pathfinder")
+        case .offset: String(localized: "Offset")
         case .layers: String(localized: "Layers")
         }
     }
@@ -31,12 +32,13 @@ enum Panel: String, CaseIterable, Identifiable {
         case .character: .panelCharacter
         case .paragraph: .panelParagraph
         case .pathfinder: .panelPathfinder
+        case .offset: .panelOffset
         case .layers: .panelLayers
         }
     }
 
     /// Collapsed into icons the first time the app opens.
-    static let defaultCollapsed = "pathfinder"
+    static let defaultCollapsed = "pathfinder,offset"
 
     /// The collapsed (or hidden) ones, stored as "pathfinder,camadas" (an app preference; the 1.0 names).
     static func parsedSet(_ text: String) -> Set<Panel> {
@@ -229,6 +231,7 @@ struct SidePanel: View {
         case .character: CharacterSection(doc: doc)
         case .paragraph: ParagraphSection(doc: doc)
         case .pathfinder: PathfinderSection(doc: doc)
+        case .offset: OffsetSection(doc: doc)
         case .layers: LayersSection(doc: doc)
         }
     }

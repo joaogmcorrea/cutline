@@ -265,8 +265,16 @@ struct CanvasTextField: NSViewRepresentable {
         override var readablePasteboardTypes: [NSPasteboard.PasteboardType] { [.string] }
         override var acceptableDragTypes: [NSPasteboard.PasteboardType] { [.string] }
 
-        /// ⌘U (Format › Underline) turns on the Character panel's underline for the selected letters.
-        override func underline(_ sender: Any?) { coordinator?.doc.changeStyle { $0.underline.toggle() } }
+        /// ⌘B, ⌘I and ⌘U (the app has no Format menu): bold, italic and the Character panel's underline for the
+        /// selected letters.
+        override func performKeyEquivalent(with event: NSEvent) -> Bool {
+            if event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .command, let doc = coordinator?.doc,
+               let key = event.charactersIgnoringModifiers?.lowercased().first, "biu".contains(key) {
+                doc.toggleTextStyle(key)
+                return true
+            }
+            return super.performKeyEquivalent(with: event)
+        }
 
         override func moveUp(_ sender: Any?) { move(-1) }
         override func moveDown(_ sender: Any?) { move(1) }

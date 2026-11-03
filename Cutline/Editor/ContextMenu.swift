@@ -1,5 +1,5 @@
 // Right-click menu on the canvas (or ⌃-click): cut, copy, paste, duplicate and delete; group and
-// ungroup; arrange in the stack; duplicate beside. Clicking an object outside the selection selects it first (the
+// ungroup; arrange in the stack; duplicate beside; show/hide and lock the guides. Clicking an object outside the selection selects it first (the
 // whole group, with the Selection tool), as in Illustrator. Also `EditResponder`, which makes the Edit menu's
 // Cut, Copy and Paste work on the objects.
 import AppKit
@@ -31,6 +31,18 @@ enum ContextMenu {
             item(String(localized: "Above"), keyEvent: arrow(NSUpArrowFunctionKey)) { doc.duplicateBeside(.up) },
             item(String(localized: "Below"), keyEvent: arrow(NSDownArrowFunctionKey)) { doc.duplicateBeside(.bottom) },
         ]))
+        // Guides, as in Illustrator's right click (the same settings as View › Show Guides and Lock Guides).
+        menu.addItem(.separator())
+        let defaults = UserDefaults.standard
+        let visible = defaults.object(forKey: Preferences.guidesVisible) == nil || defaults.bool(forKey: Preferences.guidesVisible)
+        let locked = defaults.bool(forKey: Preferences.guidesLocked)
+        menu.addItem(item(visible ? String(localized: "Hide Guides") : String(localized: "Show Guides"), keyEvent: ";") {
+            defaults.set(!visible, forKey: Preferences.guidesVisible)
+        })
+        menu.addItem(item(locked ? String(localized: "Unlock Guides") : String(localized: "Lock Guides"), keyEvent: ";",
+                          modifiers: [.command, .option]) {
+            defaults.set(!locked, forKey: Preferences.guidesLocked)
+        })
         return menu
     }
 

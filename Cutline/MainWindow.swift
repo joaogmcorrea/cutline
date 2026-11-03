@@ -8,14 +8,12 @@ extension FocusedValues {
     @Entry var document: Document?
 }
 
-/// What the open-file panel accepts: Import… (PDF, AI, SVG, EPS and images) or the Trace tool (images).
+/// What Import… accepts: PDF, AI, SVG, EPS and images (an image asks what to do: just the image or traced).
 private enum Import {
-    case file, image
-
     static let illustrator = UTType("com.adobe.illustrator.ai-image") ?? UTType(filenameExtension: "ai") ?? .pdf
     static let eps = UTType("com.adobe.encapsulated-postscript") ?? UTType(filenameExtension: "eps") ?? .data
 
-    var kinds: [UTType] { self == .file ? [.pdf, Self.illustrator, .svg, Self.eps, .image] : [.image] }
+    static let kinds: [UTType] = [.pdf, illustrator, .svg, eps, .image]
 }
 
 struct MainWindow: View {
@@ -23,6 +21,7 @@ struct MainWindow: View {
     @Environment(\.undoManager) private var manager
     @Environment(Machine.self) private var machine
     @Environment(\.openWindow) private var openWindowAction
+    @Environment(\.openSettings) private var openSettings
     @State private var control = ViewControl()
     @State private var canvasSize = CGSize.zero
     @AppStorage("paineisRecolhidos") private var collapsedPanels = Panel.defaultCollapsed
@@ -33,9 +32,7 @@ struct MainWindow: View {
     @State private var nsWindow = WeakWindow()
     @State private var sendWindowOpen = false
     @AppStorage("reguas") private var rulersOn = true
-    @State private var importResult: Import?
-    /// The last one requested (the file panel can close before returning the chosen file).
-    @State private var lastImport = Import.file
+    @State private var importing = false
     @State private var tracingNow: ImageToTrace?
     /// File being dragged over the window.
     @State private var dropping = false
@@ -87,19 +84,12 @@ struct MainWindow: View {
             if updated { sendWindowOpen = true }
         }
         .background { Color.clear.sheet(item: $tracingNow) { TraceWindow(doc: doc, origin: $0) } }
-        .fileImporter(isPresented: Binding(get: { importResult != nil }, set: { if !$0 { importResult = nil } }),
-                      allowedContentTypes: importResult?.kinds ?? [.image]) { result in
-            if case .success(let url) = result { openImported(url, ask: lastImport == .file) }
-        }
-        .onChange(of: doc.tool) { _, newOne in
-            // The Trace tool (I) opens the image picker and returns to selection.
-            guard newOne == .traceImage else { return }
-            doc.tool = .selection
-            importFile(.image)
+        .fileImporter(isPresented: $importing, allowedContentTypes: Import.kinds) { result in
+            if case .success(let url) = result { openImported(url, ask: true) }
         }
         .focusedSceneValue(\.document, doc)
         .focusedSceneValue(\.viewControl, control)
-        .onChange(of: doc.importRequest) { _, _ in importFile(.file) }
+        .onChange(of: doc.importRequest) { _, _ in importing = true }
         .onChange(of: doc.printRequest) { _, _ in printDocument() }
         .onChange(of: doc.sendRequest) { _, _ in if !doc.objects.isEmpty { sendWindowOpen = true } }
         .onChange(of: controlBarVisible) { _, visible in
@@ -109,6 +99,7 @@ struct MainWindow: View {
             // Control bar between the toolbar and the tabs; tab bar always shown (also with a
             // single document).
             self.nsWindow.nsWindow = nsWindow
+            if let nsWindow { OpeningFrame.fill(nsWindow) }
             if let nsWindow { ControlBar.install(in: nsWindow, doc: doc, control: control) }
             if let nsWindow, let group = nsWindow.tabGroup, !group.isTabBarVisible { nsWindow.toggleTabBar(nil) }
             // AppKit puts focus on the first field (stroke width) when the window opens, and then the
@@ -125,6 +116,7 @@ struct MainWindow: View {
         #if DEBUG
         .onAppear {
             DebugHooks.fillDemo(doc)
+            if DebugHooks.openSettings { openSettings() }
             DebugHooks.editTextForTest(doc)
             DebugHooks.modifyForTest(doc)
             DebugHooks.pathfinderForTest(doc)
@@ -158,11 +150,6 @@ struct MainWindow: View {
             document.displayName = name
             nsWindow?.windowController?.synchronizeWindowTitleWithDocumentName()
         }
-    }
-
-    private func importFile(_ kind: Import) {
-        importResult = kind
-        lastImport = kind
     }
 
     /// Files dropped on the window: documents (.cutline, .studio3) each open in their own window; the rest goes in
@@ -319,4 +306,19 @@ struct MainWindow: View {
 /// Weak reference to the window (keeping the NSWindow in a @State would keep it alive after closing).
 final class WeakWindow {
     weak var nsWindow: NSWindow?
+}
+
+/// A document window opens filling the screen (its visible area: the menu bar and the Dock stay), once. A new tab
+/// joins the window as it is, so the size the user chose stays.
+enum OpeningFrame {
+    private static var filled = Set<ObjectIdentifier>()
+
+    static func fill(_ nsWindow: NSWindow) {
+        #if DEBUG
+        if DebugHooks.hidden { return }   // the hidden tests keep their windows off the screens
+        #endif
+        guard filled.insert(ObjectIdentifier(nsWindow)).inserted, (nsWindow.tabbedWindows?.count ?? 1) <= 1,
+              let screen = nsWindow.screen ?? NSScreen.main else { return }
+        nsWindow.setFrame(screen.visibleFrame, display: true)
+    }
 }

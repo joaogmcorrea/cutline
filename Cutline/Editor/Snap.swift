@@ -7,7 +7,7 @@ struct SnapTargets {
     let guides: Guides
 
     @MainActor
-    init(doc: Document, exclude: Set<CanvasObject.ID>) {
+    init(doc: Document, exclude: Set<CanvasObject.ID>, guides withGuides: Bool = true) {
         let page = CGRect(origin: .zero, size: Document.page)
         pointsList = [CGPoint(x: page.minX, y: page.minY), CGPoint(x: page.midX, y: page.minY), CGPoint(x: page.maxX, y: page.minY),
                   CGPoint(x: page.minX, y: page.midY), CGPoint(x: page.midX, y: page.midY), CGPoint(x: page.maxX, y: page.midY),
@@ -15,7 +15,8 @@ struct SnapTargets {
         for object in doc.objectsInOrder where doc.visible(object) && !exclude.contains(object.id) {
             pointsList.append(contentsOf: object.anchors)
         }
-        guides = doc.guides
+        // Hidden guides don't attract.
+        guides = withGuides ? doc.guides : Guides()
     }
 
     /// Snapped point (or the point itself) and where to show the snap mark. Tolerance in mm.

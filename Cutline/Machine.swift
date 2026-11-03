@@ -297,6 +297,18 @@ final class Machine {
             }
         }
         #endif
+        // Settings › Machine prefers Bluetooth: searched first; the cable if nothing answers.
+        if PreferredConnection.current == .bluetooth {
+            do {
+                let found = try await Cutter.findBluetooth(log: log)
+                if !found.isEmpty { return found }
+            } catch {
+                let usb = Cutter.findUSB(log: log)
+                if usb.isEmpty { throw error }
+                return usb
+            }
+            return Cutter.findUSB(log: log)
+        }
         // Machine on the cable: uses USB (the search is immediate and doesn't depend on Bluetooth) and skips Bluetooth.
         let usb = Cutter.findUSB(log: log)
         if !usb.isEmpty { return usb }

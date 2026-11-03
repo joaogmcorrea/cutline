@@ -12,6 +12,8 @@ struct EditorCommands: Commands {
     @FocusedValue(\.viewControl) private var control
     @AppStorage("reguas") private var rulers = true
     @AppStorage("snap") private var snap = true
+    @AppStorage(Preferences.guidesVisible) private var guidesVisible = true
+    @AppStorage(Preferences.guidesLocked) private var guidesLocked = false
     @AppStorage("ferramentasVisiveis") private var toolsVisible = true
     @AppStorage("barraControleVisivel") private var controlBarVisible = true
     @AppStorage("paineisOcultos") private var hiddenText = ""
@@ -152,8 +154,14 @@ struct EditorCommands: Commands {
             Divider()
             Toggle("Rulers", isOn: $rulers)
                 .keyboardShortcut("r", modifiers: .command)
+            // ⌘U is the underline while typing a text or with a text selected: the menu lets go of it then.
             Toggle("Snap", isOn: $snap)
+                .keyboardShortcut("u", modifiers: .command)
+                .disabled(isTyping || (doc?.hasTextSelected ?? false))
+            Toggle("Show Guides", isOn: $guidesVisible)
                 .keyboardShortcut(";", modifiers: .command)
+            Toggle("Lock Guides", isOn: $guidesLocked)
+                .keyboardShortcut(";", modifiers: [.command, .option])
             Button("Clear Guides") { act { $0.clearGuides() } }
                 .disabled(doc?.guides.emptyOnes ?? true)
             Toggle("Registration Marks (Print & Cut)", isOn: Binding(get: { doc?.marks ?? false }, set: { updated in

@@ -422,7 +422,7 @@ extension CanvasObject {
 }
 
 nonisolated enum Tool: String, CaseIterable, Identifiable, Sendable {
-    case selection, direct, pen, text, rectangle, ellipse, star, traceImage, hand
+    case selection, direct, pen, addNode, deleteNode, text, rectangle, ellipse, star, eyedropper, hand, zoom
 
     var id: Self { self }
 
@@ -431,31 +431,39 @@ nonisolated enum Tool: String, CaseIterable, Identifiable, Sendable {
         case .selection: String(localized: "Selection")
         case .direct: String(localized: "Direct Selection")
         case .pen: String(localized: "Pen")
+        case .addNode: String(localized: "Add Anchor Point")
+        case .deleteNode: String(localized: "Delete Anchor Point")
         case .text: String(localized: "Text")
         case .rectangle: String(localized: "Rectangle")
         case .ellipse: String(localized: "Ellipse")
         case .star: String(localized: "Star")
-        case .traceImage: String(localized: "Trace Image")
+        case .eyedropper: String(localized: "Eyedropper")
         case .hand: String(localized: "Hand")
+        case .zoom: String(localized: "Zoom")
         }
     }
 
-    /// Illustrator's shortcuts.
+    /// Illustrator's shortcuts (+ is also =, as there). Tracing an image is in File › Import (and dropping it).
     var keyEvent: Character {
         switch self {
         case .selection: "v"
         case .direct: "a"
         case .pen: "p"
+        case .addNode: "+"
+        case .deleteNode: "-"
         case .text: "t"
         case .rectangle: "m"
         case .ellipse: "l"
         case .star: "s"
-        case .traceImage: "i"
+        case .eyedropper: "i"
         case .hand: "h"
+        case .zoom: "z"
         }
     }
 
     var createsShape: Bool { self == .rectangle || self == .ellipse || self == .star }
+    /// The ones that show the nodes of the selected objects.
+    var editsNodes: Bool { self == .direct || self == .addNode || self == .deleteNode }
 }
 
 /// The data lives outside the MainActor because macOS creates and reads documents on a background thread;

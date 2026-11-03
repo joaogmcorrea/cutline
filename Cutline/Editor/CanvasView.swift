@@ -66,6 +66,9 @@ struct CanvasView: View {
     /// Cursor and selection of the text being typed on the canvas (Editor/CanvasTextField.swift).
     @State private var textCursor = TextCursor()
     @AppStorage("snap") private var snapOn = true
+    @AppStorage(Preferences.guideColor) private var guideColor = Preferences.defaultGuideColor
+    @AppStorage(Preferences.guidesVisible) private var guidesVisible = true
+    @AppStorage(Preferences.guidesLocked) private var guidesLocked = false
     @Environment(\.colorScheme) private var scheme
     @Environment(\.displayScale) private var canvasScale
 
@@ -78,12 +81,12 @@ struct CanvasView: View {
         case guide(axis: Axis)
         case node(NodeRef, part: NodePart, original: [Subpath], start: CGPoint, registered: Bool)
         case pen(index: Int, start: CGPoint)
+        case zoomArea(start: CGPoint, current: CGPoint)                                                 // canvas
     }
 
     private var dark: Bool { scheme == .dark }
     private var backgroundColor: Color { dark ? Color(white: 0.1) : Color(red: 0.89, green: 0.89, blue: 0.9) }
     private var baseColor: Color { dark ? Color(red: 0.17, green: 0.18, blue: 0.17) : Color(red: 0.8, green: 0.82, blue: 0.8) }
-    private static let guideColor = Color(red: 0.0, green: 0.72, blue: 1.0)
 
     var body: some View {
         Canvas { ctx, size in
@@ -92,6 +95,7 @@ struct CanvasView: View {
             render(&ctx, size: size)
         }
             .background(backgroundColor)
+            .onGeometryChange(for: CGSize.self, of: \.size) { tracing.size = $0 }
             .contentShape(Rectangle())
             .gesture(drag)
             .simultaneousGesture(pinch)
@@ -109,6 +113,8 @@ struct CanvasView: View {
             }
             .pointerStyle(pointerStyle)
             .overlay { textEdit }
+            .overlay { if doc.tool == .eyedropper { EyedropperLoupe(doc: doc, viewState: viewState, pointer: pointer) } }
+            .pointerVisibility(doc.tool == .eyedropper && pointer.canvas != nil ? .hidden : .automatic)
             .overlay {
                 if let rulers {
                     Rulers(geometry: rulers, viewState: viewState, pointer: pointer, hasGuides: !doc.guides.emptyOnes)
@@ -134,7 +140,7 @@ struct CanvasView: View {
             }
             .onChange(of: doc.tool) { _, newOne in
                 if newOne != .pen { finishPen() }
-                if newOne != .direct { selectedNode = nil }
+                if !newOne.editsNodes { selectedNode = nil }
                 if newOne != .text { doc.finishText() }
             }
             // Selecting something else (layers, Select › None…) ends typing.
@@ -172,7 +178,16 @@ struct CanvasView: View {
         guard !keyPresses.isEmpty else { return }
         try? await Task.sleep(for: .milliseconds(1200))
         for text in keyPresses {
-            if text.hasPrefix("click:") {
+            if text.hasPrefix("offset:"), let distance = Double(text.dropFirst(7)) {
+                if let notice = doc.offsetSelection(distance, corner: .round) { NSLog("CUTLINE_TEST offset: %@", notice) }
+            } else if text.hasPrefix("hover:") {
+                let mm = text.dropFirst(6).split(separator: ",").compactMap { Double($0) }
+                guard mm.count == 2 else { continue }
+                pointer.canvas = viewState.canvas(CGPoint(x: mm[0], y: mm[1]))
+                pointer.mm = CGPoint(x: mm[0], y: mm[1])
+            } else if text == "log" {
+                DebugHooks.logState(doc, zoom: viewState.zoom)
+            } else if text.hasPrefix("click:") {
                 let mm = text.dropFirst(6).split(separator: ",").compactMap { Double($0) }
                 guard mm.count == 2 else { continue }
                 let p = viewState.canvas(CGPoint(x: mm[0], y: mm[1]))
@@ -220,7 +235,9 @@ struct CanvasView: View {
         }
         switch doc.tool {
         case .text: return .horizontalText
-        case .pen: return .rectSelection
+        case .pen, .addNode, .deleteNode: return ToolPointer.style(doc.tool)
+        case .eyedropper: return nil   // the loupe takes the pointer's place
+        case .zoom: return option ? .zoomOut : .zoomIn
         default: return doc.tool.createsShape ? .rectSelection : nil
         }
     }
@@ -259,7 +276,7 @@ struct CanvasView: View {
         for object in selectedObjects {
             ctx.stroke(object.shapePath.applying(viewState.transform), with: .color(.accentColor), lineWidth: 1.5)
         }
-        if doc.tool == .direct {
+        if doc.tool.editsNodes {
             drawNodes(selectedObjects, in: &ctx)
         } else if doc.textEditing == nil, let box = selectionBox {
             ctx.stroke(Path(box), with: .color(.accentColor.opacity(0.7)), lineWidth: 1)
@@ -277,6 +294,11 @@ struct CanvasView: View {
             let area = Path(viewState.canvas(CGRect.between(start, current, proportional: false, fromCenter: false)))
             ctx.fill(area, with: .color(.accentColor.opacity(0.08)))
             ctx.stroke(area, with: .color(.accentColor.opacity(0.6)), lineWidth: 1)
+        }
+
+        if case .zoomArea(let start, let current) = gesture {
+            let area = Path(CGRect.between(start, current, proportional: false, fromCenter: false))
+            ctx.stroke(area, with: .color(.primary.opacity(0.7)), style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
         }
 
         if let snapMark {
@@ -348,7 +370,7 @@ struct CanvasView: View {
 
     private func drawGuides(_ ctx: inout GraphicsContext, size: CGSize) {
         var lines = Path()
-        var verticals = doc.guides.verticals, horizontals = doc.guides.horizontals
+        var verticals = guidesVisible ? doc.guides.verticals : [], horizontals = guidesVisible ? doc.guides.horizontals : []
         if let dragged = draggedGuide, let value = dragged.value {
             if dragged.axis == .vertical { verticals.append(value) } else { horizontals.append(value) }
         }
@@ -362,7 +384,7 @@ struct CanvasView: View {
             lines.move(to: CGPoint(x: 0, y: py))
             lines.addLine(to: CGPoint(x: size.width, y: py))
         }
-        ctx.stroke(lines, with: .color(Self.guideColor.opacity(0.85)), lineWidth: 0.75)
+        ctx.stroke(lines, with: .color(Color(hex: guideColor).opacity(0.85)), lineWidth: 0.75)
     }
 
     /// Nodes of the selected objects; the chosen node highlighted, with its handles.
@@ -489,7 +511,7 @@ struct CanvasView: View {
     }
 
     private func prepareSnap(exclude: Set<CanvasObject.ID>) {
-        tracing.targets = snapOn ? SnapTargets(doc: doc, exclude: exclude) : nil
+        tracing.targets = snapOn ? SnapTargets(doc: doc, exclude: exclude, guides: guidesVisible) : nil
     }
 
     private func begin(in canvasPoint: CGPoint) {
@@ -517,6 +539,26 @@ struct CanvasView: View {
             }
         case .direct:
             beginDirect(canvasPoint, p)
+        case .addNode:
+            // On the outline of a selected object first, then of the one under the click (which becomes selected).
+            for id in doc.selectedObjects.reversed().map(\.id) + [objectAt(canvasPoint)].compactMap(\.self)
+            where doc.addNode(to: id, at: p, tolerance: tolerance) {
+                doc.selection = [id]
+                selectedNode = nil
+                return
+            }
+            if let target = objectAt(canvasPoint) { doc.selection = [target] }
+        case .deleteNode:
+            selectedNode = nil
+            if let ref = nodeAt(canvasPoint) {
+                doc.deleteNode(of: ref.object, sub: ref.sub, node: ref.node)
+            } else {
+                doc.selection = objectAt(canvasPoint).map { [$0] } ?? []
+            }
+        case .eyedropper:
+            if let target = objectAt(canvasPoint) { doc.eyedrop(from: target, at: p) }
+        case .zoom:
+            gesture = .zoomArea(start: canvasPoint, current: canvasPoint)
         case _ where doc.tool.createsShape:
             prepareSnap(exclude: [])
             let q = snapping(p)
@@ -593,6 +635,8 @@ struct CanvasView: View {
         let axis: Axis
         if rulers.horizontal.contains(canvasPoint) { axis = .horizontal } else if rulers.vertical.contains(canvasPoint) { axis = .vertical } else { return false }
         doc.registrar()
+        // A new guide shows them all again.
+        guidesVisible = true
         draggedGuide = (axis, nil)
         gesture = .guide(axis: axis)
         prepareSnap(exclude: [])
@@ -613,23 +657,16 @@ struct CanvasView: View {
                 }
             }
         }
-        for object in doc.selectedObjects.reversed() {
+        if let ref = nodeAt(canvasPoint), let object = doc.objects.first(where: { $0.id == ref.object }) {
             let subs = object.absoluteNodes
-            for (s, sub) in subs.enumerated() {
-                for (n, node) in sub.nodes.enumerated() {
-                    let q = viewState.canvas(node.point)
-                    guard abs(q.x - canvasPoint.x) <= 6, abs(q.y - canvasPoint.y) <= 6 else { continue }
-                    let ref = NodeRef(object: object.id, sub: s, node: n)
-                    selectedNode = ref
-                    if clicks >= 2 {
-                        toggleSmooth(ref, subs)
-                        return
-                    }
-                    prepareSnap(exclude: [object.id])
-                    gesture = .node(ref, part: .point, original: subs, start: p, registered: false)
-                    return
-                }
+            selectedNode = ref
+            if clicks >= 2 {
+                toggleSmooth(ref, subs)
+                return
             }
+            prepareSnap(exclude: [object.id])
+            gesture = .node(ref, part: .point, original: subs, start: p, registered: false)
+            return
         }
         selectedNode = nil
         if let target = objectAt(canvasPoint) {
@@ -679,6 +716,8 @@ struct CanvasView: View {
             dragNode(ref, part: part, original: original, start: start, p: p, registered: registered)
         case .pen(let index, let start):
             dragPen(index, start: start, p: p)
+        case .zoomArea(let start, _):
+            gesture = .zoomArea(start: start, current: canvasPoint)
         case nil:
             break
         }
@@ -706,13 +745,24 @@ struct CanvasView: View {
             doc.selection = sum ? doc.selection.union(touched) : touched
         case .guide(let axis):
             // Dropped on the ruler (or without moving) = no guide.
-            if let value = draggedGuide?.value, let rulers, !(rulers.horizontal.union(rulers.vertical).union(rulers.join).contains(canvasPoint)) {
+            if let value = draggedGuide?.value, let rulers, !rulers.contains(canvasPoint) {
                 switch axis {
                 case .vertical: doc.guides.verticals.append(value)
                 case .horizontal: doc.guides.horizontals.append(value)
                 }
             }
             draggedGuide = nil
+        case .zoomArea(let start, let current):
+            // Click: twice as close (⌥: half); dragging: the area fills the canvas.
+            let area = CGRect.between(start, current, proportional: false, fromCenter: false)
+            if max(area.width, area.height) < 4 {
+                viewState.zoomIn(to: viewState.zoom * (option ? 0.5 : 2), anchor: start)
+            } else {
+                let center = CGPoint(x: area.midX, y: area.midY)
+                viewState.zoomIn(to: viewState.zoom * min(tracing.size.width / area.width, tracing.size.height / area.height), anchor: center)
+                viewState.offsetBy(dx: tracing.size.width / 2 - center.x, dy: tracing.size.height / 2 - center.y)
+            }
+            pointer.mm = viewState.mm(current)
         default:
             break
         }
@@ -848,6 +898,19 @@ struct CanvasView: View {
         return order.first { $0.shapePath.applying(viewState.transform).contains(canvasPoint, eoFill: true) }?.id
     }
 
+    /// Node of a selected object under the point (the frontmost).
+    private func nodeAt(_ canvasPoint: CGPoint) -> NodeRef? {
+        for object in doc.selectedObjects.reversed() {
+            for (s, sub) in object.absoluteNodes.enumerated() {
+                for (n, node) in sub.nodes.enumerated() {
+                    let q = viewState.canvas(node.point)
+                    if abs(q.x - canvasPoint.x) <= 6, abs(q.y - canvasPoint.y) <= 6 { return NodeRef(object: object.id, sub: s, node: n) }
+                }
+            }
+        }
+        return nil
+    }
+
     private func handleAt(_ canvasPoint: CGPoint) -> Handle? {
         guard let box = selectionBox else { return nil }
         return Handle.allCases.first { handle in
@@ -856,7 +919,9 @@ struct CanvasView: View {
         }
     }
 
+    /// Hidden or locked guides can't be picked up.
     private func guideAt(_ canvasPoint: CGPoint) -> (Axis, Int)? {
+        guard guidesVisible, !guidesLocked else { return nil }
         if let i = doc.guides.verticals.firstIndex(where: { abs(viewState.canvas(CGPoint(x: $0, y: 0)).x - canvasPoint.x) <= 3 }) { return (.vertical, i) }
         if let i = doc.guides.horizontals.firstIndex(where: { abs(viewState.canvas(CGPoint(x: 0, y: $0)).y - canvasPoint.y) <= 3 }) { return (.horizontal, i) }
         return nil
@@ -895,12 +960,13 @@ struct CanvasView: View {
     // MARK: Keyboard and scrolling
 
     /// Delete deletes, Esc clears the selection (or finishes the pen), Enter finishes the pen, space holds the
-    /// hand, arrows move the selection (1 mm; ⇧ 10 mm; ⌥ 0.1 mm), letters switch the tool (V, A, P, T, M, L, S,
-    /// I, H); colors as in Illustrator: X toggles
+    /// hand, arrows move the selection (1 mm; ⇧ 10 mm; ⌥ 0.1 mm), letters switch the tool (V, A, P, +/=, −, T, M, L, S,
+    /// I, H, Z); colors as in Illustrator: X toggles
     /// fill/stroke, ⇧X swaps them, D default, / none. With ⌘, object shortcuts are read
     /// here (outside text fields, which keep their own), without depending on the menus' state: ⌘A all,
-    /// ⌘C/⌘X/⌘V, ⌘D duplicates, ⌘ + arrow duplicates beside, ⌘G/⇧⌘G group and ungroup, ⌘] ⌘[ ⇧⌘] ⇧⌘[ arrange.
-    /// ⌘R and ⌘; belong to the View menu.
+    /// ⌘C/⌘X/⌘V, ⌘D duplicates, ⌘ + arrow duplicates beside, ⌘G/⇧⌘G group and ungroup, ⌘] ⌘[ ⇧⌘] ⇧⌘[ arrange,
+    /// ⌘B/⌘I/⌘U bold, italic and underline of the selected texts. ⌘R, ⌘U (snap, without a text) and ⌘; (guides)
+    /// belong to the View menu.
     private func keyboard(_ event: NSEvent) -> NSEvent? {
         guard let nsWindow, event.window === nsWindow, nsWindow.attachedSheet == nil,
               !(nsWindow.firstResponder is NSText) else { return event }
@@ -921,6 +987,10 @@ struct CanvasView: View {
             case ("x", false): doc.cutSelection()
             case ("v", false): doc.paste()
             case ("d", false): doc.duplicateSelection()
+            case ("b", false), ("i", false), ("u", false):
+                // Bold, italic and underline of the whole selected texts; without a text, ⌘U goes to the Snap menu.
+                guard doc.hasTextSelected, let key = event.charactersIgnoringModifiers?.lowercased().first else { return event }
+                doc.toggleTextStyle(key)
             case ("g", false): doc.groupSelected()
             case ("g", true): doc.ungroupSelected()
             case ("]", _), ("}", _): doc.arrange(uppercase ? .front : .forward)
@@ -961,10 +1031,12 @@ struct CanvasView: View {
             doc.defaultColors()
             return nil
         case 123...126 where event.modifierFlags.isDisjoint(with: [.command, .control]):   // arrows
-            // Move the selection: 1 mm; with ⇧, 10 mm; with ⌥, 0.1 mm. Without a selection, they go to whoever comes next.
+            // Move the selection by the steps in Settings (1 mm; with ⇧, 10 mm; with ⌥, 0.1 mm). Without a selection, they
+            // go to whoever comes next.
             guard !doc.selection.isEmpty else { return event }
             guard goingDown else { return nil }
-            let step = event.modifierFlags.contains(.shift) ? 10 : event.modifierFlags.contains(.option) ? 0.1 : 1.0
+            let steps = Preferences.arrowSteps
+            let step = event.modifierFlags.contains(.shift) ? steps.shift : event.modifierFlags.contains(.option) ? steps.option : steps.normal
             let offsets: [UInt16: (Double, Double)] = [123: (-step, 0), 124: (step, 0), 125: (0, step), 126: (0, -step)]
             if let (dx, dy) = offsets[event.keyCode] { doc.moveSelection(dx: dx, dy: dy) }
             return nil
@@ -972,8 +1044,10 @@ struct CanvasView: View {
             doc.setColor(doc.colorTarget, nil)
             return nil
         default:
-            guard goingDown, !withModifier, !event.modifierFlags.contains(.shift),
-                  let letter = event.charactersIgnoringModifiers?.lowercased().first,
+            // + is ⇧= on most keyboards (= also works, as in Illustrator).
+            guard goingDown, !withModifier, let typed = event.charactersIgnoringModifiers?.lowercased().first else { return event }
+            let letter: Character = typed == "=" ? "+" : typed
+            guard letter == "+" || !event.modifierFlags.contains(.shift),
                   let tool = Tool.allCases.first(where: { $0.keyEvent == letter }) else { return event }
             doc.tool = tool
             return nil
@@ -986,9 +1060,9 @@ struct CanvasView: View {
         guard let nsWindow, event.window === nsWindow, nsWindow.attachedSheet == nil, let p = tracing.pointer,
               event.type == .rightMouseDown || event.modifierFlags.contains(.control),
               doc.textEditing == nil, gesture == nil, pen == nil else { return event }
-        if let rulers, rulers.horizontal.union(rulers.vertical).union(rulers.join).contains(p) { return event }
+        if let rulers, rulers.contains(p) { return event }
         if let target = objectAt(p), !doc.selection.contains(target), let object = doc.objects.first(where: { $0.id == target }) {
-            doc.selection = doc.tool == .direct ? [target] : doc.unit(of: target)
+            doc.selection = doc.tool.editsNodes ? [target] : doc.unit(of: target)
             doc.activeLayer = doc.layer(of: object).id
             selectedNode = nil
         }
@@ -996,11 +1070,11 @@ struct CanvasView: View {
         return nil
     }
 
-    /// Two fingers on the trackpad (or the mouse wheel) move the page; with ⌘, zoom at the pointer.
+    /// Two fingers on the trackpad (or the mouse wheel) move the page; with ⌘ or ⌥, zoom at the pointer.
     private func scroll(_ event: NSEvent) -> NSEvent? {
         guard let p = tracing.pointer, event.window?.isKeyWindow == true else { return event }
         let factor = event.hasPreciseScrollingDeltas ? 1.0 : 10.0
-        if event.modifierFlags.contains(.command) {
+        if !event.modifierFlags.isDisjoint(with: [.command, .option]) {
             viewState.zoomIn(to: viewState.zoom * exp(event.scrollingDeltaY * factor * 0.01), anchor: p)
         } else {
             viewState.offsetBy(dx: event.scrollingDeltaX * factor, dy: event.scrollingDeltaY * factor)
@@ -1013,6 +1087,8 @@ struct CanvasView: View {
 /// Canvas state that shouldn't redraw when it changes.
 private final class Tracing {
     var pointer: CGPoint?
+    /// The canvas size (the Zoom tool's area fills it).
+    var size = CGSize.zero
     var targets: SnapTargets?
 }
 

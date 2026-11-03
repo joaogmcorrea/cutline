@@ -1,6 +1,7 @@
 // Text editing right on the canvas, as in Illustrator: the Text tool (or a double click on a text)
 // opens editing; each typed letter changes the object right away (the canvas shows the real outline). All
 // the typing is a single undo step; text that ends up empty disappears.
+import AppKit
 import CoreGraphics
 import Foundation
 
@@ -332,5 +333,41 @@ extension Document {
         guard textEditing?.registered == false else { return }
         registerSaved()
         textEditing?.registered = true
+    }
+}
+
+// MARK: ⌘B, ⌘I and ⌘U
+
+extension CharacterStyle {
+    /// The face is bold (or italic).
+    func has(_ trait: NSFontTraitMask) -> Bool { NSFontManager.shared.traits(of: ctFont() as NSFont).contains(trait) }
+
+    /// The family's face with or without the trait; unchanged when the family has no such face.
+    mutating func set(_ trait: NSFontTraitMask, _ on: Bool) {
+        let manager = NSFontManager.shared, current = ctFont() as NSFont
+        let converted = on ? manager.convert(current, toHaveTrait: trait) : manager.convert(current, toNotHaveTrait: trait)
+        guard converted.familyName == current.familyName, converted.fontName != current.fontName else { return }
+        postscript = converted.fontName
+    }
+}
+
+extension Document {
+    var hasTextSelected: Bool { selectedObjects.contains { if case .text = $0.shape { true } else { false } } }
+
+    /// ⌘B, ⌘I and ⌘U (key "b", "i" or "u"): on the selected letters while typing, on the whole selected texts
+    /// otherwise — turned on if the first letter doesn't have it, off if it does (as in a word processor).
+    func toggleTextStyle(_ key: Character) {
+        let current = textStyle
+        switch key {
+        case "b":
+            let on = !current.has(.boldFontMask)
+            changeStyle { $0.set(.boldFontMask, on) }
+        case "i":
+            let on = !current.has(.italicFontMask)
+            changeStyle { $0.set(.italicFontMask, on) }
+        default:
+            let on = !current.underline
+            changeStyle { $0.underline = on }
+        }
     }
 }

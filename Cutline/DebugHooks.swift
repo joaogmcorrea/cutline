@@ -12,6 +12,9 @@
 //   responder chain and answers the question 2.5 s later (twice with "write2": the 2nd writes directly);
 //   CUTLINE_TEST_KEYS=cmd+a;cmd+g;click:120,70;cmd+right… passes keys (and clicks, in mm) through the canvas
 //   keyboard, one every 0.3 s; CUTLINE_TEST_CONTEXT_MENU=/x.txt dumps the right-click menu (of the selection then);
+//   in the keys, offset:2 (mm; < 0 inside) offsets the selection with round corners, hover:x,y (mm) puts the pointer
+//   there (the Eyedropper's loupe shows in a photo) and log writes the document's state (NSLog "CUTLINE_TEST state");
+//   CUTLINE_TEST_SETTINGS=1 opens Cutline › Settings;
 //   CUTLINE_MARKS=1 turns on the Print & Cut marks; CUTLINE_TEST_PRINT=/x.pdf writes the print to a PDF;
 //   CUTLINE_TEST_SEND=1 (with CUTLINE_SIMULATE) sends by itself when the Send window opens;
 //   CUTLINE_TEST_TEST_CUT=x,y (with CUTLINE_SIMULATE) sends the test cut at x,y mm when the Send window opens;
@@ -209,6 +212,21 @@ enum DebugHooks {
         return flags
     }
 
+    /// CUTLINE_TEST_SETTINGS=1: opens Cutline › Settings at launch.
+    static var openSettings: Bool { ProcessInfo.processInfo.environment["CUTLINE_TEST_SETTINGS"] != nil }
+
+    /// The "log" step of CUTLINE_TEST_KEYS: what a test needs to check, in the log.
+    static func logState(_ doc: Document, zoom: Double) {
+        let objects = doc.objects.map { o in "\(o.label ?? "?")[\(o.absoluteNodes.map(\.nodes.count).map(String.init).joined(separator: "+"))]" }
+        let text = doc.selectedObjects.lazy.compactMap { o -> CharacterStyle? in if case .text(let t) = o.shape { t.style(in: 0) } else { nil } }.first
+        NSLog("CUTLINE_TEST state: text=%@ underline=%d", text?.postscript ?? text?.font ?? "-", text?.underline == true ? 1 : 0)
+        NSLog("CUTLINE_TEST state: tool=%@ zoom=%.2f objects=%@ selected=%ld guides v=%@ h=%@ fill=%@ stroke=%@",
+              doc.tool.rawValue, zoom, objects.joined(separator: " "), doc.selection.count,
+              doc.guides.verticals.map { String(format: "%.1f", $0) }.joined(separator: ","),
+              doc.guides.horizontals.map { String(format: "%.1f", $0) }.joined(separator: ","),
+              doc.selectedObjects.first?.fill?.summaryText ?? "none", doc.selectedObjects.first?.strokeColor.summaryText ?? "-")
+    }
+
     /// In hidden tests, copy and paste use a pasteboard of Cutline's own (the owner's stays untouched).
     static let testArea: NSPasteboard? = ProcessInfo.processInfo.environment["CUTLINE_HIDDEN"] != nil
         ? NSPasteboard(name: NSPasteboard.Name("io.github.joaogmcorrea.cutline.test")) : nil
@@ -229,6 +247,7 @@ enum DebugHooks {
         let arrow = { (keyEvent: Int) in String(utf16CodeUnits: [unichar(keyEvent)], count: 1) }
         let keyPresses: [String: (UInt16, String, String)] = [
             "a": (0, "a", "A"), "c": (8, "c", "C"), "d": (2, "d", "D"), "g": (5, "g", "G"), "v": (9, "v", "V"), "x": (7, "x", "X"),
+            "z": (6, "z", "Z"), "e": (14, "e", "E"), "i": (34, "i", "I"), "b": (11, "b", "B"), "u": (32, "u", "U"), "p": (35, "p", "P"), "=": (24, "=", "+"), "-": (27, "-", "_"),
             "[": (33, "[", "{"), "]": (30, "]", "}"), "esc": (53, "\u{1b}", "\u{1b}"),
             "left": (123, arrow(NSLeftArrowFunctionKey), arrow(NSLeftArrowFunctionKey)),
             "right": (124, arrow(NSRightArrowFunctionKey), arrow(NSRightArrowFunctionKey)),

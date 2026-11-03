@@ -33,10 +33,13 @@ struct TraceWindow: View {
     let doc: Document
     let origin: ImageToTrace
     @Environment(\.dismiss) private var close
+    @AppStorage(LengthUnit.key) private var unit = LengthUnit.mm
     /// First the choice (imported or dragged image), then the settings.
     @State private var choosing: Bool
-    @State private var parameters = TraceParameters()
+    @State private var parameters = Preferences.traceDefaults
     @State private var result: TraceResult?
+    /// The settings `result` was traced with (it's traced off the main thread, so it may lag behind a slider).
+    @State private var resultParameters: TraceParameters?
     @State private var pixels: Tracer.Pixels?
     /// Previews for the choice, with the current settings: outer only and with the inner ones.
     @State private var outerPreview: [[CGPoint]]?
@@ -59,7 +62,7 @@ struct TraceWindow: View {
             if let settings = DebugHooks.traceSettings { (parameters.nodes, parameters.smoothing) = settings }
             #endif
             pixels = Tracer.pixels(origin.image)
-            guard choosing else { return recompute() }
+            guard choosing else { return await recompute() }
             await computePreviews()
             #if DEBUG
             switch DebugHooks.imageChoice {
@@ -76,7 +79,7 @@ struct TraceWindow: View {
         }
         .task(id: parameters) {
             try? await Task.sleep(for: .milliseconds(60))
-            recompute()
+            await recompute()
         }
     }
 
@@ -143,7 +146,8 @@ struct TraceWindow: View {
                          : "Traces only the outer shape — anything inside the artwork is ignored.")
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
-                    control("Margin", unit: "mm", value: $parameters.margin, span: 0...10, step: 0.5)
+                    control("Margin", unit: unit.symbol, value: Binding(get: { unit.show(parameters.margin) }, set: { parameters.margin = unit.mm($0) }),
+                            span: 0...unit.show(10), step: unit == .mm ? 0.5 : unit == .cm ? 0.05 : 0.02)
                     control("Node count", unit: "%", value: $parameters.nodes, span: 0...100, step: 1)
                     control("Smoothing", unit: "%", value: $parameters.smoothing, span: 0...100, step: 1)
                     control("Background tolerance", unit: "", value: $parameters.tolerance, span: 5...150, step: 1)
@@ -176,9 +180,13 @@ struct TraceWindow: View {
         }
     }
 
-    private func recompute() {
+    /// Off the main thread: a sheet-sized image takes about a tenth of a second.
+    private func recompute() async {
         guard let pixels else { return }
-        result = Tracer.traceImage(pixels, parameters)
+        let traced = parameters
+        let loops = await Task.detached { Tracer.traceImage(pixels, traced) }.value
+        guard traced == parameters else { return }
+        (result, resultParameters) = (loops, traced)
     }
 
     private func preview(_ loops: [[CGPoint]]?) -> TracePreview {
@@ -191,7 +199,7 @@ struct TraceWindow: View {
             HStack {
                 Text(title)
                 Spacer()
-                TextField(title, value: value, format: .number.precision(.fractionLength(0...1)))
+                TextField(title, value: value, format: .number.precision(.fractionLength(0...2)))
                     .labelsHidden()
                     .textFieldStyle(.roundedBorder)
                     .multilineTextAlignment(.trailing)
@@ -223,6 +231,8 @@ struct TraceWindow: View {
     }
 
     private func insert() {
+        // A setting changed right before Insert: traces it now, so what goes in is what the settings say.
+        if resultParameters != parameters, let pixels { (result, resultParameters) = (Tracer.traceImage(pixels, parameters), parameters) }
         guard let result, !result.loops.isEmpty else { return }
         let frame = origin.frame(width: parameters.width), key = UUID().uuidString
         var contour = doc.newObject(.shapePath([]), frame: .zero)

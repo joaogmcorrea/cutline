@@ -1,4 +1,4 @@
-// Rulers in mm (origin at the page's top-left corner), as in the prototype: glass strips at the
+// Rulers in the Settings unit (origin at the page's top-left corner), as in the prototype: glass strips at the
 // top and left of the free area, with the pointer mark. Dragging from them creates guides (in CanvasView, which
 // receives the gesture — the rulers only draw).
 import SwiftUI
@@ -28,6 +28,10 @@ struct RulerGeometry {
     var vertical: CGRect {
         CGRect(x: area.minX, y: area.minY + Self.strokeWidth + 2, width: Self.strokeWidth, height: max(area.height - Self.strokeWidth - 2, 0))
     }
+
+    /// On one of the strips or the corner. Each one on its own: their union is the box around both, which covers
+    /// the whole canvas.
+    func contains(_ p: CGPoint) -> Bool { [horizontal, vertical, join].contains { $0.contains(p) } }
 }
 
 struct Rulers: View {
@@ -35,6 +39,7 @@ struct Rulers: View {
     let viewState: ViewState
     let pointer: Pointer
     let hasGuides: Bool
+    @AppStorage(LengthUnit.key) private var unit = LengthUnit.mm
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -65,12 +70,20 @@ struct Rulers: View {
         .offset(x: r.minX, y: r.minY)
     }
 
-    /// Step of the major ticks so they are ≥ 55 pt apart; subdivisions of 5 or 10.
+    /// Step of the major ticks so they are ≥ 55 pt apart; subdivisions of 5 or 10 (in inches, halves down to 1/16).
     private func render(_ ctx: inout GraphicsContext, size: CGSize, origin: Double, horizontal: Bool) {
-        let e = viewState.scale, rg = RulerGeometry.strokeWidth
-        let step = [1.0, 2, 5, 10, 20, 50, 100, 200, 500].first { $0 * e >= 55 } ?? 500
-        var sub = step / (String(Int(step)).first == "5" ? 5 : 10)
-        if sub * e < 4 { sub *= 5 }
+        let e = viewState.scale * unit.mmPer, rg = RulerGeometry.strokeWidth
+        var sub: Double, step: Double
+        if unit == .inch {
+            step = [0.25, 0.5, 1, 2, 5, 10, 20].first { $0 * e >= 55 } ?? 20
+            sub = step >= 1 && step.truncatingRemainder(dividingBy: 5) != 0 ? step / 8 : step / (step >= 5 ? 5 : 2)
+            while sub * e < 4 { sub *= 2 }
+        } else {
+            step = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500].first { $0 * e >= 55 } ?? 500
+            let leading = step / pow(10, (log10(step) + 1e-9).rounded(.down))
+            sub = step / (abs(leading - 5) < 1e-6 ? 5 : 10)
+            if sub * e < 4 { sub *= 5 }
+        }
         let length = horizontal ? size.width : size.height
         let start = (-origin / e / sub).rounded(.down) * sub, end = (length - origin) / e
         var marks = Path()
@@ -88,7 +101,8 @@ struct Rulers: View {
                 marks.addLine(to: CGPoint(x: rg - t, y: pos))
             }
             if larger {
-                let text = ctx.resolve(Text("\(Int(v.rounded()))").font(.system(size: 8.5)).foregroundStyle(.secondary))
+                let label = v.formatted(.number.precision(.fractionLength(0...2)))
+                let text = ctx.resolve(Text(verbatim: label).font(.system(size: 8.5)).foregroundStyle(.secondary))
                 if horizontal {
                     ctx.draw(text, at: CGPoint(x: pos + 2, y: 1), anchor: .topLeading)
                 } else {
@@ -102,7 +116,7 @@ struct Rulers: View {
         }
         ctx.stroke(marks, with: .color(.secondary), lineWidth: 0.6)
         if let p = pointer.mm {
-            let pos = (origin + (horizontal ? p.x : p.y) * e).rounded() + 0.5
+            let pos = (origin + (horizontal ? p.x : p.y) / unit.mmPer * e).rounded() + 0.5
             var mark = Path()
             if horizontal {
                 mark.move(to: CGPoint(x: pos, y: 0))

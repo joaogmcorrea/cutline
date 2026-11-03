@@ -90,9 +90,11 @@ struct ColorSection: View {
 }
 
 /// Illustrator's two squares: fill behind, stroke (just the thick border) in front; clicking
-/// brings one to the front. White with a red slash = none; "?" = mixed colors.
-private struct ColorSquares: View {
+/// brings one to the front. White with a red slash = none; "?" = mixed colors. Also at the foot of the tools,
+/// smaller.
+struct ColorSquares: View {
     @Bindable var doc: Document
+    var side = 28.0
 
     var body: some View {
         let fill = doc.color(.fill), strokeColor = doc.color(.strokeColor)
@@ -100,33 +102,33 @@ private struct ColorSquares: View {
             square(fill.color, mixed: fill.mixed, isStroke: false)
                 .zIndex(doc.colorTarget == .fill ? 2 : 1)
             square(strokeColor.color, mixed: strokeColor.mixed, isStroke: true)
-                .offset(x: 14, y: 14)
+                .offset(x: side / 2, y: side / 2)
                 .zIndex(doc.colorTarget == .strokeColor ? 2 : 1)
         }
-        .frame(width: 44, height: 44, alignment: .topLeading)
+        .frame(width: side * 1.5 + 2, height: side * 1.5 + 2, alignment: .topLeading)
     }
 
     private func square(_ color: CMYK?, mixed: Bool, isStroke: Bool) -> some View {
-        let shape = RoundedRectangle(cornerRadius: 6)
+        let shape = RoundedRectangle(cornerRadius: side * 0.21)
         let isActive = doc.colorTarget == (isStroke ? .strokeColor : .fill)
         return ZStack {
             if let color, !mixed {
                 if isStroke {
                     shape.fill(Color.white.opacity(0.001))
-                    shape.strokeBorder(color.color, lineWidth: 6)
+                    shape.strokeBorder(color.color, lineWidth: side * 0.21)
                 } else {
                     shape.fill(color.color)
                 }
             } else {
                 shape.fill(.white)
                 if mixed {
-                    Text("?").font(.system(size: 13, weight: .bold)).foregroundStyle(.gray)
+                    Text("?").font(.system(size: side * 0.46, weight: .bold)).foregroundStyle(.gray)
                 } else {
                     NoneOption().clipShape(shape)
                 }
             }
         }
-        .frame(width: 28, height: 28)
+        .frame(width: side, height: side)
         .overlay(shape.strokeBorder(.black.opacity(0.22), lineWidth: 0.5))
         .shadow(color: .black.opacity(0.14), radius: 1.5, y: 1)
         .overlay(shape.inset(by: -3).stroke(Color.accentColor, lineWidth: isActive ? 2 : 0))
@@ -137,7 +139,7 @@ private struct ColorSquares: View {
 }
 
 /// Red diagonal slash: "none".
-private struct NoneOption: View {
+struct NoneOption: View {
     var body: some View {
         Canvas { ctx, size in
             var slash = Path()

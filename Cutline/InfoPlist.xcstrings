@@ -5,9 +5,15 @@
       "comment" : "Bundle display name",
       "extractionState" : "extracted_with_value",
       "localizations" : {
-        "pt-BR" : {
+        "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "Cutline"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Cutline"
           }
         }
@@ -17,9 +23,15 @@
       "comment" : "Bundle name",
       "extractionState" : "extracted_with_value",
       "localizations" : {
-        "pt-BR" : {
+        "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "Cutline"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Cutline"
           }
         }
@@ -39,16 +51,16 @@
     "NSBluetoothAlwaysUsageDescription" : {
       "extractionState" : "manual",
       "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O Cutline usa o Bluetooth para conversar com a sua cortadora Silhouette."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cutline uses Bluetooth to talk to your Silhouette cutter."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Cutline usa o Bluetooth para conversar com a sua cortadora Silhouette."
           }
         }
       }

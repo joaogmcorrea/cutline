@@ -165,11 +165,11 @@ struct SendWindow: View {
 
     /// Where the machine will look for the marks (it must be where the sheet was printed).
     private var marksDescription: String {
-        let c = doc.marksConfig
-        let mm = { (v: Double) in v.formatted(.number.precision(.fractionLength(0...3))) }
-        let margin = c.margin.map { String(localized: "\(mm($0)) mm from the edge") }
-            ?? String(localized: "margins of \(mm(c.left)), \(mm(c.top)), \(mm(c.right)) and \(mm(c.bottom)) mm")
-        return String(localized: "Marks \(margin), \(mm(c.length)) mm corner marks. Change them in the Page panel.")
+        let c = doc.marksConfig, unit = LengthUnit.current
+        let length = { (v: Double) in unit.text(v) }
+        let margin = c.margin.map { String(localized: "\(length($0)) from the edge") }
+            ?? String(localized: "margins of \(length(c.left)), \(length(c.top)), \(length(c.right)) and \(length(c.bottom))")
+        return String(localized: "Marks \(margin), \(length(c.length)) corner marks. Change them in the Page panel.")
     }
 
     // MARK: Chosen color detail

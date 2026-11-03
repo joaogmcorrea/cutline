@@ -6,6 +6,7 @@ import SwiftUI
 struct PageSection: View {
     @Bindable var doc: Document
     @Environment(Machine.self) private var machine
+    @AppStorage(LengthUnit.key) private var unit = LengthUnit.mm
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -35,7 +36,7 @@ struct PageSection: View {
                 }
                 GridRow {
                     label("Media")
-                    Text("A4 · 210 × 297 mm")
+                    Text(verbatim: "A4 · \(unit.text(Document.page))")
                 }
                 GridRow {
                     label("Print & Cut")
@@ -47,7 +48,7 @@ struct PageSection: View {
                     GridRow {
                         label("Margin")
                         HStack(spacing: 4) {
-                            mmField(Binding(get: { doc.marksConfig.margin ?? doc.marksConfig.left }, set: { newOne in
+                            lengthField(Binding(get: { doc.marksConfig.margin ?? doc.marksConfig.left }, set: { newOne in
                                 var config = doc.marksConfig
                                 (config.left, config.top, config.right, config.bottom) = (newOne, newOne, newOne, newOne)
                                 doc.setMarks(config)
@@ -63,7 +64,7 @@ struct PageSection: View {
                     }
                     GridRow {
                         label("Corner marks")
-                        mmField(Binding(get: { doc.marksConfig.length }, set: { updated in
+                        lengthField(Binding(get: { doc.marksConfig.length }, set: { updated in
                             var config = doc.marksConfig
                             config.length = updated
                             doc.setMarks(config)
@@ -87,15 +88,16 @@ struct PageSection: View {
         }
     }
 
-    /// Field in mm with arrows (0.5 mm per click).
-    private func mmField(_ value: Binding<Double>, span: ClosedRange<Double>) -> some View {
+    /// Length (mm) in the Settings unit, with arrows (0.5 mm per click).
+    private func lengthField(_ value: Binding<Double>, span: ClosedRange<Double>) -> some View {
         let limited = Binding(get: { value.wrappedValue }, set: { value.wrappedValue = min(max($0, span.lowerBound), span.upperBound) })
         return HStack(spacing: 2) {
-            TextField("", value: limited, format: .number.precision(.fractionLength(0...3)))
+            TextField("", value: Binding(get: { unit.show(limited.wrappedValue) }, set: { limited.wrappedValue = unit.mm($0) }),
+                      format: .number.precision(.fractionLength(0...3)))
                 .labelsHidden()
                 .frame(width: 54)
                 .multilineTextAlignment(.trailing)
-            Text("mm").foregroundStyle(.secondary)
+            Text(verbatim: unit.symbol).foregroundStyle(.secondary)
             Stepper("", value: limited, in: span, step: 0.5)
                 .labelsHidden()
                 .controlSize(.mini)
