@@ -7,18 +7,75 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A5E00000000000000000020 /* CutlineKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1A5E00000000000000000021 /* CutlineKit */; };
+		1A5E00000000000000000022 /* CutlinePreview.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1A5E00000000000000000016 /* CutlinePreview.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1A5E00000000000000000010 /* CutlineKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1A5E00000000000000000011 /* CutlineKit */; };
 		1A5E00000000000000000013 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 1A5E00000000000000000014 /* Sparkle */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		1A5E00000000000000000025 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1A5E0000000000000000000A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1A5E00000000000000000019;
+			remoteInfo = CutlinePreview;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		1A5E00000000000000000023 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				1A5E00000000000000000022 /* CutlinePreview.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		1A5E00000000000000000001 /* Cutline.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cutline.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A5E00000000000000000016 /* CutlinePreview.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CutlinePreview.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		1A5E00000000000000000018 /* Exceptions for "Cutline" folder in "CutlinePreview" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Model/Cutting.swift,
+				Model/ColorConversion.swift,
+				Model/Document.swift,
+				Model/DocumentFile.swift,
+				Model/Geometry.swift,
+				Model/GlobalSettings.swift,
+				Model/Groups.swift,
+				Model/Layers.swift,
+				Model/Pathfinder.swift,
+				Model/RegistrationMarks.swift,
+				Model/TextEditing.swift,
+				PagePreview.swift,
+				Printing.swift,
+			);
+			target = 1A5E00000000000000000019 /* CutlinePreview */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		1A5E00000000000000000002 /* Cutline */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				1A5E00000000000000000018 /* Exceptions for "Cutline" folder in "CutlinePreview" target */,
+			);
 			path = Cutline;
+			sourceTree = "<group>";
+		};
+		1A5E00000000000000000017 /* CutlinePreview */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = CutlinePreview;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -33,6 +90,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		1A5E0000000000000000001B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A5E00000000000000000020 /* CutlineKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -40,6 +105,7 @@
 			isa = PBXGroup;
 			children = (
 				1A5E00000000000000000002 /* Cutline */,
+				1A5E00000000000000000017 /* CutlinePreview */,
 				1A5E00000000000000000005 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -48,6 +114,7 @@
 			isa = PBXGroup;
 			children = (
 				1A5E00000000000000000001 /* Cutline.app */,
+				1A5E00000000000000000016 /* CutlinePreview.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -62,10 +129,12 @@
 				1A5E00000000000000000008 /* Sources */,
 				1A5E00000000000000000003 /* Frameworks */,
 				1A5E00000000000000000009 /* Resources */,
+				1A5E00000000000000000023 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				1A5E00000000000000000024 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				1A5E00000000000000000002 /* Cutline */,
@@ -79,6 +148,29 @@
 			productReference = 1A5E00000000000000000001 /* Cutline.app */;
 			productType = "com.apple.product-type.application";
 		};
+		1A5E00000000000000000019 /* CutlinePreview */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A5E0000000000000000001D /* Build configuration list for PBXNativeTarget "CutlinePreview" */;
+			buildPhases = (
+				1A5E0000000000000000001A /* Sources */,
+				1A5E0000000000000000001B /* Frameworks */,
+				1A5E0000000000000000001C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				1A5E00000000000000000017 /* CutlinePreview */,
+			);
+			name = CutlinePreview;
+			packageProductDependencies = (
+				1A5E00000000000000000021 /* CutlineKit */,
+			);
+			productName = CutlinePreview;
+			productReference = 1A5E00000000000000000016 /* CutlinePreview.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -90,6 +182,9 @@
 				LastUpgradeCheck = 2700;
 				TargetAttributes = {
 					1A5E00000000000000000006 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					1A5E00000000000000000019 = {
 						CreatedOnToolsVersion = 27.0;
 					};
 				};
@@ -114,12 +209,20 @@
 			projectRoot = "";
 			targets = (
 				1A5E00000000000000000006 /* Cutline */,
+				1A5E00000000000000000019 /* CutlinePreview */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		1A5E00000000000000000009 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A5E0000000000000000001C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -136,7 +239,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		1A5E0000000000000000001A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1A5E00000000000000000024 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1A5E00000000000000000019 /* CutlinePreview */;
+			targetProxy = 1A5E00000000000000000025 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1A5E0000000000000000000C /* Debug */ = {
@@ -160,6 +278,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.2.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
@@ -182,6 +301,7 @@
 				GCC_NO_COMMON_BLOCKS = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.2.0;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
@@ -208,7 +328,6 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = io.github.joaogmcorrea.cutline;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -239,12 +358,63 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = io.github.joaogmcorrea.cutline;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		1A5E0000000000000000001E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)";
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "CutlinePreview-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Cutline;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.joaogmcorrea.cutline.preview;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		1A5E0000000000000000001F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)";
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "CutlinePreview-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Cutline;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.joaogmcorrea.cutline.preview;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
@@ -266,6 +436,15 @@
 			buildConfigurations = (
 				1A5E0000000000000000000C /* Debug */,
 				1A5E0000000000000000000D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1A5E0000000000000000001D /* Build configuration list for PBXNativeTarget "CutlinePreview" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A5E0000000000000000001E /* Debug */,
+				1A5E0000000000000000001F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -299,6 +478,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 1A5E00000000000000000015 /* XCRemoteSwiftPackageReference "Sparkle" */;
 			productName = Sparkle;
+		};
+		1A5E00000000000000000021 /* CutlineKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CutlineKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

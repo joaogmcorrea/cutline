@@ -211,3 +211,35 @@ extension Document {
                         logLines: registrationToSend, withMat: withMat, base: cuttingMatSetting)
     }
 }
+
+/// One send in the queue: the machine cuts one at a time, in order of arrival.
+struct Job: Identifiable {
+    enum JobStatus: Equatable {
+        case waiting
+        case cutting(String)
+        case done
+        /// The queue stops here until the user retries or removes the job from the queue.
+        case failure(String)
+        /// Print & Cut: the machine didn't find the marks (nothing was cut).
+        case marksNotFound
+
+        var didStop: Bool {
+            switch self {
+            case .failure, .marksNotFound: true
+            default: false
+            }
+        }
+    }
+
+    let id = UUID()
+    /// Document name.
+    let name: String
+    /// Document it came from (the marks notice opens in its window).
+    let origin: ObjectIdentifier
+    let layers: [CutLayer]
+    let logLines: Cutter.Registration?
+    let withMat: Bool
+    /// The chosen mat (nil = the machine's default).
+    var base: CuttingMat? = nil
+    var status = JobStatus.waiting
+}

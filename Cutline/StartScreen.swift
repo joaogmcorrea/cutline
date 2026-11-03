@@ -292,7 +292,8 @@ private struct RecentCard: View {
         .buttonStyle(.plain)
         .onHover { over = $0 }
         .help(url.path)
-        .task { preview = Self.preview(of: url) }
+        // 2 px per point of a 150 pt wide page.
+        .task { preview = PagePreview.image(of: url, width: 300) }
     }
 
     private var kind: LocalizedStringKey {
@@ -300,41 +301,4 @@ private struct RecentCard: View {
     }
 
     private var date: Date? { (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate }
-
-    /// The page as printed (fills, images, printed strokes, marks) plus the cut lines, from the file; nil if it can't be
-    /// read.
-    static func preview(of url: URL) -> CGImage? {
-        guard let payload = try? Data(contentsOf: url) else { return nil }
-        let doc: Document
-        if UTType(filenameExtension: url.pathExtension)?.conforms(to: .studio3) == true {
-            guard let studio = try? StudioDocument(data: payload) else { return nil }
-            let (objects, _, images, _, _) = Document.importResult(studio)
-            doc = Document(objects: objects, images: images, marks: studio.registrationMarks?.on ?? false,
-                           marksConfig: studio.registrationMarks.map(MarksConfig.init) ?? .defaultValue)
-        } else {
-            guard let file = try? DocumentFile.read(payload) else { return nil }
-            doc = Document(objects: file.objects, images: file.images, layers: file.layers, marks: file.marks, marksConfig: file.marksConfig)
-        }
-        // 2 px per point of a 150 pt wide page.
-        let width = 300, scale = Double(width) / (Document.page.width * Printing.pointsPerMM)
-        let height = Int((Document.page.height * Printing.pointsPerMM * scale).rounded())
-        guard let ctx = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
-                                  space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
-        else { return nil }
-        ctx.setFillColor(.white)
-        ctx.fill(CGRect(x: 0, y: 0, width: width, height: height))
-        // The page is drawn y down, as in the print view.
-        ctx.translateBy(x: 0, y: Double(height))
-        ctx.scaleBy(x: scale, y: -scale)
-        Printing.render(doc, in: ctx)
-        // The 0 pt cut lines don't print, but they are most of a sticker sheet: thin, in their color.
-        ctx.scaleBy(x: Printing.pointsPerMM, y: Printing.pointsPerMM)
-        ctx.setLineWidth(0.4)
-        for object in doc.objectsInOrder where doc.visible(object) && object.cutsLine && object.strokeWidth == 0 {
-            ctx.addPath(object.shapePath.cgPath)
-            ctx.setStrokeColor(object.strokeColor.cgCMYK)
-            ctx.strokePath()
-        }
-        return ctx.makeImage()
-    }
 }

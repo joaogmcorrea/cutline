@@ -8,27 +8,6 @@ import CutlineKit
 import ImageIO
 import UniformTypeIdentifiers
 
-/// Where a Cutline object came from in the .studio3.
-nonisolated struct StudioPiece: Sendable {
-    /// `StudioDocument.Object.source`: where it is in the file's tree.
-    var shapePath: [Int]
-    /// How it was when opened (or at the last save): equal = unchanged.
-    var object: CanvasObject
-    /// The line color as it is in the file (Cutline's goes through CMYK and rounds).
-    var line: StudioDocument.Color
-}
-
-/// The opened .studio3: the bytes (the template for writing) and where each object came from.
-nonisolated struct StudioOrigin: Sendable {
-    var payload: Data
-    var url: URL?
-    var pieces: [CanvasObject.ID: StudioPiece]
-    var images: Set<String>
-    /// Already chose to write to the .studio3: the next ⌘S write directly.
-    var confirmed = false
-    var copyInTrash = false
-}
-
 extension Document {
     struct StudioWriting {
         var payload: Data

@@ -12,6 +12,7 @@ Cutting for Silhouette machines on the Mac — a lean, free, native app for peop
 - **Cut by line color:** each stroke color gets its own material, force, speed, blade and passes.
 - Sends to the machine over USB or Bluetooth, and remembers the settings in the file and in the app.
 - macOS 26 interface (Liquid Glass), with Illustrator-style panels: Color (CMYK), Stroke, Pathfinder, Layers, Character and Paragraph.
+- Quick Look in the Finder: select a `.cutline` or `.studio3` file and press Space to see its page.
 
 ## Machines
 
