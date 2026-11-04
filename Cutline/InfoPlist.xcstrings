@@ -11,6 +11,12 @@
             "value" : "Cutline"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cutline"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -29,6 +35,12 @@
             "value" : "Cutline"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cutline"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -40,6 +52,12 @@
     "Cutline Document" : {
       "extractionState" : "manual",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documento de Cutline"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
@@ -57,6 +75,12 @@
             "value" : "Cutline uses Bluetooth to talk to your Silhouette cutter."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cutline usa Bluetooth para comunicarse con tu cortadora Silhouette."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
@@ -68,6 +92,12 @@
     "Silhouette Studio Document" : {
       "extractionState" : "manual",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documento de Silhouette Studio"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",

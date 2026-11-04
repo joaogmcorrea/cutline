@@ -35,6 +35,7 @@ struct MainWindow: View {
     @AppStorage("reguas") private var rulersOn = true
     @State private var importing = false
     @State private var tracingNow: ImageToTrace?
+    @State private var layeredNow: LayeredImage?
     /// File being dragged over the window.
     @State private var dropping = false
 
@@ -76,6 +77,9 @@ struct MainWindow: View {
             control.freeArea = newOne
             if !control.viewState.manual, canvasSize.width > 300, canvasSize.height > 300 { control.adjust() }
         }
+        .onChange(of: control.viewState.mm(CGPoint(x: control.freeArea.midX, y: control.freeArea.midY)), initial: true) { _, center in
+            doc.visibleCenter = center
+        }
         // The document name shows only on the tab.
         .toolbar(removing: .title)
         .toolbar { toolbarPanel }
@@ -85,6 +89,7 @@ struct MainWindow: View {
             if updated { sendWindowOpen = true }
         }
         .background { Color.clear.sheet(item: $tracingNow) { TraceWindow(doc: doc, origin: $0) } }
+        .background { Color.clear.sheet(item: $layeredNow) { LayeredImageWindow(doc: doc, origin: $0) } }
         .fileImporter(isPresented: $importing, allowedContentTypes: Import.kinds) { result in
             if case .success(let url) = result { openImported(url, ask: true) }
         }
@@ -185,7 +190,8 @@ struct MainWindow: View {
     }
 
     /// PDF, AI, SVG and EPS (Model/VectorImport.swift) → the paths go into the active layer, with a notice of what
-    /// was left out; any other image → Trace window, which first asks whether the image goes alone, with the outer
+    /// was left out; a Photoshop file with layers → each layer as its own image (Editor/LayeredImageWindow.swift);
+    /// any other image → Trace window, which first asks whether the image goes alone, with the outer
     /// contour or with the inner ones (`ask`; the Trace tool goes straight to the settings). The content decides:
     /// .ai and .svg are also "images" to macOS, and the Trace tool's panel accepts both.
     private func openImported(_ url: URL, ask: Bool = true, center: CGPoint? = nil) {
@@ -198,10 +204,19 @@ struct MainWindow: View {
         let kind = UTType(filenameExtension: url.pathExtension) ?? .data
         let vectorByName = [.pdf, Import.illustrator, .svg, Import.eps].contains { kind.conforms(to: $0) }
         guard VectorImporter.format(payload) != nil || vectorByName else {
-            guard var image = ImageToTrace(url: url) else { doc.notice = String(localized: "The image couldn’t be opened."); return }
-            image.ask = ask
-            image.center = center
-            tracingNow = image
+            let openImage = {
+                guard var image = ImageToTrace(url: url) else { doc.notice = String(localized: "The image couldn’t be opened."); return }
+                image.ask = ask
+                image.center = center
+                tracingNow = image
+            }
+            guard PSDImport.isPhotoshop(payload) else { return openImage() }
+            // Reading every layer takes a moment on big files: off the main thread. Flattened, it goes as one image.
+            Task {
+                let file = await Task.detached { PSDImport.read(payload) }.value
+                guard let file, !file.layers.isEmpty else { return openImage() }
+                layeredNow = LayeredImage(name: url.deletingPathExtension().lastPathComponent, file: file, center: center)
+            }
             return
         }
         do {

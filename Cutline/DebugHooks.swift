@@ -4,7 +4,8 @@
 //   CUTLINE_TEST_MODIFY=1 changes the document by itself; CUTLINE_TEST_SAVE=/x.cutline saves a copy;
 //   CUTLINE_TEST_IMPORT=/x.pdf imports; CUTLINE_TEST_PATHFINDER=divide…; CUTLINE_COLLAPSED=Color,Stroke;
 //   CUTLINE_TEST_DROP=/x.png does the same as dropping the file in the middle of the window;
-//   CUTLINE_TEST_IMAGE=image|outer|inners|inners-insert picks the answer to the imported-image question;
+//   CUTLINE_TEST_IMAGE=image|outer|inners|inners-insert picks the answer to the imported-image question (also the
+//   question of a Photoshop file with layers, which inserts right away);
 //   CUTLINE_TEST_TRACE=nodes,smoothing (0–100) changes the Trace settings;
 //   CUTLINE_TEST_HANDLE=1|option|shift|shift+option drags the selection's bottom-right corner (30 × 10 mm),
 //   like the mouse, with those modifiers;

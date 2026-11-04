@@ -219,15 +219,8 @@ struct TraceWindow: View {
 
     // MARK: Insert
 
-    /// The image in the frame (prints, doesn't cut); `key` is where its data lives in the document.
     private func imageObject(_ frame: CGRect, key: String) -> CanvasObject {
-        var image = doc.newObject(.rectangle(radius: 0), frame: frame)
-        image.image = ImageInShape(key: key, transform: Transform(
-            CGAffineTransform(scaleX: 1 / Double(origin.image.width), y: 1 / Double(origin.image.height))))
-        image.fill = nil
-        image.cutsLine = false
-        image.label = origin.name
-        return image
+        doc.imageObject(frame, key: key, pixels: CGSize(width: origin.image.width, height: origin.image.height), name: origin.name)
     }
 
     private func insert() {
@@ -235,16 +228,7 @@ struct TraceWindow: View {
         if resultParameters != parameters, let pixels { (result, resultParameters) = (Tracer.traceImage(pixels, parameters), parameters) }
         guard let result, !result.loops.isEmpty else { return }
         let frame = origin.frame(width: parameters.width), key = UUID().uuidString
-        var contour = doc.newObject(.shapePath([]), frame: .zero)
-        contour.setNodes(result.loops.map { loop in
-            Subpath(nodes: Tracer.smoothPoints(loop.map { CGPoint(x: $0.x + frame.minX, y: $0.y + frame.minY) }, parameters.smoothing),
-                       closed: true)
-        })
-        contour.fill = nil
-        contour.strokeColor = CMYK(c: 0, m: 100, y: 0, k: 0)
-        contour.cutsLine = true
-        contour.strokeWidth = 0
-        contour.label = String(localized: "\(origin.name) outline")
+        var contour = doc.outlineObject(result.loops, origin: frame.origin, smoothing: parameters.smoothing, name: origin.name)
         // Grouped: the image and the contour move and resize together.
         var image = imageObject(frame, key: key)
         let group = UUID()
@@ -289,8 +273,34 @@ private struct TracePreview: View {
     }
 }
 
+extension Document {
+    /// An image in the frame (prints, doesn't cut); `key` is where its data lives in the document.
+    func imageObject(_ frame: CGRect, key: String, pixels: CGSize, name: String) -> CanvasObject {
+        var image = newObject(.rectangle(radius: 0), frame: frame)
+        image.image = ImageInShape(key: key, transform: Transform(CGAffineTransform(scaleX: 1 / pixels.width, y: 1 / pixels.height)))
+        image.fill = nil
+        image.cutsLine = false
+        image.label = name
+        return image
+    }
+
+    /// A traced outline (loops in mm, from `origin`) as a 0 pt magenta cut line.
+    func outlineObject(_ loops: [[CGPoint]], origin: CGPoint, smoothing: Double, name: String) -> CanvasObject {
+        var contour = newObject(.shapePath([]), frame: .zero)
+        contour.setNodes(loops.map { loop in
+            Subpath(nodes: Tracer.smoothPoints(loop.map { CGPoint(x: $0.x + origin.x, y: $0.y + origin.y) }, smoothing), closed: true)
+        })
+        contour.fill = nil
+        contour.strokeColor = CMYK(c: 0, m: 100, y: 0, k: 0)
+        contour.cutsLine = true
+        contour.strokeWidth = 0
+        contour.label = String(localized: "\(name) outline")
+        return contour
+    }
+}
+
 /// One of the choices for the imported image: the preview of the result, the name and what it does.
-private struct ImageOption<Preview: View>: View {
+struct ImageOption<Preview: View>: View {
     let title: LocalizedStringKey
     let detail: LocalizedStringKey
     /// Chosen with Return (highlighted).
@@ -330,10 +340,11 @@ private struct ImageOption<Preview: View>: View {
 }
 
 extension ImageToTrace {
-    /// PNG, JPEG, HEIC, TIFF… (whatever ImageIO opens).
+    /// PNG, JPEG, HEIC, TIFF… (whatever ImageIO opens). A flattened Photoshop file goes into the document as a PNG.
     init?(url: URL) {
         guard let payload = try? Data(contentsOf: url), let font = CGImageSourceCreateWithData(payload as CFData, nil),
               let image = CGImageSourceCreateImageAtIndex(font, 0, nil) else { return nil }
-        self.init(name: url.deletingPathExtension().lastPathComponent, payload: payload, image: image)
+        let stored = PSDImport.isPhotoshop(payload) ? PSDImport.png(image) ?? payload : payload
+        self.init(name: url.deletingPathExtension().lastPathComponent, payload: stored, image: image)
     }
 }

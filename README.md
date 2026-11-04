@@ -2,13 +2,15 @@
 
 Cutting for Silhouette machines on the Mac — a lean, free, native app for people who just want to draw or import something and send it to cut.
 
-*English and Portuguese UI.*
+*English, Portuguese and Spanish UI.*
 
 **[⬇ Download Cutline for Mac (.dmg)](https://github.com/joaogmcorrea/cutline/releases/latest/download/Cutline.dmg)** — macOS 26 (Tahoe) or newer. See [Install](#install) for the first launch.
 
 ## What it does
 
 - Draws (Bézier pen, rectangle, ellipse, star, text) and imports PDF, AI, SVG and EPS, images (it traces the outline) and Silhouette Studio `.studio3` files.
+- Imports Photoshop files layer by layer: each layer comes in as its own image, in its place, and can get its own cut outline.
+- Pastes what you copy in Illustrator. The stroke sets the cut, like when you import a file.
 - **Cut by line color:** each stroke color gets its own material, force, speed, blade and passes.
 - Sends to the machine over USB or Bluetooth, and remembers the settings in the file and in the app.
 - macOS 26 interface (Liquid Glass), with Illustrator-style panels: Color (CMYK), Stroke, Pathfinder, Layers, Character and Paragraph.

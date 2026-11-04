@@ -188,7 +188,7 @@ struct StartView: View {
                     StartCard(icon: .registrationMarks, title: "Print & Cut", detail: "A4 with the registration marks") {
                         StartScreen.newDocument(.printAndCut)
                     }
-                    StartCard(icon: .toolTrace, title: "Trace an image", detail: "PNG or JPEG → cut line") { pick([.image]) }
+                    StartCard(icon: .toolTrace, title: "Trace an image", detail: "PNG, JPEG or PSD → cut line") { pick([.image]) }
                     StartCard(icon: .openDocument, title: "Silhouette Studio file", detail: "Opens a .studio3") { pick([.studio3]) }
                 }
                 heading("RECENT").padding(.top, 32)
