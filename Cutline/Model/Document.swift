@@ -523,6 +523,11 @@ nonisolated final class Document: @unchecked Sendable {
     var sendRequest = 0
     /// Top-left corner of the test cut on the sheet, in mm (Model/Cutting.swift); doesn't go into the file.
     var testPosition = CGPoint(x: 25, y: 25)
+    /// Side of the test cut's square, in mm; doesn't go into the file.
+    var testSide = TestCut.defaultSide
+    /// The Send window's "Test Shape" checkbox: shows the test on the sheet and lets it be cut. Starts off
+    /// each time the document opens; doesn't go into the file.
+    var testShape = false
     /// Center of what the window shows, in page mm (MainWindow keeps it): where vectors pasted from other apps go.
     @ObservationIgnored var visibleCenter: CGPoint?
     /// Opened from a .studio3: the window detaches the document from that file (see MainWindow).

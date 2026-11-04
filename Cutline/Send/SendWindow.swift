@@ -48,6 +48,16 @@ struct SendWindow: View {
                 .padding(20)
             }
         }
+        .overlay(alignment: .topLeading) {
+            Button("Close", image: .close) { close() }
+                .labelStyle(.iconOnly)
+                .buttonStyle(.glass)
+                .buttonBorderShape(.circle)
+                .controlSize(.large)
+                .keyboardShortcut(.cancelAction)
+                .help("Close")
+                .padding(12)
+        }
         .safeAreaInset(edge: .bottom, spacing: 0) { footer(lines, current: current?.color) }
         .frame(width: 1000, height: 680)
         .task {
@@ -56,8 +66,16 @@ struct SendWindow: View {
             #if DEBUG
             // CUTLINE_TEST_SEND=1 (only with the simulated machine): sends by itself, without pinning the settings in the file.
             if DebugHooks.sendForTest { machine.enqueue(doc.job(name: "Teste")) }
-            // CUTLINE_TEST_TEST_CUT=x,y (with CUTLINE_SIMULATE): puts the test cut at x,y mm and sends it.
-            if let target = DebugHooks.testCut, let color = doc.cutLines.first?.color {
+            // CUTLINE_TEST_TEST_SHAPE=x,y[,side]: turns on the test shape at x,y mm (and that size).
+            if let (target, side) = DebugHooks.testShape {
+                doc.testShape = true
+                if let side { doc.resizeTest(to: side) }
+                doc.moveTest(to: target)
+            }
+            // CUTLINE_TEST_TEST_CUT=x,y[,side] (with CUTLINE_SIMULATE): the same, and sends the test cut.
+            if let (target, side) = DebugHooks.testCut, let color = doc.cutLines.first?.color {
+                doc.testShape = true
+                if let side { doc.resizeTest(to: side) }
                 doc.moveTest(to: target)
                 machine.enqueue(doc.testJob(color))
             }
@@ -313,15 +331,15 @@ struct SendWindow: View {
                 Text(verbatim: String(localized: "\(layers.count) colors") + " · ≈ " + tempo(seconds))
                     .foregroundStyle(.secondary)
             }
-            Button("Close") { close() }
-                .keyboardShortcut(.cancelAction)
+            testControls
             Button("Test Cut") {
                 if let current { machine.enqueue(doc.testJob(current)) }
             }
             .controlSize(.large)
-            .disabled(current == nil || machine.studioOpen)
-            .help(current.map { "Cuts only the square with the triangle, where it is marked on the sheet (drag to move it), with the settings of \(Material.show(doc.config($0).material))" as LocalizedStringKey }
-                  ?? "Cuts only the square with the triangle, where it is marked on the sheet")
+            .disabled(current == nil || machine.studioOpen || !doc.testShape)
+            .help(!doc.testShape ? "Turn on Test Shape to place the test on the sheet" as LocalizedStringKey
+                  : current.map { "Cuts only the square with the C, where it is marked on the sheet, with the settings of \(Material.show(doc.config($0).material))" as LocalizedStringKey }
+                  ?? "Cuts only the square with the C, where it is marked on the sheet")
             Button {
                 // Goes into the queue: if the machine is busy, it cuts when the previous one is done.
                 doc.pinSendSettings()
@@ -342,6 +360,28 @@ struct SendWindow: View {
         .padding(.vertical, 14)
         .background(.bar)
         .overlay(alignment: .top) { Divider() }
+    }
+
+    /// Test Shape on/off and its size (the corner handle on the sheet does the same).
+    private var testControls: some View {
+        HStack(spacing: 8) {
+            Toggle("Test Shape", isOn: $doc.testShape)
+                .toggleStyle(.checkbox)
+                .help("Shows the test cut on the sheet: drag it to move it, or its corner to resize it")
+            HStack(spacing: 8) {
+                // Whole mm, without a step (a step draws a tick for each mm).
+                Slider(value: Binding(get: { doc.testSide }, set: { doc.resizeTest(to: $0.rounded()) }), in: TestCut.sides)
+                    .controlSize(.small)
+                    .frame(width: 90)
+                    .help("Size of the test cut")
+                Text(verbatim: LengthUnit.current.text(doc.testSide))
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+                    .frame(minWidth: 44, alignment: .leading)
+            }
+            .disabled(!doc.testShape)
+            .opacity(doc.testShape ? 1 : 0.45)
+        }
     }
 
     @ViewBuilder
@@ -409,13 +449,21 @@ struct SendWindow: View {
 }
 
 /// A4 sheet with the cuts: the chosen color highlighted; the disabled ones disappear. With Print & Cut, with the marks.
-/// The test cut shows dashed and can be dragged anywhere on the sheet.
+/// With Test Shape on, the test cut shows dashed: dragging it moves it, dragging its corner handle resizes it.
 struct SheetPreview: View {
     let doc: Document
     let lines: [CutLine]
     let highlight: CMYK?
-    /// Where the test cut was when the drag started (mm).
-    @State private var testCutAtLaunch: CGPoint?
+    /// What the drag started on: moving the test (from that corner, in mm) or resizing it.
+    @State private var testDrag: TestDrag?
+
+    private enum TestDrag {
+        case move(CGPoint)
+        case resize
+    }
+
+    /// Size of the corner handle, in points.
+    private static let handle = 6.0
 
     /// Page mm → preview points.
     private static func transform(_ size: CGSize) -> CGAffineTransform {
@@ -428,27 +476,55 @@ struct SheetPreview: View {
 
     var body: some View {
         GeometryReader { geometry in
+            let t = Self.transform(geometry.size)
             sheet
-                .gesture(dragTest(Self.transform(geometry.size)))
-                .help("Drag the test cut (the dashed square) to where you want to test on the sheet")
+                .overlay(alignment: .topLeading) {
+                    // Over the corner handle the pointer shows it resizes.
+                    if doc.testShape {
+                        let corner = CGPoint(x: doc.testBox.maxX, y: doc.testBox.maxY).applying(t)
+                        Color.clear
+                            .frame(width: 3 * Self.handle, height: 3 * Self.handle)
+                            .contentShape(Rectangle())
+                            .pointerStyle(.frameResize(position: .bottomTrailing))
+                            .offset(x: corner.x - 1.5 * Self.handle, y: corner.y - 1.5 * Self.handle)
+                    }
+                }
+                .gesture(dragTest(t))
+                .help(doc.testShape ? Text("Drag the test cut (the dashed square) to where you want to test on the sheet, or its corner to resize it")
+                      : Text(verbatim: ""))
         }
     }
 
-    /// Drag the test cut; clicking elsewhere on the sheet moves it there.
+    /// Drag the test cut or its corner; clicking elsewhere on the sheet moves it there. Nothing with Test Shape off.
     private func dragTest(_ t: CGAffineTransform) -> some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { gesture in
+                guard doc.testShape else { return }
                 let toMM = t.inverted()
-                if testCutAtLaunch == nil {
+                let box = doc.testBox
+                if testDrag == nil {
                     let p = gesture.startLocation.applying(toMM)
-                    let box = CGRect(origin: doc.testPosition, size: CGSize(width: TestCut.side, height: TestCut.side))
-                    testCutAtLaunch = box.insetBy(dx: -3, dy: -3).contains(p)
-                        ? doc.testPosition : CGPoint(x: p.x - TestCut.side / 2, y: p.y - TestCut.side / 2)
+                    let grab = 1.5 * Self.handle / t.a
+                    if abs(p.x - box.maxX) <= grab && abs(p.y - box.maxY) <= grab {
+                        testDrag = .resize
+                    } else {
+                        testDrag = .move(box.insetBy(dx: -3, dy: -3).contains(p)
+                                         ? box.origin : CGPoint(x: p.x - box.width / 2, y: p.y - box.height / 2))
+                    }
                 }
-                guard let start = testCutAtLaunch else { return }
-                doc.moveTest(to: CGPoint(x: start.x + gesture.translation.width / t.a, y: start.y + gesture.translation.height / t.d))
+                switch testDrag {
+                case .move(let start):
+                    doc.moveTest(to: CGPoint(x: start.x + gesture.translation.width / t.a, y: start.y + gesture.translation.height / t.d))
+                case .resize:
+                    // Square from the top-left corner to the pointer, in whole mm (like the slider), without
+                    // pushing past the area.
+                    let p = gesture.location.applying(toMM), area = doc.testAreaOf
+                    doc.resizeTest(to: min(max(p.x - box.minX, p.y - box.minY).rounded(), area.maxX - box.minX, area.maxY - box.minY))
+                case nil:
+                    break
+                }
             }
-            .onEnded { _ in testCutAtLaunch = nil }
+            .onEnded { _ in testDrag = nil }
     }
 
     private var sheet: some View {
@@ -474,9 +550,16 @@ struct SheetPreview: View {
                                style: StrokeStyle(lineWidth: strong ? 1.6 : 0.8, dash: dashed))
                 }
             }
+            guard doc.testShape else { return }
             var test = Path()
-            for shapePath in TestCut.paths(in: doc.testPosition) { test.addLines(shapePath.map { $0.applying(t) }) }
+            for shapePath in TestCut.paths(in: doc.testPosition, side: doc.testSide) { test.addLines(shapePath.map { $0.applying(t) }) }
             ctx.stroke(test, with: .color(.accentColor), style: StrokeStyle(lineWidth: 1.2, dash: [3, 2]))
+            // Corner handle (resizes), like the canvas's selection handles.
+            let h = Self.handle
+            let corner = CGPoint(x: doc.testBox.maxX, y: doc.testBox.maxY).applying(t)
+            let knob = Path(CGRect(x: corner.x - h / 2, y: corner.y - h / 2, width: h, height: h))
+            ctx.fill(knob, with: .color(.white))
+            ctx.stroke(knob, with: .color(.accentColor), lineWidth: 1)
         }
     }
 }

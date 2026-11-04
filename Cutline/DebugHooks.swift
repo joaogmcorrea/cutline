@@ -20,7 +20,9 @@
 //   CUTLINE_TEST_START=blank|printAndCut picks that way to start 1 s after it opens;
 //   CUTLINE_MARKS=1 turns on the Print & Cut marks; CUTLINE_TEST_PRINT=/x.pdf writes the print to a PDF;
 //   CUTLINE_TEST_SEND=1 (with CUTLINE_SIMULATE) sends by itself when the Send window opens;
-//   CUTLINE_TEST_TEST_CUT=x,y (with CUTLINE_SIMULATE) sends the test cut at x,y mm when the Send window opens;
+//   CUTLINE_TEST_TEST_CUT=x,y[,side] (with CUTLINE_SIMULATE) sends the test cut at x,y mm when the Send window opens;
+//   CUTLINE_TEST_TEST_SHAPE=x,y[,side] only turns on the test shape there (side in mm);
+//   CUTLINE_TEST_SEND_PLAIN=1 opens the Send window's content in a plain hidden window (a sheet may take the menu bar);
 //   CUTLINE_TEST_IGNORE_STUDIO=1 pretends Silhouette Studio is closed;
 //   CUTLINE_TEST_MAT=mini_6x8 picks the cutting mat on open (CuttingMat values);
 //   CUTLINE_TEST_MARKS=fail (with CUTLINE_SIMULATE) makes reading the marks fail;
@@ -105,12 +107,46 @@ enum DebugHooks {
         return environment["CUTLINE_TEST_SEND"] != nil && environment["CUTLINE_SIMULATE"] != nil
     }
 
-    /// CUTLINE_TEST_TEST_CUT=x,y with CUTLINE_SIMULATE: the Send window puts the test cut at x,y mm and sends it.
-    static var testCut: CGPoint? {
+    /// CUTLINE_TEST_SEND_PLAIN=1 (or =/x.png): the Send window's content opens in a plain window instead of a sheet. In a
+    /// hidden copy, a sheet can take over the menu bar; this window goes straight below the desktop, off the screens, and
+    /// never becomes key (`screencapture -l` finds it by the title "CutlineTestSend"). With a .png path, it also draws
+    /// itself into that file 2.5 s later (no screen recording permission needed; glass doesn't show in it).
+    static var openSendPlain: Bool { ProcessInfo.processInfo.environment["CUTLINE_TEST_SEND_PLAIN"] != nil }
+
+    static func showPlain(_ view: some View, title: String, size: CGSize) {
+        let nsWindow = NSWindow(contentRect: NSRect(x: -30000, y: 0, width: size.width, height: size.height),
+                                styleMask: [.borderless], backing: .buffered, defer: false)
+        nsWindow.title = title
+        nsWindow.isReleasedWhenClosed = false
+        nsWindow.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.desktopWindow)) - 1)
+        nsWindow.contentView = NSHostingView(rootView: view)
+        nsWindow.orderFront(nil)
+        plainWindows.append(nsWindow)
+        guard let outputPath = ProcessInfo.processInfo.environment["CUTLINE_TEST_SEND_PLAIN"], outputPath.hasSuffix(".png") else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+            guard let view = nsWindow.contentView, let image = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }
+            view.cacheDisplay(in: view.bounds, to: image)
+            try? image.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: outputPath))
+        }
+    }
+
+    private static var plainWindows: [NSWindow] = []
+
+    /// CUTLINE_TEST_TEST_CUT=x,y[,side] with CUTLINE_SIMULATE: the Send window turns on the test shape, puts it at
+    /// x,y mm (with that side, in mm) and sends it.
+    static var testCut: (CGPoint, Double?)? {
         let environment = ProcessInfo.processInfo.environment
-        guard environment["CUTLINE_SIMULATE"] != nil, let value = environment["CUTLINE_TEST_TEST_CUT"] else { return nil }
-        let n = value.split(separator: ",").compactMap { Double($0) }
-        return n.count == 2 ? CGPoint(x: n[0], y: n[1]) : nil
+        guard environment["CUTLINE_SIMULATE"] != nil else { return nil }
+        return testShapeValue(environment["CUTLINE_TEST_TEST_CUT"])
+    }
+
+    /// CUTLINE_TEST_TEST_SHAPE=x,y[,side]: the Send window turns on the test shape at x,y mm (with that side, in mm),
+    /// without sending it.
+    static var testShape: (CGPoint, Double?)? { testShapeValue(ProcessInfo.processInfo.environment["CUTLINE_TEST_TEST_SHAPE"]) }
+
+    private static func testShapeValue(_ value: String?) -> (CGPoint, Double?)? {
+        guard let n = value?.split(separator: ",").compactMap({ Double($0) }), n.count == 2 || n.count == 3 else { return nil }
+        return (CGPoint(x: n[0], y: n[1]), n.count == 3 ? n[2] : nil)
     }
 
     /// CUTLINE_TEST_MODIFY=1 moves the first object 1 mm right after opening (registering the undo),

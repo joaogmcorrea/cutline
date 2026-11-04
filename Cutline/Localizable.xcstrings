@@ -3040,34 +3040,34 @@
         }
       }
     },
-    "Cuts only the square with the triangle, where it is marked on the sheet" : {
+    "Cuts only the square with the C, where it is marked on the sheet" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Corta solo el cuadrado con el triángulo, en el lugar marcado en la hoja"
+            "value" : "Corta solo el cuadrado con la C, en el lugar marcado en la hoja"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Corta só o quadrado com o triângulo, no lugar marcado na folha"
+            "value" : "Corta só o quadrado com o C, no lugar marcado na folha"
           }
         }
       }
     },
-    "Cuts only the square with the triangle, where it is marked on the sheet (drag to move it), with the settings of %@" : {
+    "Cuts only the square with the C, where it is marked on the sheet, with the settings of %@" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Corta solo el cuadrado con el triángulo, en el lugar marcado en la hoja (arrástralo para moverlo), con los ajustes de %@"
+            "value" : "Corta solo el cuadrado con la C, en el lugar marcado en la hoja, con los ajustes de %@"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Corta só o quadrado com o triângulo, no lugar marcado na folha (arraste para mudar), com os ajustes de %@"
+            "value" : "Corta só o quadrado com o C, no lugar marcado na folha, com os ajustes de %@"
           }
         }
       }
@@ -3440,18 +3440,18 @@
         }
       }
     },
-    "Drag the test cut (the dashed square) to where you want to test on the sheet" : {
+    "Drag the test cut (the dashed square) to where you want to test on the sheet, or its corner to resize it" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Arrastra la prueba de corte (el cuadrado discontinuo) a donde quieras probar en la hoja"
+            "value" : "Arrastra la prueba de corte (el cuadrado discontinuo) a donde quieras probar en la hoja, o por la esquina para cambiar el tamaño"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Arraste o teste de corte (o quadrado tracejado) para onde quiser testar na folha"
+            "value" : "Arraste o teste de corte (o quadrado tracejado) para onde quiser testar na folha, ou pelo canto para mudar o tamanho"
           }
         }
       }
@@ -7607,6 +7607,22 @@
         }
       }
     },
+    "Shows the test cut on the sheet: drag it to move it, or its corner to resize it" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra la prueba de corte en la hoja: arrástrala para moverla, o por la esquina para cambiar el tamaño"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra o teste de corte na folha: arraste para mudar de lugar, ou pelo canto para mudar o tamanho"
+          }
+        }
+      }
+    },
     "Side" : {
       "localizations" : {
         "es" : {
@@ -7699,6 +7715,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Corpo"
+          }
+        }
+      }
+    },
+    "Size of the test cut" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamaño de la prueba de corte"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamanho do teste de corte"
           }
         }
       }
@@ -8132,6 +8164,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Testar corte"
+          }
+        }
+      }
+    },
+    "Test Shape" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forma de prueba"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forma de teste"
           }
         }
       }
@@ -8957,6 +9005,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tentar primeiro"
+          }
+        }
+      }
+    },
+    "Turn on Test Shape to place the test on the sheet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activa Forma de prueba para poner la prueba en la hoja"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ligue Forma de teste para pôr o teste na folha"
           }
         }
       }

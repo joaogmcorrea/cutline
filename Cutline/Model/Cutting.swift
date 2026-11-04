@@ -177,17 +177,49 @@ extension Document {
 
 // MARK: - Test cut
 
-/// Test cut (like Silhouette Studio's): a square with a triangle inside, at the spot chosen in the
-/// Send window's preview and with one color's settings, to check the blade before cutting everything.
+/// Test cut: a square with a C (for Cutline) inside, at the spot chosen in the Send window's preview, in the size
+/// chosen there, and with one color's settings, to check the blade before cutting everything.
 nonisolated enum TestCut {
-    static let side = 10.0
+    /// Side of the square, in mm.
+    static let defaultSide = 10.0
+    static let sides = 5.0...30.0
 
-    /// In page mm: the inner triangle first and the square last (the piece doesn't come loose earlier).
-    static func paths(in p: CGPoint) -> [[CGPoint]] {
-        let l = side, m = 2.0
-        let triangle = [CGPoint(x: p.x + l / 2, y: p.y + m), CGPoint(x: p.x + l - m, y: p.y + l - m),
-                         CGPoint(x: p.x + m, y: p.y + l - m), CGPoint(x: p.x + l / 2, y: p.y + m)]
-        return [triangle, TestShapes.square(x: p.x, y: p.y, side: l)]
+    /// In page mm: the inner C first and the square last (the piece doesn't come loose earlier).
+    static func paths(in p: CGPoint, side: Double) -> [[CGPoint]] {
+        [letterC(center: CGPoint(x: p.x + side / 2, y: p.y + side / 2), side: side),
+         TestShapes.square(x: p.x, y: p.y, side: side)]
+    }
+
+    /// A closed C with round ends, open to the right, in the middle 60% of the square.
+    private static func letterC(center c: CGPoint, side: Double) -> [CGPoint] {
+        let outer = 0.3 * side, weight = 0.15 * side, inner = outer - weight, middle = outer - weight / 2
+        let opening = 45.0 * .pi / 180, steps = 72
+        let direction = { (a: Double) in CGPoint(x: cos(a), y: sin(a)) }
+        let point = { (center: CGPoint, r: Double, d: CGPoint) in CGPoint(x: center.x + r * d.x, y: center.y + r * d.y) }
+        /// From angle a to angle b (y points down, so growing angles turn clockwise on the sheet).
+        let arc = { (r: Double, a: Double, b: Double) -> [CGPoint] in
+            let n = max(2, Int((abs(b - a) / (2 * .pi) * Double(steps)).rounded(.up)))
+            return (0...n).map { point(c, r, direction(a + (b - a) * Double($0) / Double(n))) }
+        }
+        /// Half circle joining the outer and inner arcs at angle a, bulging toward the opening (sign).
+        let end = { (a: Double, sign: Double) -> [CGPoint] in
+            let capCenter = point(c, middle, direction(a)), d = direction(a), t = CGPoint(x: -d.y * sign, y: d.x * sign)
+            return (1..<(steps / 4)).map {
+                let b = Double($0) / Double(steps / 4) * .pi
+                let along = sign > 0 ? cos(b) : -cos(b)
+                return CGPoint(x: capCenter.x + weight / 2 * (along * d.x + sin(b) * t.x),
+                               y: capCenter.y + weight / 2 * (along * d.y + sin(b) * t.y))
+            }
+        }
+        let start = opening, stop = 2 * .pi - opening
+        var path = arc(outer, start, stop)
+        path += end(stop, 1)
+        path += arc(inner, stop, start)
+        path += end(start, -1)
+        path.append(path[0])
+        // The opening makes the C narrower on the right: centered by its own width, it sits in the middle of the square.
+        let xs = path.map(\.x), shift = c.x - (xs.min()! + xs.max()!) / 2
+        return path.map { CGPoint(x: $0.x + shift, y: $0.y) }
     }
 }
 
@@ -195,10 +227,19 @@ extension Document {
     /// Where the test can go: between the marks with Print & Cut (the rest isn't cut); otherwise, on the page.
     var testAreaOf: CGRect { marks ? marksConfig.area : CGRect(origin: .zero, size: Self.page) }
 
+    /// The test's square on the sheet, in mm.
+    var testBox: CGRect { CGRect(origin: testPosition, size: CGSize(width: testSide, height: testSide)) }
+
     /// Puts the test at a spot on the sheet (without going past the area).
     func moveTest(to p: CGPoint) {
-        let a = testAreaOf, l = TestCut.side
+        let a = testAreaOf, l = testSide
         testPosition = CGPoint(x: min(max(p.x, a.minX), a.maxX - l), y: min(max(p.y, a.minY), a.maxY - l))
+    }
+
+    /// Changes the test's size (within `TestCut.sides`), keeping the top-left corner where it fits.
+    func resizeTest(to side: Double) {
+        testSide = min(max(side, TestCut.sides.lowerBound), TestCut.sides.upperBound)
+        moveTest(to: testPosition)
     }
 
     /// Just the test, with the color's settings; with Print & Cut the machine reads the marks first, as in the real cut.
@@ -206,7 +247,7 @@ extension Document {
         moveTest(to: testPosition)
         let config = config(color)
         let layer = CutLayer(name: String(localized: "Test cut (\(Material.show(config.material)))"),
-                              paths: TestCut.paths(in: testPosition), settings: config.settings)
+                              paths: TestCut.paths(in: testPosition, side: testSide), settings: config.settings)
         return Job(name: String(localized: "Test cut"), origin: ObjectIdentifier(self), layers: [layer],
                         logLines: registrationToSend, withMat: withMat, base: cuttingMatSetting)
     }

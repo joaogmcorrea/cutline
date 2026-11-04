@@ -152,6 +152,9 @@ struct MainWindow: View {
             DebugHooks.scheduleSnapshot()
             DebugHooks.dumpMenus()
             if DebugHooks.openSendWindow { sendWindowOpen = true }
+            if DebugHooks.openSendPlain {
+                DebugHooks.showPlain(SendWindow(doc: doc).environment(machine), title: "CutlineTestSend", size: CGSize(width: 1000, height: 680))
+            }
             if let kind = DebugHooks.openReport { openWindowAction(value: kind) }
         }
         #endif
