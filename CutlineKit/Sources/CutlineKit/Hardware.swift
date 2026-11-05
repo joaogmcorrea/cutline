@@ -65,9 +65,20 @@ public struct Hardware: Sendable, Hashable {
     static let cameo3On: Set<UInt16> = cameo4Line.union([idCameo3])
     static let twoTools: Set<UInt16> = cameo3On.subtracting([idPortrait3, idPortrait4])
 
+    /// Heat Pen: Silhouette Studio's table lists it for curio2, cameo5_base and portrait4 (the Pro MK II is a guess).
+    static let heatPenModels: Set<UInt16> = [
+        idPortrait4, idCameo5, idCameo5Plus, idCameoProMkII, idCameo5Alpha, idCameo5AlphaPlus,
+    ]
+    /// Emboss tool: the Cameo 5 line (its tool detection lists it; the Pro MK II is a guess).
+    static let embossModels: Set<UInt16> = [idCameo5, idCameo5Plus, idCameoProMkII, idCameo5Alpha, idCameo5AlphaPlus]
+
     var isCameo4Line: Bool { productID.map(Self.cameo4Line.contains) ?? false }
     var isCameo3On: Bool { productID.map(Self.cameo3On.contains) ?? false }
-    var hasTwoTools: Bool { productID.map(Self.twoTools.contains) ?? false }
+    public var hasTwoTools: Bool { productID.map(Self.twoTools.contains) ?? false }
+    public var hasHeatPen: Bool { productID.map(Self.heatPenModels.contains) ?? false }
+    public var hasEmboss: Bool { productID.map(Self.embossModels.contains) ?? false }
+    /// The machine says which tools are in the holders (ESC NAK, `Cutter.toolSetup()`): Cameo 4 onward.
+    public var detectsTools: Bool { isCameo4Line }
     var isCameo3: Bool { productID == Self.idCameo3 }
 
     // MARK: Model table

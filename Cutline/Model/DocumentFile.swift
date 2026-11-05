@@ -16,7 +16,7 @@ nonisolated extension UTType {
 nonisolated struct DocumentFile: Codable, Sendable {
     /// The keys stored on disk keep the names of the 1.0 format (Portuguese), so older files still open.
     enum CodingKeys: String, CodingKey {
-        case version = "versao", objects = "objetos", cuts = "cortes", cutOrder = "ordemCortes", images = "imagens", layers = "camadas", activeLayer = "camadaAtiva", recent = "recentes", guides = "guias", marks = "marcas", marksConfig = "configMarcas", withMat = "comBase", cuttingMatSetting = "baseDeCorte"
+        case version = "versao", objects = "objetos", cuts = "cortes", cutOrder = "ordemCortes", images = "imagens", layers = "camadas", activeLayer = "camadaAtiva", recent = "recentes", guides = "guias", marks = "marcas", marksConfig = "configMarcas", withMat = "comBase", cuttingMatSetting = "baseDeCorte", bleed = "sangria"
     }
 
     static let currentVersion = 1
@@ -48,6 +48,8 @@ nonisolated struct DocumentFile: Codable, Sendable {
     var marksConfig = MarksConfig.defaultValue
     var withMat = true
     var cuttingMatSetting: CuttingMat?
+    /// Print bleed; nil when it is the default (off, 1 mm), so files that don't use it stay as before.
+    var bleed: PrintBleed?
 
     static func read(_ payload: Data) throws -> DocumentFile {
         let file = try PropertyListDecoder().decode(DocumentFile.self, from: payload)
@@ -79,6 +81,7 @@ extension DocumentFile {
         marksConfig = try c.decodeIfPresent(MarksConfig.self, forKey: .marksConfig) ?? .defaultValue
         withMat = try c.decodeIfPresent(Bool.self, forKey: .withMat) ?? true
         cuttingMatSetting = try c.decodeIfPresent(CuttingMat.self, forKey: .cuttingMatSetting)
+        bleed = try c.decodeIfPresent(PrintBleed.self, forKey: .bleed)
     }
 }
 
@@ -143,7 +146,7 @@ nonisolated extension Document: ReferenceFileDocument {
                       cuts: Dictionary(file.cuts.map { ($0.color, $0.config) }, uniquingKeysWith: { _, last in last }),
                       cutOrder: file.cutOrder, images: file.images, layers: file.layers,
                       activeLayer: file.activeLayer, recent: file.recent, guides: file.guides,
-                      marks: file.marks, marksConfig: file.marksConfig, withMat: file.withMat,
+                      marks: file.marks, marksConfig: file.marksConfig, bleed: file.bleed ?? PrintBleed(), withMat: file.withMat,
                       cuttingMatSetting: .some(file.cuttingMatSetting))
         }
     }
@@ -156,7 +159,8 @@ nonisolated extension Document: ReferenceFileDocument {
         return try DocumentFile(objects: objects.filter { !$0.emptyText }, cuts: cuts.map { DocumentFile.CutByColor(color: $0.key, config: $0.value) },
                            cutOrder: cutOrder, images: images.filter { used.contains($0.key) },
                            layers: layers, activeLayer: activeLayer, recent: recent, guides: guides, marks: marks,
-                           marksConfig: marksConfig, withMat: withMat, cuttingMatSetting: cuttingMatSetting).payload()
+                           marksConfig: marksConfig, withMat: withMat, cuttingMatSetting: cuttingMatSetting,
+                           bleed: bleed == PrintBleed() ? nil : bleed).payload()
     }
 
     func fileWrapper(snapshot: Data, configuration: WriteConfiguration) throws -> FileWrapper {

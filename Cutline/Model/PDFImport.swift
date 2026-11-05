@@ -2,6 +2,9 @@
 // objects, at the same position on the page, with the common painting rule (Model/VectorImport.swift); the file's
 // CMYK colors go in as they are. The PDF's texts and images don't go in (count and report them). Read with
 // CGPDFScanner (the page content's operators).
+// Cutline has no clipping masks and paints every fill even-odd (like Silhouette Studio), so the import bakes both into
+// the geometry (Model/ImportClipping.swift): what a clipping path (W/W* n, a form's /BBox) hides is cut away from the
+// paths, and a nonzero fill (f, B) whose overlaps even-odd would paint as holes becomes its outline.
 import CoreGraphics
 import Foundation
 
@@ -25,11 +28,15 @@ nonisolated enum PDFImport {
             var strokeColor: CMYK? = CMYK(c: 0, m: 0, y: 0, k: 100)
             var fill: CMYK? = CMYK(c: 0, m: 0, y: 0, k: 100)
             var strokeWidth = 1.0
+            /// What the clipping paths leave visible, in page mm; nil = nothing clipped.
+            var clip: ImportClipping.Region?
         }
 
         var state = ConnectionState()
         var stack: [ConnectionState] = []
         var shapePath = CGMutablePath()
+        /// W or W* seen: the current path also clips, from the next painting operator on (usually n).
+        var pendingClip: CGPathFillRule?
         var objects: [CanvasObject] = []
         var texts = 0
         var images = 0
@@ -58,18 +65,28 @@ nonisolated enum PDFImport {
 
         // MARK: Painting
 
-        func paintPath(strokeColor: Bool, fill: Bool, close: Bool = false) {
+        /// A painting operator (n paints nothing). `evenOdd`: the fill's rule (f*, B*, b*); the others are nonzero.
+        func paintPath(strokeColor: Bool, fill: Bool, evenOdd: Bool = false, close: Bool = false) {
             if close { shapePath.closeSubpath() }
-            defer { shapePath = CGMutablePath() }
-            guard !shapePath.isEmpty, strokeColor || fill else { return }
-            let t = state.ctm.concatenating(toPage)
-            guard let page = shapePath.copy(using: [t]) else { return }
-            // Width at the page's scale (pt).
-            let scale = sqrt(abs(state.ctm.a * state.ctm.d - state.ctm.b * state.ctm.c))
-            if let object = VectorImporter.object(page, strokeColor: strokeColor ? state.strokeColor : nil, strokeWidth: state.strokeWidth * scale,
-                                                 fill: fill ? state.fill : nil) {
-                objects.append(object)
+            defer {
+                shapePath = CGMutablePath()
+                pendingClip = nil
             }
+            guard !shapePath.isEmpty, let page = shapePath.copy(using: [state.ctm.concatenating(toPage)]) else { return }
+            if strokeColor || fill {
+                // Width at the page's scale (pt).
+                let scale = sqrt(abs(state.ctm.a * state.ctm.d - state.ctm.b * state.ctm.c))
+                objects += ImportClipping.objects(page, strokeColor: strokeColor ? state.strokeColor : nil,
+                                                  strokeWidth: state.strokeWidth * scale, fill: fill ? state.fill : nil,
+                                                  evenOdd: evenOdd, clip: state.clip)
+            }
+            // The painting above still used the old clip (PDF: W/W* take effect after the painting operator).
+            if let rule = pendingClip { clip(to: page, rule: rule) }
+        }
+
+        /// W/W*: from now on only what's inside both the current clip and this path (with its rule) shows.
+        func clip(to page: CGPath, rule: CGPathFillRule) {
+            state.clip = ImportClipping.clip(state.clip, to: page, rule: rule)
         }
 
         // MARK: Operators
@@ -120,17 +137,20 @@ nonisolated enum PDFImport {
             // Painting.
             CGPDFOperatorTableSetCallback(t, "S") { _, info in reader(info)?.paintPath(strokeColor: true, fill: false) }
             CGPDFOperatorTableSetCallback(t, "s") { _, info in reader(info)?.paintPath(strokeColor: true, fill: false, close: true) }
-            for op in ["f", "F", "f*"] {
+            for op in ["f", "F"] {
                 CGPDFOperatorTableSetCallback(t, op) { _, info in reader(info)?.paintPath(strokeColor: false, fill: true) }
             }
-            for op in ["B", "B*"] {
-                CGPDFOperatorTableSetCallback(t, op) { _, info in reader(info)?.paintPath(strokeColor: true, fill: true) }
+            CGPDFOperatorTableSetCallback(t, "f*") { _, info in reader(info)?.paintPath(strokeColor: false, fill: true, evenOdd: true) }
+            CGPDFOperatorTableSetCallback(t, "B") { _, info in reader(info)?.paintPath(strokeColor: true, fill: true) }
+            CGPDFOperatorTableSetCallback(t, "B*") { _, info in reader(info)?.paintPath(strokeColor: true, fill: true, evenOdd: true) }
+            CGPDFOperatorTableSetCallback(t, "b") { _, info in reader(info)?.paintPath(strokeColor: true, fill: true, close: true) }
+            CGPDFOperatorTableSetCallback(t, "b*") { _, info in
+                reader(info)?.paintPath(strokeColor: true, fill: true, evenOdd: true, close: true)
             }
-            for op in ["b", "b*"] {
-                CGPDFOperatorTableSetCallback(t, op) { _, info in reader(info)?.paintPath(strokeColor: true, fill: true, close: true) }
-            }
-            // Clipping (W/W* + n) and a path without painting: discarded.
-            CGPDFOperatorTableSetCallback(t, "n") { _, info in reader(info)?.shapePath = CGMutablePath() }
+            // Clipping: W/W* mark the path, the painting operator after them (usually n, which paints nothing) applies it.
+            CGPDFOperatorTableSetCallback(t, "W") { _, info in reader(info)?.pendingClip = .winding }
+            CGPDFOperatorTableSetCallback(t, "W*") { _, info in reader(info)?.pendingClip = .evenOdd }
+            CGPDFOperatorTableSetCallback(t, "n") { _, info in reader(info)?.paintPath(strokeColor: false, fill: false) }
             // Colors.
             CGPDFOperatorTableSetCallback(t, "G") { s, info in reader(info)?.state.strokeColor = numbers(s, 1).flatMap(color) }
             CGPDFOperatorTableSetCallback(t, "g") { s, info in reader(info)?.state.fill = numbers(s, 1).flatMap(color) }
@@ -175,6 +195,14 @@ nonisolated enum PDFImport {
                         var m = [CGFloat](repeating: 0, count: 6)
                         for i in 0..<6 { var x: CGPDFReal = 0; CGPDFArrayGetNumber(matrix, i, &x); m[i] = x }
                         l.state.ctm = CGAffineTransform(a: m[0], b: m[1], c: m[2], d: m[3], tx: m[4], ty: m[5]).concatenating(l.state.ctm)
+                    }
+                    // The form's box clips what it draws.
+                    var bbox: CGPDFArrayRef?
+                    if CGPDFDictionaryGetArray(dictionary, "BBox", &bbox), let bbox, CGPDFArrayGetCount(bbox) == 4 {
+                        var b = [CGFloat](repeating: 0, count: 4)
+                        for i in 0..<4 { var x: CGPDFReal = 0; CGPDFArrayGetNumber(bbox, i, &x); b[i] = x }
+                        let box = CGRect(x: min(b[0], b[2]), y: min(b[1], b[3]), width: abs(b[2] - b[0]), height: abs(b[3] - b[1]))
+                        l.clip(to: CGPath(rect: box, transform: [l.state.ctm.concatenating(l.toPage)]), rule: .winding)
                     }
                     var features: CGPDFDictionaryRef?
                     CGPDFDictionaryGetDictionary(dictionary, "Resources", &features)

@@ -1,6 +1,7 @@
-// Quick Look in the Finder (space bar) for .cutline and .studio3 files: the page as Cutline draws it, as a PDF, so it
-// stays sharp when zoomed. The extension runs in its own sandboxed process and compiles the app's drawing
-// (PagePreview.swift, Printing.swift and the model files it needs: see the CutlinePreview exceptions in the project).
+// Quick Look in the Finder (space bar) for .cutline and .studio3 files: everything in the file as Cutline draws it,
+// the sheet and the objects off it, as a PDF, so it stays sharp when zoomed. The extension runs in its own sandboxed
+// process and compiles the app's drawing (PagePreview.swift, Printing.swift and the model files it needs: see the
+// CutlinePreview exceptions in the project).
 import QuickLookUI
 import UniformTypeIdentifiers
 
@@ -8,11 +9,10 @@ import UniformTypeIdentifiers
 nonisolated final class PreviewProvider: QLPreviewProvider, QLPreviewingController {
     func providePreview(for request: QLFilePreviewRequest) async throws -> QLPreviewReply {
         let url = request.fileURL
-        let preview = await MainActor.run {
-            PagePreview.pdf(of: url).map { ($0, CGSize(width: Document.page.width * Printing.pointsPerMM,
-                                                      height: Document.page.height * Printing.pointsPerMM)) }
+        guard let preview = await MainActor.run(body: { PagePreview.pdf(of: url) }) else {
+            throw CocoaError(.fileReadCorruptFile)
         }
-        guard let (pdf, page) = preview else { throw CocoaError(.fileReadCorruptFile) }
-        return QLPreviewReply(dataOfContentType: .pdf, contentSize: page) { _ in pdf }
+        let pdf = preview.data
+        return QLPreviewReply(dataOfContentType: .pdf, contentSize: preview.size) { _ in pdf }
     }
 }

@@ -131,7 +131,7 @@ struct StartView: View {
             Text("MACHINE").font(.caption.weight(.semibold)).foregroundStyle(.secondary).padding(.bottom, 8)
             machineStatus
             Spacer()
-            Button { openWindow(value: ReportKind.bug) } label: { Label("Report a Bug…", image: .info) }
+            Button { openWindow(value: ReportRequest(kind: .bug)) } label: { Label("Report a Bug…", image: .info) }
                 .buttonStyle(.borderless)
                 .padding(.bottom, 8)
             SettingsLink { Label("Settings…", image: .snap) }

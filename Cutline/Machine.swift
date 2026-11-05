@@ -24,6 +24,9 @@ final class Machine {
     private(set) var info: MachineInfo?
     /// Latest driver messages (for diagnostics).
     private(set) var logLines: [String] = []
+    /// What the machine says is in its tool holders ("2,8" = AutoBlade in 1, Foil in 2), Cameo 4 onward; read when it
+    /// connects and before each job (Send/ToolChoice.swift decodes it).
+    private(set) var tools: String?
     /// Cutters seen in the last search (to switch when there is more than one).
     private(set) var discovered: [DiscoveredCutter] = []
     /// The connected cutter (or the last one used).
@@ -45,8 +48,11 @@ final class Machine {
     #if DEBUG
     /// CUTLINE_SIMULATE=1: no machine, like the test's `--simular`.
     private let simulate = ProcessInfo.processInfo.environment["CUTLINE_SIMULATE"] != nil
+    /// CUTLINE_SIMULATE_MODEL=Silhouette_Cameo4: the simulated model (the Portrait 4 by default).
+    private let simulatedModel = ProcessInfo.processInfo.environment["CUTLINE_SIMULATE_MODEL"].flatMap(Hardware.named) ?? .portrait4
     #else
     private let simulate = false
+    private let simulatedModel = Hardware.portrait4
     #endif
 
     /// "Silhouette_Portrait4" → "Portrait 4".
@@ -97,6 +103,7 @@ final class Machine {
         do {
             let cutter = try await connectedCutter(chosen)
             info = try await cutter.info()
+            tools = await readTools(cutter)
             state = .connected
         } catch MachineError.choose(let list) {
             state = .choose(list)
@@ -173,6 +180,7 @@ final class Machine {
                 info = try await cutter.info()
             }
             self.info = info
+            tools = await readTools(cutter)
             guard info.status != .unloaded || simulate else {
                 let text = job.withMat ? String(localized: "Load the mat into the machine and try again.")
                     : String(localized: "Load the sheet into the machine and try again.")
@@ -185,6 +193,13 @@ final class Machine {
             #endif
             try await cutter.cut(job.layers, info: info, registration: job.logLines,
                                     cuttingMat: job.withMat, mat: job.base) { [weak self] progress in
+                if let seconds = progress.heatingSecondsLeft {
+                    let text = seconds > 0
+                        ? String(localized: "Heating the Heat Pen… about \(Duration.seconds(seconds).formatted(.time(pattern: .minuteSecond))) left")
+                        : String(localized: "Heating the Heat Pen…")
+                    Task { @MainActor in self?.display(text, id) }
+                    return
+                }
                 let color = progress.passCount > 1
                     ? String(localized: "color \(progress.layer) of \(progress.layerCount) — pass \(progress.pass) of \(progress.passCount)")
                     : String(localized: "color \(progress.layer) of \(progress.layerCount)")
@@ -245,7 +260,7 @@ final class Machine {
                 throw MachineError.choose(list)
             }
         }
-        let newOne = simulate ? Cutter.simulated(.portrait4, log: log)
+        let newOne = simulate ? Cutter.simulated(simulatedModel, log: log)
             : target.link == .usb ? try await Cutter.connectUSB(identifier: target.id, log: log)
             : try await Cutter.connectBluetooth(identifier: target.id, log: log)
         cutter = newOne
@@ -259,7 +274,10 @@ final class Machine {
         // CUTLINE_SIMULATE=2: two simulated machines, to see the choice.
         if simulate {
             let twoOf = ProcessInfo.processInfo.environment["CUTLINE_SIMULATE"] == "2"
-            let names = twoOf ? ["Portrait 4-0000001", "Portrait 4-0000002"] : ["Portrait 4-0000001"]
+            let model = simulatedModel.name.replacingOccurrences(of: "Silhouette_", with: "")
+                .replacingOccurrences(of: "_", with: " ")
+                .replacingOccurrences(of: #"([A-Za-z])(\d)"#, with: "$1 $2", options: .regularExpression)
+            let names = twoOf ? ["\(model)-0000001", "\(model)-0000002"] : ["\(model)-0000001"]
             return names.enumerated().map {
                 DiscoveredCutter(id: UUID(uuidString: "00000000-0000-0000-0000-00000000000\($0.offset + 1)")!, name: $0.element)
             }
@@ -376,6 +394,14 @@ final class Machine {
         let processes = Self.studioProcesses
         let mainOnes = processes.filter { !($0.bundleURL?.path.contains(".app/Contents/") ?? false) }
         for app in mainOnes.isEmpty ? processes : mainOnes { app.terminate() }
+    }
+
+    /// The tools in the holders (nil where the machine can't tell). CUTLINE_SIMULATE_TOOLS=2,8 pretends an answer.
+    private func readTools(_ cutter: Cutter) async -> String? {
+        #if DEBUG
+        if simulate { return ProcessInfo.processInfo.environment["CUTLINE_SIMULATE_TOOLS"] }
+        #endif
+        return try? await cutter.toolSetup()
     }
 
     private func note(_ line: String) {

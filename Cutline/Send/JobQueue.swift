@@ -49,6 +49,8 @@ private struct QueueRow: View {
                     .lineLimit(2)
             }
             Spacer(minLength: 6)
+            // Holder 2, or a tool other than the blade: not tried on a machine yet.
+            if job.layers.contains(where: { $0.holder != 1 || $0.tool != .blade }) { ExperimentalBadge() }
             if job.status.didStop {
                 Button("Try Again", image: .refresh) { machine.retry(job.id) }
                     .help("Try Again")

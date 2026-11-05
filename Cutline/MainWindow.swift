@@ -36,6 +36,7 @@ struct MainWindow: View {
     @State private var importing = false
     @State private var tracingNow: ImageToTrace?
     @State private var layeredNow: LayeredImage?
+    @State private var manyPathsNow: ManyPaths?
     /// File being dragged over the window.
     @State private var dropping = false
 
@@ -90,6 +91,7 @@ struct MainWindow: View {
         }
         .background { Color.clear.sheet(item: $tracingNow) { TraceWindow(doc: doc, origin: $0) } }
         .background { Color.clear.sheet(item: $layeredNow) { LayeredImageWindow(doc: doc, origin: $0) } }
+        .background { Color.clear.sheet(item: $manyPathsNow) { ManyPathsWindow(doc: doc, origin: $0) } }
         .fileImporter(isPresented: $importing, allowedContentTypes: Import.kinds) { result in
             if case .success(let url) = result { openImported(url, ask: true) }
         }
@@ -155,7 +157,7 @@ struct MainWindow: View {
             if DebugHooks.openSendPlain {
                 DebugHooks.showPlain(SendWindow(doc: doc).environment(machine), title: "CutlineTestSend", size: CGSize(width: 1000, height: 680))
             }
-            if let kind = DebugHooks.openReport { openWindowAction(value: kind) }
+            if let request = DebugHooks.reportRequest(doc: doc, machine: machine) { openWindowAction(value: request) }
         }
         #endif
     }
@@ -224,17 +226,21 @@ struct MainWindow: View {
         }
         do {
             let result = try VectorImporter.read(payload)
-            doc.insertImported(result.objects)
-            var parts: [String] = []
-            if result.texts > 0 { parts.append(String(localized: "text not imported (convert it to outlines in Illustrator)")) }
-            if result.images > 0 { parts.append(String(localized: "\(result.images) images not imported")) }
-            if result.objects.isEmpty {
-                doc.notice = parts.isEmpty ? String(localized: "No paths to import in “\(url.lastPathComponent)”.")
-                    : String(localized: "No paths to import in “\(url.lastPathComponent)”: \(parts.joined(separator: " · ")).")
-            } else {
-                parts.insert(String(localized: "\(result.objects.count) paths"), at: 0)
-                doc.notice = String(localized: "Imported from “\(url.lastPathComponent)”: \(parts.joined(separator: " · ")).")
+            // Tens of thousands of paths (a texture, an image trace): flatten, simplify or bring them all.
+            if result.objects.count > ManyPaths.threshold {
+                let origin = ManyPaths(name: url.lastPathComponent, result: result)
+                #if DEBUG
+                if let output = DebugHooks.manyPathsPlain {
+                    DebugHooks.showPlain(ManyPathsWindow(doc: doc, origin: origin), title: "CutlineTestManyPaths",
+                                         size: CGSize(width: 480, height: 470), output: output)
+                    return
+                }
+                #endif
+                manyPathsNow = origin
+                return
             }
+            doc.insertImported(result.objects)
+            doc.notice = result.notice(from: url.lastPathComponent)
         } catch {
             doc.notice = error.localizedDescription
         }

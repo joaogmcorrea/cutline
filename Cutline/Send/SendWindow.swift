@@ -64,6 +64,14 @@ struct SendWindow: View {
             if case .disconnected = machine.state { await machine.connect() }
             if case .failure = machine.state { await machine.connect() }
             #if DEBUG
+            // CUTLINE_TEST_TOOL=2:foil: the first color goes to holder 2 with that tool (raw value or case name). Only in
+            // the document: `setConfig` would also remember it in the app's settings, which are the owner's.
+            if let (holder, tool) = DebugHooks.testTool, let first = doc.cutLines.first {
+                var config = doc.config(first.color)
+                config.holder = holder
+                config.tool = tool
+                doc.cuts[first.color] = config
+            }
             // CUTLINE_TEST_SEND=1 (only with the simulated machine): sends by itself, without pinning the settings in the file.
             if DebugHooks.sendForTest { machine.enqueue(doc.job(name: "Teste")) }
             // CUTLINE_TEST_TEST_SHAPE=x,y[,side]: turns on the test shape at x,y mm (and that size).
@@ -223,10 +231,7 @@ struct SendWindow: View {
                 }
                 materialMenu(config, color: color)
             }
-            LabeledContent("Tool") {
-                Text(machine.info?.autoblade == false ? "Manual blade" : "AutoBlade (automatic)")
-                    .foregroundStyle(.secondary)
-            }
+            ToolChoice(doc: doc, color: color)
 
             HStack(spacing: 6) {
                 Text("Settings").fontWeight(.semibold)
@@ -250,6 +255,20 @@ struct SendWindow: View {
                        defaultValue: defaultValue.speed) { Image(.speed).resizable().scaledToFit() }
                 SettingsEditor(title: "Blade", unit: "depth", span: CutSettings.bladeRange, value: settings.blade,
                        defaultValue: defaultValue.blade) { Image(.blade).resizable().scaledToFit() }
+                    // Pen, foil, emboss and Heat Pen have no blade depth (the driver doesn't send it).
+                    .disabled(config.tool != .blade)
+                    .opacity(config.tool != .blade ? 0.35 : 1)
+                    .overlay {
+                        if config.tool != .blade {
+                            Text("Not used with \(config.tool.name)")
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(.background, in: Capsule())
+                                .overlay(Capsule().strokeBorder(Color.primary.opacity(0.12)))
+                        }
+                    }
                 SettingsEditor(title: "Passes", unit: "repeats", span: CutSettings.passesRange, value: settings.passes,
                        defaultValue: defaultValue.passes) { Image(.passes).resizable().scaledToFit() }
             }
@@ -257,6 +276,16 @@ struct SendWindow: View {
             .disabled(!config.sends)
             .opacity(config.sends ? 1 : 0.4)
 
+            if config.tool != .blade {
+                Label {
+                    Text("Pen, foil, emboss and Heat Pen usually go before the blade (drag this color up), so the piece doesn’t come loose first.")
+                } icon: {
+                    Image(.info).resizable().scaledToFit().frame(width: 13, height: 13)
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            }
             Text("Saved in this file and remembered by the app for this color in future files.")
                 .font(.caption)
                 .foregroundStyle(.secondary)

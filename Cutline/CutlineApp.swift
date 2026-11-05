@@ -55,8 +55,8 @@ struct CutlineApp: App {
         }
 
         // Help › Report a Bug… / Request a Feature… (one window each; no items in the File menu).
-        WindowGroup(for: ReportKind.self) { $kind in
-            ReportWindow(kind: kind ?? .bug)
+        WindowGroup(for: ReportRequest.self) { $request in
+            ReportWindow(request: request ?? ReportRequest(kind: .bug))
                 .environment(machine)
         }
         .defaultSize(width: 600, height: 760)

@@ -5,6 +5,8 @@
 // <style> (.class, #id, tag, tag.class, *) and from style=, inherited as in the browser. A gradient becomes the average
 // of its stops' colors. text and image don't go in (counted); defs, clipPath, mask, pattern and marker don't draw.
 // Units: mm, cm, in, pt, pc and px (1/96"; in Illustrator's files and in those without a size, 1 px = 1 pt, as it exports).
+// Cutline has no clipping masks and paints every fill even-odd, so clip-path (and the viewport of a nested svg or of a
+// symbol) and fill-rule (nonzero by default in SVG) are baked into the geometry (Model/ImportClipping.swift).
 import CoreGraphics
 import Foundation
 
@@ -85,6 +87,8 @@ nonisolated enum SVGImport {
         var visible = true
         var fillOpacity = 1.0
         var strokeOpacity = 1.0
+        /// fill-rule: evenodd (SVG's default is nonzero).
+        var evenOdd = false
     }
 
     /// CSS rule: only simple selectors (the last part of a compound selector, without pseudo-classes).
@@ -178,10 +182,13 @@ nonisolated enum SVGImport {
         var result = VectorImport()
         private var rules: [Rule] = []
         private var byID: [String: Node] = [:]
+        /// Each element's parent (clip-rule is inherited from the clipPath's ancestors).
+        private var parents: [ObjectIdentifier: Node] = [:]
         private var useDepth = 0
 
         static let properties: Set<String> = ["fill", "stroke", "stroke-width", "color", "display", "visibility", "opacity",
-                                                "fill-opacity", "stroke-opacity"]
+                                                "fill-opacity", "stroke-opacity", "fill-rule", "clip-rule", "clip-path",
+                                                "overflow"]
 
         init(root: Node, dpi: Double) {
             self.root = root
@@ -189,7 +196,10 @@ nonisolated enum SVGImport {
             func visit(_ node: Node) {
                 if let id = node["id"], byID[id] == nil { byID[id] = node }
                 if node.name == "style" { rules += SVGImport.rules(node.text) }
-                node.children.forEach(visit)
+                for child in node.children {
+                    parents[ObjectIdentifier(child)] = node
+                    visit(child)
+                }
             }
             visit(root)
         }
@@ -205,7 +215,8 @@ nonisolated enum SVGImport {
                 let l = width ?? box.width * mmPerPx, a = height ?? box.height * mmPerPx
                 t = Self.adjustment(box, in: CGSize(width: l, height: a), root["preserveAspectRatio"])
             }
-            render(root, ctm: t, style: ObjectStyle(), svgRoot: true)
+            // The root's viewport doesn't clip: what is off it comes in, as off the page of a PDF.
+            render(root, ctm: t, style: ObjectStyle(), clip: nil, svgRoot: true)
         }
 
         /// viewBox in the area (x, y, width, height), with preserveAspectRatio (default: xMidYMid meet).
@@ -254,47 +265,57 @@ nonisolated enum SVGImport {
 
         // MARK: Elements
 
-        private mutating func render(_ node: Node, ctm parent: CGAffineTransform, style inherited: ObjectStyle, svgRoot: Bool = false) {
+        private mutating func render(_ node: Node, ctm parent: CGAffineTransform, style inherited: ObjectStyle,
+                                     clip outer: ImportClipping.Region?, svgRoot: Bool = false) {
             let declared = properties(of: node)
             if declared["display"] == "none" { return }
             if let o = declared["opacity"].flatMap(Double.init), o <= 0 { return }
             let style = apply(declared, a: inherited)
             var ctm = SVGImport.transform(node["transform"]).concatenating(parent)
+            // use: x and y move the content and the user space of its clip-path (SVG: a g with translate(x, y)).
+            if node.name == "use" { ctm = CGAffineTransform(translationX: length(node["x"]) ?? 0, y: length(node["y"]) ?? 0).concatenating(ctm) }
+            var clip = clipping(node, declared, ctm: ctm, inside: outer)
             switch node.name {
             case "svg":
                 if !svgRoot {
-                    // SVG inside SVG: a new area with its own viewBox.
+                    // SVG inside SVG: a new area with its own viewBox, which clips what goes past it (overflow: hidden).
                     let x = length(node["x"]) ?? 0, y = length(node["y"]) ?? 0
                     if let box = Self.viewBox(node["viewBox"]), box.width > 0, box.height > 0 {
                         let area = CGSize(width: length(node["width"]) ?? box.width, height: length(node["height"]) ?? box.height)
+                        clip = viewport(CGRect(origin: CGPoint(x: x, y: y), size: area), declared, ctm: ctm, inside: clip)
                         ctm = Self.adjustment(box, in: area, node["preserveAspectRatio"], origin: CGPoint(x: x, y: y)).concatenating(ctm)
                     } else {
+                        if let w = absoluteLength(node["width"]), let h = absoluteLength(node["height"]) {
+                            clip = viewport(CGRect(x: x, y: y, width: w, height: h), declared, ctm: ctm, inside: clip)
+                        }
                         ctm = CGAffineTransform(translationX: x, y: y).concatenating(ctm)
                     }
                 }
-                for child in node.children { render(child, ctm: ctm, style: style) }
+                for child in node.children { render(child, ctm: ctm, style: style, clip: clip) }
             case "g", "a":
-                for child in node.children { render(child, ctm: ctm, style: style) }
+                for child in node.children { render(child, ctm: ctm, style: style, clip: clip) }
             case "switch":
                 // The first child that applies: Illustrator's brings a foreignObject of its own first.
                 if let child = node.children.first(where: { $0.name != "foreignObject" && $0["requiredExtensions"] == nil }) {
-                    render(child, ctm: ctm, style: style)
+                    render(child, ctm: ctm, style: style, clip: clip)
                 }
             case "use":
                 guard useDepth < 20, let target = node.href.flatMap({ $0.hasPrefix("#") ? byID[String($0.dropFirst())] : nil })
                 else { return }
-                ctm = CGAffineTransform(translationX: length(node["x"]) ?? 0, y: length(node["y"]) ?? 0).concatenating(ctm)
                 useDepth += 1
                 defer { useDepth -= 1 }
                 if target.name == "symbol" {
+                    let symbolProperties = properties(of: target)
+                    clip = clipping(target, symbolProperties, ctm: ctm, inside: clip)
                     if let box = Self.viewBox(target["viewBox"]), box.width > 0, box.height > 0 {
                         let area = CGSize(width: length(node["width"]) ?? box.width, height: length(node["height"]) ?? box.height)
+                        clip = viewport(CGRect(origin: .zero, size: area), symbolProperties, ctm: ctm, inside: clip)
                         ctm = Self.adjustment(box, in: area, target["preserveAspectRatio"]).concatenating(ctm)
                     }
-                    let symbolStyle = apply(properties(of: target), a: style)
-                    for child in target.children { render(child, ctm: ctm, style: symbolStyle) }
+                    let symbolStyle = apply(symbolProperties, a: style)
+                    for child in target.children { render(child, ctm: ctm, style: symbolStyle, clip: clip) }
                 } else {
-                    render(target, ctm: ctm, style: style)
+                    render(target, ctm: ctm, style: style, clip: clip)
                 }
             case "text":
                 result.texts += 1
@@ -302,10 +323,107 @@ nonisolated enum SVGImport {
                 result.images += 1
             case "path", "rect", "circle", "ellipse", "line", "polyline", "polygon":
                 guard let shape = shape(node) else { return }
-                paintPath(shape, ctm: ctm, style: style, withFill: node.name != "line")
+                paintPath(shape, ctm: ctm, style: style, clip: clip, withFill: node.name != "line")
             default:
                 // defs, symbol, clipPath, mask, pattern, marker, style, metadata, foreignObject… don't draw.
                 break
+            }
+        }
+
+        // MARK: Clipping
+
+        /// The clip for `node` and what it holds: `outer` narrowed by its clip-path. A clip-path that can't be worked out
+        /// (it isn't a clipPath, or it holds text, which isn't read) clips nothing, so what it would hide stays.
+        private func clipping(_ node: Node, _ declared: [String: String], ctm: CGAffineTransform,
+                              inside outer: ImportClipping.Region?, depth: Int = 0) -> ImportClipping.Region? {
+            guard depth < 10, let value = declared["clip-path"], let id = Self.reference(value), let clipPath = byID[id],
+                  clipPath.name == "clipPath" else { return outer }
+            var space = SVGImport.transform(clipPath["transform"]).concatenating(ctm)
+            if clipPath["clipPathUnits"] == "objectBoundingBox" {
+                // Fractions of the element's box, in its user space; an empty box shows nothing.
+                let box = userBox(node)
+                guard !box.isNull, box.width > 0, box.height > 0 else { return .nothing }
+                space = CGAffineTransform(a: box.width, b: 0, c: 0, d: box.height, tx: box.minX, ty: box.minY).concatenating(space)
+            }
+            // The region is the union of the children, each with its clip-rule.
+            var pieces: [(CGPath, CGPathFillRule)] = []
+            for child in clipPath.children {
+                let props = properties(of: child)
+                if props["display"] == "none" || (props["visibility"].map { $0 != "visible" && $0 != "inherit" } ?? false) { continue }
+                var element = child, place = SVGImport.transform(child["transform"]).concatenating(space)
+                if child.name == "use" {
+                    guard let target = child.href.flatMap({ $0.hasPrefix("#") ? byID[String($0.dropFirst())] : nil }) else { continue }
+                    place = SVGImport.transform(target["transform"])
+                        .concatenating(CGAffineTransform(translationX: length(child["x"]) ?? 0, y: length(child["y"]) ?? 0))
+                        .concatenating(place)
+                    element = target
+                }
+                if element.name == "text" { return outer }
+                guard ["path", "rect", "circle", "ellipse", "line", "polyline", "polygon"].contains(element.name),
+                      let shape = shape(element), let mm = shape.copy(using: [place]) else { continue }
+                // clip-rule: the shape's, the use's, then inherited from the clipPath and its ancestors.
+                let rule = Self.rule(properties(of: element)["clip-rule"]) ?? (element === child ? nil : Self.rule(props["clip-rule"]))
+                    ?? inheritedClipRule(clipPath) ?? .winding
+                pieces.append((mm, rule))
+            }
+            // A clip-path of the clipPath itself narrows it further.
+            let narrowed = clipping(clipPath, properties(of: clipPath), ctm: ctm, inside: outer, depth: depth + 1)
+            guard !pieces.isEmpty else { return .nothing }
+            if pieces.count == 1 { return ImportClipping.clip(narrowed, to: pieces[0].0, rule: pieces[0].1) }
+            var union = pieces[0].0.normalized(using: pieces[0].1)
+            for (path, rule) in pieces.dropFirst() { union = union.union(path.normalized(using: rule), using: .evenOdd) }
+            return ImportClipping.clip(narrowed, to: union, rule: .evenOdd)
+        }
+
+        static func rule(_ value: String?) -> CGPathFillRule? {
+            guard let value, value != "inherit" else { return nil }
+            return value == "evenodd" ? .evenOdd : .winding
+        }
+
+        /// The clip-rule declared on `node` or on its ancestors.
+        private func inheritedClipRule(_ node: Node) -> CGPathFillRule? {
+            var current: Node? = node
+            while let n = current {
+                if let rule = Self.rule(properties(of: n)["clip-rule"]) { return rule }
+                current = parents[ObjectIdentifier(n)]
+            }
+            return nil
+        }
+
+        /// A nested svg's or a symbol's viewport (user units of `ctm`) clips what it holds, unless overflow is visible.
+        private func viewport(_ rect: CGRect, _ declared: [String: String], ctm: CGAffineTransform,
+                              inside outer: ImportClipping.Region?) -> ImportClipping.Region? {
+            if let overflow = declared["overflow"], overflow == "visible" || overflow == "auto" { return outer }
+            guard rect.width > 0, rect.height > 0 else { return outer }
+            return ImportClipping.clip(outer, to: CGPath(rect: rect, transform: [ctm]), rule: .winding)
+        }
+
+        /// The id in "url(#id)".
+        static func reference(_ value: String) -> String? {
+            let t = value.trimmingCharacters(in: .whitespaces)
+            guard t.hasPrefix("url(") else { return nil }
+            let id = t.dropFirst(4).prefix { $0 != ")" }.trimmingCharacters(in: CharacterSet(charactersIn: " '\"#"))
+            return id.isEmpty ? nil : id
+        }
+
+        /// The box of what the element draws, in its own user space (for clipPathUnits="objectBoundingBox").
+        private func userBox(_ node: Node, depth: Int = 0) -> CGRect {
+            guard depth < 20, properties(of: node)["display"] != "none" else { return .null }
+            switch node.name {
+            case "path", "rect", "circle", "ellipse", "line", "polyline", "polygon":
+                return shape(node)?.boundingBoxOfPath ?? .null
+            case "g", "a", "switch", "svg":
+                return node.children.reduce(CGRect.null) { box, child in
+                    let inner = userBox(child, depth: depth + 1)
+                    return inner.isNull ? box : box.union(inner.applying(SVGImport.transform(child["transform"])))
+                }
+            case "use":
+                guard let target = node.href.flatMap({ $0.hasPrefix("#") ? byID[String($0.dropFirst())] : nil }) else { return .null }
+                let inner = userBox(target, depth: depth + 1)
+                return inner.isNull ? inner : inner.applying(SVGImport.transform(target["transform"])
+                    .concatenating(CGAffineTransform(translationX: length(node["x"]) ?? 0, y: length(node["y"]) ?? 0)))
+            default:
+                return .null
             }
         }
 
@@ -347,16 +465,15 @@ nonisolated enum SVGImport {
             return p.isEmpty ? nil : p
         }
 
-        private mutating func paintPath(_ shape: CGPath, ctm: CGAffineTransform, style: ObjectStyle, withFill: Bool) {
+        private mutating func paintPath(_ shape: CGPath, ctm: CGAffineTransform, style: ObjectStyle, clip: ImportClipping.Region?,
+                                        withFill: Bool) {
             guard style.visible, let mm = shape.copy(using: [ctm]) else { return }
             let fill = withFill && style.fillOpacity > 0 ? color(style.fill, style) : nil
             let strokeColor = style.strokeWidth > 0 && style.strokeOpacity > 0 ? color(style.stroke, style) : nil
             // Width in pt at the page's scale.
             let scale = sqrt(abs(ctm.a * ctm.d - ctm.b * ctm.c))
-            if let object = VectorImporter.object(mm, strokeColor: strokeColor, strokeWidth: style.strokeWidth * scale * 72 / 25.4,
-                                                 fill: fill) {
-                result.objects.append(object)
-            }
+            result.objects += ImportClipping.objects(mm, strokeColor: strokeColor, strokeWidth: style.strokeWidth * scale * 72 / 25.4,
+                                                     fill: fill, evenOdd: style.evenOdd, clip: clip)
         }
 
         private func color(_ paint: Paint, _ style: ObjectStyle) -> CMYK? {
@@ -423,6 +540,7 @@ nonisolated enum SVGImport {
             if let v = p["visibility"] { e.visible = v == "inherit" ? inherited.visible : v == "visible" }
             if let v = p["fill-opacity"].flatMap(Double.init) { e.fillOpacity = v }
             if let v = p["stroke-opacity"].flatMap(Double.init) { e.strokeOpacity = v }
+            if let v = p["fill-rule"], v != "inherit" { e.evenOdd = v == "evenodd" }
             return e
         }
     }

@@ -15,6 +15,22 @@ nonisolated struct VectorImport {
     var images = 0
 }
 
+extension VectorImport {
+    /// The notice after the import: "Imported from “x.pdf”: 12 paths · 2 images not imported." `lead` takes the place of
+    /// the path count (a flattened or simplified file says what went in).
+    func notice(from name: String, lead: [String]? = nil) -> String {
+        var parts: [String] = []
+        if texts > 0 { parts.append(String(localized: "text not imported (convert it to outlines in Illustrator)")) }
+        if images > 0 { parts.append(String(localized: "\(images) images not imported")) }
+        if objects.isEmpty {
+            return parts.isEmpty ? String(localized: "No paths to import in “\(name)”.")
+                : String(localized: "No paths to import in “\(name)”: \(parts.joined(separator: " · ")).")
+        }
+        parts.insert(contentsOf: lead ?? [String(localized: "\(objects.count) paths")], at: 0)
+        return String(localized: "Imported from “\(name)”: \(parts.joined(separator: " · ")).")
+    }
+}
+
 nonisolated enum VectorImporter {
     nonisolated enum Format {
         case pdf, postscript, svg

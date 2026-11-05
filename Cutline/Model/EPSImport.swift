@@ -9,6 +9,9 @@
 //   AI format's operators (m L C f S B, k K x X, *u … *U for compound paths).
 // - Any other program: the whole file runs in the interpreter.
 // Texts and images don't go in (counted). An error in one command doesn't bring down the rest; there is an operation limit.
+// Cutline has no clipping masks and paints every fill even-odd, so the clip (clip, eoclip, rectclip; clp/eclp/nclp in
+// AGM; W in classic AI) and the nonzero rule of fill (eofill, ef and XR 1 are even-odd) are baked into the geometry
+// (Model/ImportClipping.swift). A clip made of text (charpath, which isn't read) clips nothing.
 import CoreGraphics
 import Foundation
 
@@ -50,9 +53,10 @@ nonisolated enum EPSImport {
         let toPage = CGAffineTransform(translationX: -box.minX, y: -box.maxY)
             .concatenating(CGAffineTransform(scaleX: mm, y: -mm))
             .concatenating(CGAffineTransform(translationX: dx, y: dy))
-        result.objects = paints.compactMap { p in
-            guard let page = p.shapePath.copy(using: [toPage]) else { return nil }
-            return VectorImporter.object(page, strokeColor: p.strokeColor, strokeWidth: p.strokeWidth, fill: p.fill)
+        result.objects = paints.flatMap { p -> [CanvasObject] in
+            guard let page = p.shapePath.copy(using: [toPage]) else { return [] }
+            return ImportClipping.objects(page, strokeColor: p.strokeColor, strokeWidth: p.strokeWidth, fill: p.fill,
+                                          evenOdd: p.evenOdd, clip: p.clip?.applying(toPage))
         }
         #if DEBUG
         if ProcessInfo.processInfo.environment["CUTLINE_TEST_EPS"] != nil {
@@ -137,6 +141,10 @@ nonisolated enum EPSImport {
         /// In pt.
         var strokeWidth: Double
         var fill: CMYK?
+        /// The fill's rule (eofill); the others are nonzero.
+        var evenOdd = false
+        /// What the clip left visible when it was painted, in pt; nil = nothing clipped.
+        var clip: ImportClipping.Region?
     }
 }
 
@@ -531,7 +539,10 @@ extension EPSImport {
     nonisolated struct Graphic {
         var ctm = CGAffineTransform.identity
         var shapePath = CGMutablePath()
-        var clipping: CGPath?
+        /// What the clip leaves visible (pt, like the paths); nil = nothing clipped.
+        var clip: ImportClipping.Region?
+        /// charpath added text to the path (only counted, so the path is missing it).
+        var textInPath = false
         var space = ColorSpaceKind.gray
         /// Current color (PostScript: the same for filling and stroking).
         var color: CMYK? = CMYK(c: 0, m: 0, y: 0, k: 100)
@@ -563,6 +574,10 @@ extension EPSImport {
         private var features: [String: Value] = [:]
         /// AI format compound path (*u … *U): the subpaths join into one object.
         private var compound: (shapePath: CGMutablePath, fillDemo: Bool, trace: Bool)?
+        /// AI format: W marks the path as a clip, applied by the next painting operator (at *U, in a compound path).
+        private var aiClip = false
+        /// AI format fill rule (XR: 0 nonzero, 1 even-odd), for the fill and the clip.
+        private var aiEvenOdd = false
         private let currentFile: DocumentFile
         static let limitValue = 40_000_000
 
@@ -767,19 +782,31 @@ extension EPSImport {
 
         private var currentScale: Double { sqrt(abs(g.ctm.a * g.ctm.d - g.ctm.b * g.ctm.c)) }
 
-        func emit(_ shapePath: CGPath, strokeColor: CMYK?, fill: CMYK?) {
+        func emit(_ shapePath: CGPath, strokeColor: CMYK?, fill: CMYK?, evenOdd: Bool = false) {
             guard !shapePath.isEmpty, strokeColor != nil || fill != nil else { return }
             let strokeWidth = g.strokeWidth * currentScale
             // Fill and then stroke the same path (as PostScript makes one object with both): a single object.
-            if let strokeColor, fill == nil, let lastOne = paints.last, lastOne.strokeColor == nil, lastOne.shapePath == shapePath {
+            if let strokeColor, fill == nil, let lastOne = paints.last, lastOne.strokeColor == nil, lastOne.shapePath == shapePath,
+               lastOne.clip?.path == g.clip?.path {
                 paints[paints.count - 1].strokeColor = strokeColor
                 paints[paints.count - 1].strokeWidth = strokeWidth
                 return
             }
-            paints.append(Paint(shapePath: shapePath.copy() ?? shapePath, strokeColor: strokeColor, strokeWidth: strokeWidth, fill: fill))
+            paints.append(Paint(shapePath: shapePath.copy() ?? shapePath, strokeColor: strokeColor, strokeWidth: strokeWidth, fill: fill,
+                                evenOdd: evenOdd, clip: g.clip))
         }
 
-        func newPath() { g.shapePath = CGMutablePath() }
+        func newPath() {
+            g.shapePath = CGMutablePath()
+            g.textInPath = false
+        }
+
+        /// clip/eoclip: from now on only what's inside both the clip and the current path shows. A path with text in
+        /// it (charpath) can't be worked out and clips nothing, so what it would hide stays.
+        func clipToPath(_ rule: CGPathFillRule) {
+            guard !g.textInPath else { return }
+            g.clip = ImportClipping.clip(g.clip, to: g.shapePath, rule: rule)
+        }
 
         func point(_ x: Double, _ y: Double) -> CGPoint { CGPoint(x: x, y: y).applying(g.ctm) }
 
@@ -788,7 +815,8 @@ extension EPSImport {
             return g.shapePath.currentPoint.applying(g.ctm.inverted())
         }
 
-        /// AI format painting: `close` (lowercase), fill and stroke; inside *u … *U, joins.
+        /// AI format painting: `close` (lowercase), fill and stroke; inside *u … *U, joins. After a W, the path also clips
+        /// (painted first, as Illustrator's procset does); in a compound path, the whole path at *U.
         func paintAIPath(close: Bool, fillDemo: Bool, trace: Bool) {
             if close, !g.shapePath.isEmpty { g.shapePath.closeSubpath() }
             if var c = compound {
@@ -797,7 +825,11 @@ extension EPSImport {
                 c.trace = c.trace || trace
                 compound = c
             } else {
-                emit(g.shapePath, strokeColor: trace ? g.strokeColor : nil, fill: fillDemo ? g.fill : nil)
+                emit(g.shapePath, strokeColor: trace ? g.strokeColor : nil, fill: fillDemo ? g.fill : nil, evenOdd: aiEvenOdd)
+                if aiClip {
+                    clipToPath(aiEvenOdd ? .evenOdd : .winding)
+                    aiClip = false
+                }
             }
             newPath()
             stack.removeAll()
@@ -1625,11 +1657,17 @@ extension EPSImport {
                 stack += [.real(box.minX), .real(box.minY), .real(box.maxX), .real(box.maxY)]
             case "flattenpath", "reversepath", "strokepath": break
             case "clippath":
-                g.shapePath = (g.clipping?.mutableCopy()) ?? CGMutablePath()
-            case "initclip": g.clipping = nil
-            case "clip", "eoclip": g.clipping = g.shapePath.copy()
+                g.shapePath = (g.clip?.path.mutableCopy()) ?? CGMutablePath()
+                g.textInPath = false
+            case "initclip": g.clip = nil
+            case "clip": clipToPath(.winding)
+            case "eoclip": clipToPath(.evenOdd)
             case "rectclip":
-                if let r = try rectangles().first { g.clipping = CGPath(rect: r, transform: [g.ctm]) }
+                let p = CGMutablePath()
+                for r in try rectangles() { p.addRect(r, transform: g.ctm) }
+                g.shapePath = p
+                g.textInPath = false
+                clipToPath(.winding)
                 newPath()
             case "rectfill", "rectstroke":
                 if name == "rectstroke" { _ = matrixOnTop() }
@@ -1637,7 +1675,7 @@ extension EPSImport {
                 for r in try rectangles() { p.addRect(r, transform: g.ctm) }
                 emit(p, strokeColor: name == "rectstroke" ? g.color : nil, fill: name == "rectfill" ? g.color : nil)
             case "fill", "eofill":
-                emit(g.shapePath, strokeColor: nil, fill: g.color)
+                emit(g.shapePath, strokeColor: nil, fill: g.color, evenOdd: name == "eofill")
                 newPath()
             case "stroke":
                 emit(g.shapePath, strokeColor: g.color, fill: nil)
@@ -1645,7 +1683,7 @@ extension EPSImport {
             case "ufill", "ueofill", "ustroke": _ = try pop()
             case "shfill":
                 let d = try dictionary()
-                if let clipping = g.clipping { emit(clipping, strokeColor: nil, fill: gradientColor(d)) }
+                if let clip = g.clip { emit(clip.path, strokeColor: nil, fill: gradientColor(d)) }
             case "pathforall": for _ in 0..<4 { _ = try pop() }
 
             // Images
@@ -1678,7 +1716,10 @@ extension EPSImport {
                 let c = try chain()
                 stack += [.real(Double(c.b.count) * g.fontPointSize * 0.5), .real(0)]
             case "show", "charpath", "glyphshow":
-                if name == "charpath" { _ = try pop() }
+                if name == "charpath" {
+                    _ = try pop()
+                    g.textInPath = true
+                }
                 _ = try pop()
                 texts += 1
             case "ashow": _ = try pop(); _ = try numbers(2); texts += 1
@@ -1834,14 +1875,18 @@ extension EPSImport {
             case "cp": try op("closepath")
             case "np": newPath()
             case "f", "ef":
-                emit(g.shapePath, strokeColor: nil, fill: g.color)
+                emit(g.shapePath, strokeColor: nil, fill: g.color, evenOdd: name == "ef")
                 newPath()
             case "@":
                 emit(g.shapePath, strokeColor: g.color, fill: nil)
                 newPath()
-            case "clp", "eclp", "nclp":
-                g.clipping = g.shapePath.copy()
+            // As in AGM's prolog: clp = clip newpath, eclp = eoclip newpath, nclp = newpath clip (clips everything away).
+            case "clp", "eclp":
+                clipToPath(name == "eclp" ? .evenOdd : .winding)
                 newPath()
+            case "nclp":
+                newPath()
+                clipToPath(.winding)
             case "ct": try op("concat")
             case "pgsv": try op("gsave")
             case "pgrs": try op("grestore")
@@ -1921,7 +1966,10 @@ extension EPSImport {
                 let end = point(v[2], v[3])
                 g.shapePath.addCurve(to: end, control1: point(v[0], v[1]), control2: end)
             case "N": paintAIPath(close: false, fillDemo: false, trace: false)
-            case "n", "h", "H": paintAIPath(close: true, fillDemo: false, trace: false)
+            case "n": paintAIPath(close: true, fillDemo: false, trace: false)
+            // As in Illustrator's procset: h only closes the path, H does nothing (neither paints nor ends the path).
+            case "h": if !g.shapePath.isEmpty { g.shapePath.closeSubpath() }
+            case "H": break
             case "F": paintAIPath(close: false, fillDemo: true, trace: false)
             case "f": paintAIPath(close: true, fillDemo: true, trace: false)
             case "S": paintAIPath(close: false, fillDemo: false, trace: true)
@@ -1932,10 +1980,22 @@ extension EPSImport {
             case "*U":
                 if let c = compound {
                     compound = nil
-                    emit(c.shapePath, strokeColor: c.trace ? g.strokeColor : nil, fill: c.fillDemo ? g.fill : nil)
+                    emit(c.shapePath, strokeColor: c.trace ? g.strokeColor : nil, fill: c.fillDemo ? g.fill : nil, evenOdd: aiEvenOdd)
+                    if aiClip {
+                        let path = g.shapePath
+                        g.shapePath = c.shapePath
+                        clipToPath(aiEvenOdd ? .evenOdd : .winding)
+                        g.shapePath = path
+                        aiClip = false
+                    }
                 }
-            case "u", "U", "q", "Q", "W", "LB": break
-            case "D", "A", "O", "R", "XR", "J", "j", "M", "Ar", "i", "Ln": _ = try pop()
+            // Clip group: q and Q are gsave and grestore in Illustrator's procset (not inside a compound path).
+            case "q": if compound == nil { graphicsStack.append(g.copy()) }
+            case "Q": if compound == nil, let previous = graphicsStack.popLast() { g = previous }
+            case "W": aiClip = true
+            case "XR": aiEvenOdd = try num() != 0
+            case "u", "U", "LB": break
+            case "D", "A", "O", "R", "J", "j", "M", "Ar", "i", "Ln": _ = try pop()
             case "w": try op("setlinewidth")
             case "d": _ = try pop(); _ = try pop()
             case "g": g.fill = VectorImporter.color([try num()])

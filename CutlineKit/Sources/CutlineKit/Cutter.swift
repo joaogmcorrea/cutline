@@ -454,7 +454,8 @@ public actor Cutter {
         if hardware.isCameo3On, o.autoblade, let depth = o.depth {
             if let current = currentTool, current != Self.toolAutoblade, current != Self.toolEmpty {
                 log("Expected an AutoBlade, found tool \(current). Blade not set.")
-            } else if o.toolholder != 1 {
+            } else if o.toolholder != 1, !hardware.hasTwoTools {
+                // On the Cameo 3/4/5 Studio sends `TF<depth>,2` for an AutoBlade in holder 2 (seen with REA, 05/11/2026).
                 log("The AutoBlade only adjusts in tool holder 1, not in \(o.toolholder).")
             } else {
                 let value = max(0, min(10, depth))

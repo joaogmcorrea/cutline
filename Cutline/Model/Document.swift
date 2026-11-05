@@ -493,6 +493,8 @@ nonisolated final class Document: @unchecked Sendable {
     /// Print & Cut registration marks on the page (Model/RegistrationMarks.swift): on/off and where they are.
     var marks: Bool
     var marksConfig: MarksConfig
+    /// Print bleed with Print & Cut (Model/PrintBleed.swift; experimental).
+    var bleed: PrintBleed
     /// Cut with the cutting mat (the sticky plastic); without it, the machine pulls the sheet directly. New
     /// documents start with the last choice (Page panel).
     var withMat: Bool
@@ -548,11 +550,13 @@ nonisolated final class Document: @unchecked Sendable {
 
     init(objects: [CanvasObject] = [], cuts: [CMYK: CutConfig] = [:], cutOrder: [CMYK] = [],
          images: [String: Data] = [:], layers: [Layer] = [], activeLayer: UUID? = nil, recent: [CMYK] = [],
-         guides: Guides = Guides(), marks: Bool = false, marksConfig: MarksConfig = .defaultValue, withMat: Bool? = nil,
+         guides: Guides = Guides(), marks: Bool = false, marksConfig: MarksConfig = .defaultValue,
+         bleed: PrintBleed = PrintBleed(), withMat: Bool? = nil,
          cuttingMatSetting: CuttingMat?? = nil, notice: String? = nil, cameFromStudio: Bool = false) {
         self.guides = guides
         self.marks = marks
         self.marksConfig = marksConfig
+        self.bleed = bleed
         self.withMat = withMat ?? Self.lastMat
         self.cuttingMatSetting = cuttingMatSetting ?? Self.lastCuttingMat
         let layers = layers.isEmpty ? [Layer(name: String(localized: "Layer \(1)"), color: 0)] : layers
@@ -582,6 +586,7 @@ nonisolated private struct ConnectionState: Sendable {
     var guides: Guides
     var marks: Bool
     var marksConfig: MarksConfig
+    var bleed: PrintBleed
     var withMat: Bool
     var cuttingMatSetting: CuttingMat?
 }
@@ -619,7 +624,7 @@ extension Document {
     private var state: ConnectionState {
         get {
             ConnectionState(objects: objects, cuts: cuts, cutOrder: cutOrder, layers: layers, activeLayer: activeLayer,
-                   guides: guides, marks: marks, marksConfig: marksConfig, withMat: withMat,
+                   guides: guides, marks: marks, marksConfig: marksConfig, bleed: bleed, withMat: withMat,
                    cuttingMatSetting: cuttingMatSetting)
         }
         set {
@@ -631,6 +636,7 @@ extension Document {
             guides = newValue.guides
             marks = newValue.marks
             marksConfig = newValue.marksConfig
+            bleed = newValue.bleed
             withMat = newValue.withMat
             cuttingMatSetting = newValue.cuttingMatSetting
             selection.formIntersection(objects.map(\.id))

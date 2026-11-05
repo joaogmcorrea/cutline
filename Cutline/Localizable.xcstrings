@@ -551,6 +551,64 @@
         }
       }
     },
+    "%lld more objects not listed" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld more object not listed"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld more objects not listed"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld objeto más sin listar"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld objetos más sin listar"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Mais %lld objeto não listado"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Mais %lld objetos não listados"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld nodes" : {
       "localizations" : {
         "en" : {
@@ -1122,6 +1180,64 @@
         }
       }
     },
+    "%lld small pieces left out" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld small piece left out"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld small pieces left out"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pieza pequeña dejada fuera"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld piezas pequeñas dejadas fuera"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pedacinho deixado de fora"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pedacinhos deixados de fora"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld × %lld" : {
       "localizations" : {
         "es" : {
@@ -1358,6 +1474,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "?"
+          }
+        }
+      }
+    },
+    "A photo of the printed and cut sheet helps a lot: attach it to the issue or the email, with the document." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una foto de la hoja impresa y cortada ayuda mucho: adjúntala al reporte en GitHub o al correo, junto con el documento."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma foto da folha impressa e cortada ajuda muito: anexe ao relato no GitHub ou ao e-mail, junto com o documento."
           }
         }
       }
@@ -1891,6 +2023,22 @@
         }
       }
     },
+    "AutoBlade" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AutoBlade"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AutoBlade"
+          }
+        }
+      }
+    },
     "AutoBlade (automatic)" : {
       "localizations" : {
         "es" : {
@@ -2064,6 +2212,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Folha em branco"
+          }
+        }
+      }
+    },
+    "Bleed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sangrado"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sangria"
           }
         }
       }
@@ -2652,6 +2816,23 @@
         }
       }
     },
+    "Colors with different tools have to be sent separately: turn the other colors off, cut, swap the tool and send the rest." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los colores con herramientas distintas se envían por separado: desactiva los otros colores, corta, cambia la herramienta y envía el resto."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cores com ferramentas diferentes vão em envios separados: desligue as outras cores, corte, troque a ferramenta e envie o resto."
+          }
+        }
+      }
+    },
     "Connect" : {
       "localizations" : {
         "es" : {
@@ -3200,6 +3381,22 @@
         }
       }
     },
+    "Deep-Cut Blade" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuchilla Deep-Cut"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lâmina Deep-Cut"
+          }
+        }
+      }
+    },
     "Default: no fill, red 0 pt stroke (D)" : {
       "localizations" : {
         "es" : {
@@ -3616,6 +3813,54 @@
         }
       }
     },
+    "Emboss" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relieve"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relevo"
+          }
+        }
+      }
+    },
+    "Emboss Tool" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herramienta de relieve"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ferramenta de relevo"
+          }
+        }
+      }
+    },
+    "Everything that only prints becomes one image at 300 dpi. The cut lines stay as they are." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo lo que solo se imprime se vuelve una sola imagen a 300 ppp. Las líneas de corte quedan como están."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tudo o que só imprime vira uma imagem só, a 300 dpi. As linhas de corte ficam como estão."
+          }
+        }
+      }
+    },
     "Exclude Overlap" : {
       "localizations" : {
         "es" : {
@@ -3644,6 +3889,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exclusão"
+          }
+        }
+      }
+    },
+    "Experimental" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experimental"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experimental"
+          }
+        }
+      }
+    },
+    "Experimental: print bleed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experimental: sangrado de impresión"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experimental: sangria na impressão"
+          }
+        }
+      }
+    },
+    "Experimental: tool holder 2 and tools" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experimental: soporte 2 y herramientas"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experimental: suporte 2 e ferramentas"
           }
         }
       }
@@ -3728,6 +4021,22 @@
         }
       }
     },
+    "Fine-Cut Blade" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuchilla Fine-Cut"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lâmina Fine-Cut"
+          }
+        }
+      }
+    },
     "First-line indent of each paragraph" : {
       "localizations" : {
         "es" : {
@@ -3772,6 +4081,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ajustar à janela (⌘0)"
+          }
+        }
+      }
+    },
+    "Flatten what prints" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplanar lo que se imprime"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Achatar o que imprime"
+          }
+        }
+      }
+    },
+    "Flattening…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplanando…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Achatando…"
+          }
+        }
+      }
+    },
+    "Foil" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foil"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foil"
           }
         }
       }
@@ -3937,6 +4294,22 @@
         }
       }
     },
+    "Glue Tape Tool" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herramienta de cinta adhesiva"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ferramenta de fita de cola"
+          }
+        }
+      }
+    },
     "Goes into the queue: the machine cuts it when it finishes the previous job" : {
       "localizations" : {
         "es" : {
@@ -4017,6 +4390,54 @@
         }
       }
     },
+    "Heat Pen" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heat Pen"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heat Pen"
+          }
+        }
+      }
+    },
+    "Heating the Heat Pen…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calentando la Heat Pen…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aquecendo a Heat Pen…"
+          }
+        }
+      }
+    },
+    "Heating the Heat Pen… about %@ left" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calentando la Heat Pen… faltan unos %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aquecendo a Heat Pen… faltam uns %@"
+          }
+        }
+      }
+    },
     "Hide" : {
       "localizations" : {
         "es" : {
@@ -4061,6 +4482,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ocultar camada"
+          }
+        }
+      }
+    },
+    "Holder 1" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soporte 1"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suporte 1"
+          }
+        }
+      }
+    },
+    "Holder 2" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soporte 2"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suporte 2"
+          }
+        }
+      }
+    },
+    "Holder 2 and the pen, foil, emboss and Heat Pen haven’t been tried on a machine yet." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El soporte 2 y la pluma, el foil, el relieve y la Heat Pen aún no se probaron en una máquina."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O suporte 2 e a caneta, o foil, o relevo e a Heat Pen ainda não foram testados numa máquina."
           }
         }
       }
@@ -4177,6 +4646,22 @@
         }
       }
     },
+    "Import All Paths" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar todos los trazados"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar todos os caminhos"
+          }
+        }
+      }
+    },
     "Imported from Silhouette Studio: %@. ⌘S saves over the .studio3 or as a Cutline document." : {
       "localizations" : {
         "es" : {
@@ -4253,6 +4738,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Em uma linha, o que você gostaria"
+          }
+        }
+      }
+    },
+    "In the machine now: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En la máquina ahora: %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Na máquina agora: %@"
           }
         }
       }
@@ -4508,6 +5009,22 @@
         }
       }
     },
+    "Kraft Blade" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuchilla Kraft"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lâmina Kraft"
+          }
+        }
+      }
+    },
     "Layer %lld" : {
       "localizations" : {
         "es" : {
@@ -4552,6 +5069,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entrelinha (vazio = automática; a linha usa a maior)"
+          }
+        }
+      }
+    },
+    "Leaves out the print-only pieces smaller than this size. Cut lines always stay." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deja fuera las piezas que solo se imprimen y son más pequeñas que este tamaño. Las líneas de corte siempre se quedan."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deixa de fora os pedaços que só imprimem e são menores que este tamanho. As linhas de corte sempre ficam."
           }
         }
       }
@@ -5551,6 +6084,38 @@
         }
       }
     },
+    "Not tried on a machine yet: if something goes wrong, use “Report a Problem…”" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no se probó en una máquina: si algo sale mal, usa “Informar de un problema…”"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ainda não testado numa máquina: se algo der errado, use “Relatar um problema…”"
+          }
+        }
+      }
+    },
+    "Not used with %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se usa con %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não se usa com %@"
+          }
+        }
+      }
+    },
     "Nothing in the queue. Each Send goes here; the machine cuts one job at a time." : {
       "localizations" : {
         "es" : {
@@ -6157,6 +6722,22 @@
         }
       }
     },
+    "Paths left: %lld of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trazados que quedan: %1$lld de %2$lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caminhos que ficam: %1$lld de %2$lld"
+          }
+        }
+      }
+    },
     "Pen" : {
       "localizations" : {
         "es" : {
@@ -6169,6 +6750,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Caneta"
+          }
+        }
+      }
+    },
+    "Pen, foil, emboss and Heat Pen usually go before the blade (drag this color up), so the piece doesn’t come loose first." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pluma, foil, relieve y Heat Pen suelen ir antes de la cuchilla (arrastra este color hacia arriba), para que la pieza no se suelte antes."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caneta, foil, relevo e Heat Pen costumam vir antes da lâmina (arraste esta cor para cima), para a peça não se soltar antes."
           }
         }
       }
@@ -6397,6 +6994,22 @@
         }
       }
     },
+    "Print bleed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sangrado de impresión"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sangria na impressão"
+          }
+        }
+      }
+    },
     "Printed at 100%" : {
       "localizations" : {
         "es" : {
@@ -6409,6 +7022,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Impressa em 100 %"
+          }
+        }
+      }
+    },
+    "Prints the color at the edge of the art %@ past each closed cut line, so a cut that lands a little off doesn’t show white paper. On the canvas, the red line shows how far it goes." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imprime el color del borde del diseño %@ más allá de cada línea de corte cerrada, para que un corte un poco desplazado no deje ver el papel blanco. En la pantalla, la línea roja muestra hasta dónde llega."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imprime a cor da borda da arte %@ além de cada linha de corte fechada, para um corte um pouco deslocado não mostrar o papel branco. Na tela, a linha vermelha mostra até onde ela vai."
+          }
+        }
+      }
+    },
+    "Prints the color at the edge of the art a little past each cut line" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imprime el color del borde del diseño un poco más allá de cada línea de corte"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imprime a cor da borda da arte um pouco além de cada linha de corte"
           }
         }
       }
@@ -6457,6 +7102,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Proporção travada"
+          }
+        }
+      }
+    },
+    "Punch Tool" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herramienta de perforar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ferramenta de furar"
           }
         }
       }
@@ -6537,6 +7198,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Raio"
+          }
+        }
+      }
+    },
+    "Ratchet Blade" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuchilla Ratchet"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lâmina Ratchet"
           }
         }
       }
@@ -6733,6 +7410,22 @@
         }
       }
     },
+    "Report a Problem…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informar de un problema…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relatar um problema…"
+          }
+        }
+      }
+    },
     "Report copied." : {
       "localizations" : {
         "es" : {
@@ -6825,6 +7518,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recuo à direita (texto alinhado à direita ou ao centro)"
+          }
+        }
+      }
+    },
+    "Rotary Blade" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuchilla rotativa"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lâmina rotativa"
           }
         }
       }
@@ -7703,6 +8412,22 @@
         }
       }
     },
+    "Simplify" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simplificar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simplificar"
+          }
+        }
+      }
+    },
     "Size" : {
       "localizations" : {
         "es" : {
@@ -7747,6 +8472,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Versalete (o da fonte; sem ele, maiúsculas a 70 %)"
+          }
+        }
+      }
+    },
+    "Smaller than" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más pequeñas que"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menores que"
           }
         }
       }
@@ -7843,6 +8584,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Traço contínuo"
+          }
+        }
+      }
+    },
+    "Sonic Blade" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuchilla Sonic"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lâmina Sonic"
           }
         }
       }
@@ -8232,6 +8989,64 @@
         }
       }
     },
+    "That’s a lot for Cutline. %lld of them cut, the rest only prints." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "That’s a lot for Cutline. %lld of them cuts, the rest only prints."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "That’s a lot for Cutline. %lld of them cut, the rest only prints."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Es mucho para Cutline. %lld de ellos corta, el resto solo se imprime."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Es mucho para Cutline. %lld de ellos cortan, el resto solo se imprime."
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "É muito para o Cutline. %lld deles corta, o resto só imprime."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "É muito para o Cutline. %lld deles cortam, o resto só imprime."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "The .studio3 file changed since it was opened (was it saved by another app?). To keep those changes, it wasn't saved; save as a Cutline document or open the file again." : {
       "localizations" : {
         "es" : {
@@ -8260,6 +9075,56 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Não foi possível ler o EPS."
+          }
+        }
+      }
+    },
+    "The Heat Pen didn’t heat up in 6 minutes." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La Heat Pen no se calentó en 6 minutos."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Heat Pen não esquentou em 6 minutos."
+          }
+        }
+      }
+    },
+    "The Heat Pen heats up before the job starts (about 3 minutes) and turns off at the end. Don’t touch it while its light is red." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La Heat Pen se calienta antes de empezar el trabajo (unos 3 minutos) y se apaga al final. No la toques mientras su luz esté roja."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Heat Pen esquenta antes de o trabalho começar (uns 3 minutos) e desliga no fim. Não encoste nela enquanto a luz estiver vermelha."
+          }
+        }
+      }
+    },
+    "The Heat Pen reported an error. Check that it is plugged into the machine and in the tool holder." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La Heat Pen informó un error. Comprueba que esté conectada a la máquina y en el soporte."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Heat Pen informou um erro. Confira se ela está ligada na máquina e no suporte."
           }
         }
       }
@@ -8833,6 +9698,40 @@
         }
       }
     },
+    "This machine doesn’t take the Heat Pen (“%@”)." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta máquina no admite la Heat Pen (“%@”)."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta máquina não aceita a Heat Pen (“%@”)."
+          }
+        }
+      }
+    },
+    "This machine has one tool holder: “%@” is set to holder 2." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta máquina tiene un solo soporte: “%@” está en el soporte 2."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta máquina tem um suporte só: “%@” está no suporte 2."
+          }
+        }
+      }
+    },
     "This stroke will also be printed." : {
       "localizations" : {
         "es" : {
@@ -8861,6 +9760,55 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ferramenta"
+          }
+        }
+      }
+    },
+    "Tool holder" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soporte"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suporte"
+          }
+        }
+      }
+    },
+    "Tool holder %lld has colors with different tools. Use the other holder, or send them separately (turn the other colors off)." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El soporte %lld tiene colores con herramientas distintas. Usa el otro soporte o envíalos por separado (desactiva los otros colores)."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O suporte %lld tem cores com ferramentas diferentes. Use o outro suporte ou envie em separado (desligue as outras cores)."
+          }
+        }
+      }
+    },
+    "Tool holder 2 and tools" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soporte 2 y herramientas"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suporte 2 e ferramentas"
           }
         }
       }
@@ -9674,6 +10622,22 @@
         }
       }
     },
+    "Width" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ancho"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Largura"
+          }
+        }
+      }
+    },
     "With cutting mat" : {
       "localizations" : {
         "es" : {
@@ -10060,6 +11024,22 @@
         }
       }
     },
+    "empty" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vacío"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vazio"
+          }
+        }
+      }
+    },
     "error: %@" : {
       "localizations" : {
         "es" : {
@@ -10088,6 +11068,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "hex"
+          }
+        }
+      }
+    },
+    "holder %lld · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "soporte %lld · %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "suporte %lld · %@"
           }
         }
       }
@@ -10502,6 +11498,22 @@
         }
       }
     },
+    "tool %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "herramienta %lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ferramenta %lld"
+          }
+        }
+      }
+    },
     "top" : {
       "localizations" : {
         "es" : {
@@ -10611,6 +11623,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Não foi possível abrir “%@”."
+          }
+        }
+      }
+    },
+    "“%@” has %lld paths" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” tiene %2$lld trazados"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” tem %2$lld caminhos"
           }
         }
       }

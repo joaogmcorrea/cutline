@@ -2,6 +2,8 @@
 // expected (or the feature and what it would be for), plus the technical details (versions, Mac, machine and the
 // driver log), which the person sees before sending. It goes as a GitHub issue (prefilled new-issue page) or by
 // email (with the latest cut log attached); it can also just be copied.
+// The experimental features (tool holder 2 and tools, print bleed) open it from their own "Report a Problem…" link,
+// already titled and with what's needed to look into them (`ReportRequest.context`).
 import AppKit
 import CutlineKit
 import SwiftUI
@@ -15,6 +17,26 @@ enum ReportKind: String, Codable, Hashable, CaseIterable {
         case .feature: String(localized: "Request a Feature")
         }
     }
+}
+
+/// Features marked "Experimental" in the interface: not tried on a machine yet.
+enum ExperimentalFeature: String, Codable, Hashable {
+    case tools, printBleed
+
+    var title: String {
+        switch self {
+        case .tools: String(localized: "Tool holder 2 and tools")
+        case .printBleed: String(localized: "Print bleed")
+        }
+    }
+}
+
+/// What opens a report window: the kind and, from an experimental feature, which one and its details (built where the
+/// link is, which knows the document and the machine).
+struct ReportRequest: Codable, Hashable {
+    var kind: ReportKind
+    var feature: ExperimentalFeature? = nil
+    var context: String? = nil
 }
 
 /// Where the reports go.
@@ -35,6 +57,9 @@ struct Report {
     /// Bug: what should have happened.
     var expected = ""
     var includeTechnical = true
+    /// Reported from an experimental feature's link, with its details.
+    var feature: ExperimentalFeature?
+    var context: String?
 
     /// GitHub doesn't open pages with very long addresses: the log shrinks until it fits.
     static let urlLimit = 7_500
@@ -68,6 +93,7 @@ struct Report {
         }
         if let technical {
             parts.append("### " + String(localized: "Technical details") + "\n\n" + technical.summary)
+            if let context, !context.isEmpty { parts.append(context) }
             let lines = technical.logLines.suffix(logLineCount ?? technical.logLines.count)
             if !lines.isEmpty {
                 let title = String(localized: "Machine log (last \(lines.count) lines)")
@@ -87,7 +113,7 @@ struct Report {
             var components = URLComponents(string: "https://github.com/\(Contact.repository)/issues/new")!
             components.queryItems = [URLQueryItem(name: "title", value: finalTitle),
                                       URLQueryItem(name: "body", value: pointSize),
-                                      URLQueryItem(name: "labels", value: kind == .bug ? "bug" : "enhancement")]
+                                      URLQueryItem(name: "labels", value: kind == .bug ? (feature == nil ? "bug" : "bug,experimental") : "enhancement")]
             return components.url!
         }
         var lines = technical?.logLines.count ?? 0
@@ -117,9 +143,10 @@ struct TechnicalInfo {
         FileManager.default.homeDirectoryForCurrentUser.appending(path: "Library/Logs/Cutline")
     }
 
-    /// Everything that goes along, as the person sees it before sending.
-    var preview: String {
+    /// Everything that goes along, as the person sees it before sending (with an experimental feature's details).
+    func preview(_ context: String? = nil) -> String {
         var text = summary
+        if let context, !context.isEmpty { text += "\n\n" + context }
         if !logLines.isEmpty { text += "\n\n" + logLines.joined(separator: "\n") }
         if let lastCut {
             text += "\n\n" + String(localized: "Attached to the email: \(lastCut.lastPathComponent)")
@@ -198,8 +225,14 @@ struct ReportWindow: View {
     @State private var report: Report
     @State private var notice: String?
 
-    init(kind: ReportKind) {
-        _report = State(initialValue: Report(kind: kind, detail: kind == .bug ? Report.emptySteps : ""))
+    init(request: ReportRequest) {
+        var report = Report(kind: request.kind, detail: request.kind == .bug ? Report.emptySteps : "")
+        if let feature = request.feature {
+            report.feature = feature
+            report.context = request.context
+            report.summary = "[" + String(localized: "Experimental") + "] " + feature.title + ": "
+        }
+        _report = State(initialValue: report)
     }
 
     private var technical: TechnicalInfo? { report.includeTechnical ? TechnicalInfo(machine: machine) : nil }
@@ -231,7 +264,7 @@ struct ReportWindow: View {
                     Toggle("Include Cutline, Mac and machine details", isOn: $report.includeTechnical)
                     if let technical {
                         DisclosureGroup("See what’s included") {
-                            Text(technical.preview)
+                            Text(technical.preview(report.context))
                                 .font(.system(.caption, design: .monospaced))
                                 .textSelection(.enabled)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -240,6 +273,9 @@ struct ReportWindow: View {
                 } footer: {
                     if report.kind == .bug {
                         VStack(alignment: .leading, spacing: 6) {
+                            if report.feature == .printBleed {
+                                Text("A photo of the printed and cut sheet helps a lot: attach it to the issue or the email, with the document.")
+                            }
                             Text("If the problem happens with a file, attach the document (.cutline, .studio3, PDF…). Cut logs are in ~/Library/Logs/Cutline; the latest one is attached to the email.")
                             Button("Show cut logs") { showLogs() }
                                 .buttonStyle(.link)
@@ -351,6 +387,37 @@ struct ReportWindow: View {
     }
 }
 
+/// The "Experimental" tag next to a feature that hasn't been tried on a machine yet.
+struct ExperimentalBadge: View {
+    var body: some View {
+        Text("Experimental")
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(.orange)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 2)
+            .background(Color.orange.opacity(0.16), in: Capsule())
+            .fixedSize()
+            .help("Not tried on a machine yet: if something goes wrong, use “Report a Problem…”")
+    }
+}
+
+/// "Report a Problem…" for an experimental feature: opens the report already titled, with the feature's details.
+struct ReportProblemLink: View {
+    let feature: ExperimentalFeature
+    /// Built when clicked (it can take a moment: the print bleed recomputes its bands to measure them).
+    let context: () -> String
+    @Environment(\.openWindow) private var openWindowAction
+
+    var body: some View {
+        Button("Report a Problem…") {
+            openWindowAction(value: ReportRequest(kind: .bug, feature: feature, context: context()))
+        }
+        .buttonStyle(.link)
+        // A caption's secondary color would make it look like plain text.
+        .foregroundStyle(.tint)
+    }
+}
+
 /// The app always opens documents in tabs; the report window stays on its own.
 private struct NoTabs: NSViewRepresentable {
     func makeNSView(context: Context) -> NSView { Probe() }
@@ -370,8 +437,8 @@ struct HelpCommands: Commands {
 
     var body: some Commands {
         CommandGroup(replacing: .help) {
-            Button("Report a Bug…") { openWindowAction(value: ReportKind.bug) }
-            Button("Request a Feature…") { openWindowAction(value: ReportKind.feature) }
+            Button("Report a Bug…") { openWindowAction(value: ReportRequest(kind: .bug)) }
+            Button("Request a Feature…") { openWindowAction(value: ReportRequest(kind: .feature)) }
             Divider()
             Link("Cutline on GitHub", destination: Contact.gitHubPage)
         }

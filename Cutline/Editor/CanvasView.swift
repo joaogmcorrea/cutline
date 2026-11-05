@@ -52,6 +52,8 @@ struct CanvasView: View {
     @State private var gesture: CanvasGesture?
     @State private var pointer = Pointer()
     @State private var tracing = Tracing()
+    /// The print bleed's bands, drawn under the art (Model/PrintBleed.swift).
+    @State private var bleedPreview = BleedPreview()
     @State private var scrollMonitor: Any?
     @State private var keyboardMonitor: Any?
     @State private var rightClickMonitor: Any?
@@ -85,6 +87,8 @@ struct CanvasView: View {
     }
 
     private var dark: Bool { scheme == .dark }
+    /// The print bleed's outer edge on screen.
+    private static let bleedGuide = Color(red: 0.93, green: 0.11, blue: 0.14)
     private var backgroundColor: Color { dark ? Color(white: 0.1) : Color(red: 0.89, green: 0.89, blue: 0.9) }
     private var baseColor: Color { dark ? Color(red: 0.17, green: 0.18, blue: 0.17) : Color(red: 0.8, green: 0.82, blue: 0.8) }
 
@@ -254,10 +258,22 @@ struct CanvasView: View {
         var withShadow = ctx
         withShadow.addFilter(.shadow(color: .black.opacity(0.16), radius: 8, y: 3))
         withShadow.fill(Path(viewState.canvas(page)), with: .color(.white))   // the sheet is white in dark mode too
+        // Print bleed: the bands under the art, as they print.
+        let bleedPieces = doc.marks && doc.bleed.enabled ? bleedPreview.pieces(for: doc) : []
+        if !bleedPieces.isEmpty {
+            ctx.withCGContext { cg in
+                cg.concatenate(viewState.transform)
+                PrintBleed.draw(bleedPieces, in: cg)
+            }
+        }
 
         for object in doc.objectsInOrder where doc.visible(object) {
             paintPath(object, in: &ctx)
             if object.cutsLine || object.strokeWidth > 0 { trace(object, in: &ctx) }
+        }
+        // …and how far they go: a thin red line, like Illustrator's bleed guide (only on screen).
+        for piece in bleedPieces {
+            ctx.stroke(Path(piece.guide).applying(viewState.transform), with: .color(Self.bleedGuide), lineWidth: 1)
         }
         if doc.marks { drawMarks(&ctx, size: size) }
 

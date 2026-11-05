@@ -1,5 +1,6 @@
 // File › Print… (⌘P): the A4 page at actual size with what gets printed — fills, images
-// and strokes with width — and, with Print & Cut, the registration marks. 0 pt strokes only mark the cut
+// and strokes with width — and, with Print & Cut, the registration marks and the print bleed (Model/PrintBleed.swift).
+// The bleed is in the print and on the canvas; the Finder's previews leave it out. 0 pt strokes only mark the cut
 // and are not printed. Colors go in CMYK (the system's generic CMYK profile; ColorSync converts for the printer).
 import AppKit
 import SwiftUI
@@ -38,16 +39,20 @@ enum Printing {
         }
     }
 
-    /// Draws the page in mm (y down) in a context in points.
-    static func render(_ doc: Document, in cg: CGContext) {
+    /// Draws the page in mm (y down) in a context in points. `marks` false leaves the registration marks out (the
+    /// print bleed's source); `bleed` goes under everything; `screenColors` paints with the canvas's colors instead of
+    /// the print's CMYK (the bleed's canvas preview).
+    static func render(_ doc: Document, in cg: CGContext, marks: Bool = true, bleed: [PrintBleed.Piece] = [],
+                       screenColors: Bool = false) {
         cg.saveGState()
         defer { cg.restoreGState() }
         cg.scaleBy(x: pointsPerMM, y: pointsPerMM)
+        PrintBleed.draw(bleed, in: cg)
         for object in doc.objectsInOrder where doc.visible(object) {
             let shapePath = object.shapePath.cgPath
             if let color = object.fill {
                 cg.addPath(shapePath)
-                cg.setFillColor(color.cgCMYK)
+                cg.setFillColor(screenColors ? color.cgScreen : color.cgCMYK)
                 cg.fillPath(using: .evenOdd)
             }
             if let image = object.image, let cgImage = doc.image(image.key) {
@@ -62,16 +67,16 @@ enum Printing {
                 cg.draw(cgImage, in: CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height))
                 cg.restoreGState()
             }
-            if object.strokeWidth > 0 { trace(object, shapePath, in: cg) }
+            if object.strokeWidth > 0 { trace(object, shapePath, in: cg, screenColors: screenColors) }
         }
-        if doc.marks {
+        if marks, doc.marks {
             cg.setFillColor(CMYK(c: 0, m: 0, y: 0, k: 100).cgCMYK)
             cg.fill(doc.marksConfig.rectangles)
         }
     }
 
     /// Stroke with width (pt → mm), cap, join, dashes and alignment — as on the canvas.
-    private static func trace(_ object: CanvasObject, _ shapePath: CGPath, in cg: CGContext) {
+    private static func trace(_ object: CanvasObject, _ shapePath: CGPath, in cg: CGContext, screenColors: Bool) {
         let e = object.style
         cg.saveGState()
         defer { cg.restoreGState() }
@@ -83,7 +88,7 @@ enum Printing {
             cg.clip(using: .evenOdd)
             width *= 2
         }
-        cg.setStrokeColor(object.strokeColor.cgCMYK)
+        cg.setStrokeColor(screenColors ? object.strokeColor.cgScreen : object.strokeColor.cgCMYK)
         cg.setLineWidth(width)
         cg.setLineCap(e.cap.cg)
         cg.setLineJoin(e.join.cg)
@@ -95,6 +100,12 @@ enum Printing {
 }
 
 extension CMYK {
+    /// The color the canvas shows (`CMYK.color`'s simple conversion, sRGB).
+    var cgScreen: CGColor {
+        let f = { (v: Double) in 1 - v / 100 }
+        return CGColor(srgbRed: f(c) * f(k), green: f(m) * f(k), blue: f(y) * f(k), alpha: 1)
+    }
+
     /// Color in the system's generic CMYK profile (for printing).
     var cgCMYK: CGColor {
         let space = CGColorSpace(name: CGColorSpace.genericCMYK)!
@@ -105,6 +116,8 @@ extension CMYK {
 /// The page to print, paper-sized (A4 in points), with y down.
 private final class PrintedSheet: NSView {
     let doc: Document
+    /// Made once per print (the print calls `draw` more than once).
+    private lazy var bleed = PrintBleed.pieces(for: doc, pixelsPerMM: PrintBleed.printPixelsPerMM)
 
     init(doc: Document) {
         self.doc = doc
@@ -129,6 +142,6 @@ private final class PrintedSheet: NSView {
 
     override func draw(_ dirtyRect: NSRect) {
         guard let cg = NSGraphicsContext.current?.cgContext else { return }
-        Printing.render(doc, in: cg)
+        Printing.render(doc, in: cg, bleed: bleed)
     }
 }

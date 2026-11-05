@@ -12,9 +12,10 @@ Cutting for Silhouette machines on the Mac — a lean, free, native app for peop
 - Imports Photoshop files layer by layer: each layer comes in as its own image, in its place, and can get its own cut outline.
 - Pastes what you copy in Illustrator. The stroke sets the cut, like when you import a file.
 - **Cut by line color:** each stroke color gets its own material, force, speed, blade and passes.
+- **Experimental:** tool holder 2 with a pen, foil, the emboss tool or the Heat Pen for each color, and a print bleed for Print & Cut. They haven't been tried on a machine yet: if something goes wrong, **Report a Problem…** next to each one fills in the details.
 - Sends to the machine over USB or Bluetooth, and remembers the settings in the file and in the app.
 - macOS 26 interface (Liquid Glass), with Illustrator-style panels: Color (CMYK), Stroke, Pathfinder, Layers, Character and Paragraph.
-- Quick Look in the Finder: `.cutline` and `.studio3` icons show their page, and Space opens it bigger.
+- Quick Look in the Finder: `.cutline` and `.studio3` icons show their page, and Space opens the whole file.
 
 ## Machines
 

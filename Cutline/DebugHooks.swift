@@ -1,8 +1,13 @@
 // Debug builds only: helps check the interface without screen recording permission.
 //   open --env CUTLINE_SNAPSHOT=/path/window.png --env CUTLINE_DEMO=1 Cutline.app
 //   CUTLINE_SEND=1 opens the Send window; CUTLINE_SIMULATE=1 uses the simulated machine;
+//   CUTLINE_SIMULATE_MODEL=Silhouette_Cameo4 picks the simulated model; CUTLINE_SIMULATE_TOOLS=2,8 pretends what
+//   is in its tool holders (Cameo 4 onward); CUTLINE_TEST_TOOL=2:foil sets the 1st color's holder and tool;
 //   CUTLINE_TEST_MODIFY=1 changes the document by itself; CUTLINE_TEST_SAVE=/x.cutline saves a copy;
 //   CUTLINE_TEST_IMPORT=/x.pdf imports; CUTLINE_TEST_PATHFINDER=divide…; CUTLINE_COLLAPSED=Color,Stroke;
+//   CUTLINE_TEST_LAYER_ROWS=3 lists that many objects per layer in the Layers panel (500 normally);
+//   CUTLINE_TEST_MANY_PATHS=flatten|simplify:2|all|cancel answers the question of a file with too many paths, and
+//   CUTLINE_TEST_MANY_PATHS_PLAIN=/x.png shows that question in a plain hidden window (and draws it into the file);
 //   CUTLINE_TEST_DROP=/x.png does the same as dropping the file in the middle of the window;
 //   CUTLINE_TEST_IMAGE=image|outer|inners|inners-insert picks the answer to the imported-image question (also the
 //   question of a Photoshop file with layers, which inserts right away);
@@ -18,7 +23,9 @@
 //   CUTLINE_TEST_SETTINGS=1 opens Cutline › Settings; CUTLINE_START=1 keeps the start screen on in a hidden test, and
 //   CUTLINE_TEST_RECENT=/a.cutline:/b.studio3 shows those files as its recent ones (the owner's list stays untouched),
 //   CUTLINE_TEST_START=blank|printAndCut picks that way to start 1 s after it opens;
-//   CUTLINE_MARKS=1 turns on the Print & Cut marks; CUTLINE_TEST_PRINT=/x.pdf writes the print to a PDF;
+//   CUTLINE_SNAPSHOT_DELAY=6 takes the snapshot later;
+//   CUTLINE_MARKS=1 turns on the Print & Cut marks; CUTLINE_TEST_BLEED=1.5 turns on the print bleed (that width, mm);
+//   CUTLINE_TEST_PRINT=/x.pdf writes the print to a PDF;
 //   CUTLINE_TEST_SEND=1 (with CUTLINE_SIMULATE) sends by itself when the Send window opens;
 //   CUTLINE_TEST_TEST_CUT=x,y[,side] (with CUTLINE_SIMULATE) sends the test cut at x,y mm when the Send window opens;
 //   CUTLINE_TEST_TEST_SHAPE=x,y[,side] only turns on the test shape there (side in mm);
@@ -34,7 +41,7 @@
 //   CUTLINE_TEST_DEMO_FONT=Family sets the demo text in that family (a font installed while the app is open)
 //   (CUTLINE_TEST_FAMILY=Montserrat switches the family during it);
 //   CUTLINE_TEST_FONTS=1 opens the Character panel's font list.
-//   CUTLINE_TEST_REPORT=bug|feature opens the report window; CUTLINE_TEST_REPORT_TEXT=1 fills in
+//   CUTLINE_TEST_REPORT=bug|feature|tools|printBleed opens the report window; CUTLINE_TEST_REPORT_TEXT=1 fills in
 //   an example; CUTLINE_TEST_REPORT_OUTPUT=/x.txt writes the GitHub address and the text instead of opening it.
 //   CUTLINE_HIDDEN=1 (with `open -g`) tests without showing up: the windows stay behind the desktop.
 #if DEBUG
@@ -65,9 +72,16 @@ enum DebugHooks {
 
     private static var activity: NSObjectProtocol?
 
-    /// CUTLINE_TEST_REPORT=bug|feature opens the report window at launch.
-    static var openReport: ReportKind? {
-        ProcessInfo.processInfo.environment["CUTLINE_TEST_REPORT"].flatMap(ReportKind.init(rawValue:))
+    /// CUTLINE_TEST_REPORT=bug|feature|tools|printBleed opens the report window at launch (the last two as their
+    /// "Report a Problem…" links do, with the document's details).
+    static func reportRequest(doc: Document, machine: Machine) -> ReportRequest? {
+        switch ProcessInfo.processInfo.environment["CUTLINE_TEST_REPORT"] {
+        case "bug": ReportRequest(kind: .bug)
+        case "feature": ReportRequest(kind: .feature)
+        case "tools": ReportRequest(kind: .bug, feature: .tools, context: ToolChoice.reportContext(doc: doc, machine: machine))
+        case "printBleed": ReportRequest(kind: .bug, feature: .printBleed, context: PrintBleed.reportContext(doc))
+        default: nil
+        }
     }
 
     /// CUTLINE_TEST_REPORT_TEXT=1 fills the window with an example; with CUTLINE_TEST_REPORT_OUTPUT, it also
@@ -92,6 +106,16 @@ enum DebugHooks {
         return true
     }
 
+    /// CUTLINE_TEST_TOOL=2:foil (holder:tool, the tool by its stored value or its name): the Send window sets the first
+    /// color to it, in the document only (not in the app's remembered settings).
+    static var testTool: (Int, CutTool)? {
+        guard let text = ProcessInfo.processInfo.environment["CUTLINE_TEST_TOOL"] else { return nil }
+        let parts = text.split(separator: ":").map(String.init)
+        guard parts.count == 2, let holder = Int(parts[0]),
+              let tool = CutTool(rawValue: parts[1]) ?? CutTool.allCases.first(where: { "\($0)" == parts[1] }) else { return nil }
+        return (holder, tool)
+    }
+
     /// CUTLINE_SEND=1 opens the Send window at launch (with CUTLINE_SIMULATE=1, without a machine).
     static var openSendWindow: Bool { ProcessInfo.processInfo.environment["CUTLINE_SEND"] != nil }
 
@@ -113,7 +137,8 @@ enum DebugHooks {
     /// itself into that file 2.5 s later (no screen recording permission needed; glass doesn't show in it).
     static var openSendPlain: Bool { ProcessInfo.processInfo.environment["CUTLINE_TEST_SEND_PLAIN"] != nil }
 
-    static func showPlain(_ view: some View, title: String, size: CGSize) {
+    static func showPlain(_ view: some View, title: String, size: CGSize,
+                          output: String? = ProcessInfo.processInfo.environment["CUTLINE_TEST_SEND_PLAIN"]) {
         let nsWindow = NSWindow(contentRect: NSRect(x: -30000, y: 0, width: size.width, height: size.height),
                                 styleMask: [.borderless], backing: .buffered, defer: false)
         nsWindow.title = title
@@ -122,7 +147,7 @@ enum DebugHooks {
         nsWindow.contentView = NSHostingView(rootView: view)
         nsWindow.orderFront(nil)
         plainWindows.append(nsWindow)
-        guard let outputPath = ProcessInfo.processInfo.environment["CUTLINE_TEST_SEND_PLAIN"], outputPath.hasSuffix(".png") else { return }
+        guard let outputPath = output, outputPath.hasSuffix(".png") else { return }
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
             guard let view = nsWindow.contentView, let image = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }
             view.cacheDisplay(in: view.bounds, to: image)
@@ -191,6 +216,12 @@ enum DebugHooks {
         Set((ProcessInfo.processInfo.environment["CUTLINE_COLLAPSED"] ?? "").split(separator: ",").map(String.init))
     }
 
+    /// CUTLINE_TEST_LAYER_ROWS=3 lists only that many objects per layer in the Layers panel (instead of 500), to see
+    /// the "more objects not listed" line at the top of the panel.
+    static var layerRows: Int? {
+        ProcessInfo.processInfo.environment["CUTLINE_TEST_LAYER_ROWS"].flatMap { Int($0) }
+    }
+
     /// CUTLINE_TEST_PATHFINDER=unite|minusFront|intersect|exclude|divide|minusBack draws an overlapping
     /// rectangle and ellipse and applies the operation (to check the result without the mouse).
     static func pathfinderForTest(_ doc: Document) {
@@ -217,6 +248,14 @@ enum DebugHooks {
 
     /// CUTLINE_TEST_IMAGE=image|outer|inners|inners-insert: the answer to the imported-image question.
     static var imageChoice: String? { ProcessInfo.processInfo.environment["CUTLINE_TEST_IMAGE"] }
+
+    /// CUTLINE_TEST_MANY_PATHS=flatten|simplify|simplify:2|all|cancel: the answer to the many-paths question (simplify
+    /// with that size in mm), picked by itself once the previews are ready.
+    static var manyPathsChoice: String? { ProcessInfo.processInfo.environment["CUTLINE_TEST_MANY_PATHS"] }
+
+    /// CUTLINE_TEST_MANY_PATHS_PLAIN=1 (or =/x.png): the many-paths question opens in a plain hidden window instead of a
+    /// sheet, like CUTLINE_TEST_SEND_PLAIN (with a .png, it draws itself into that file 2.5 s later).
+    static var manyPathsPlain: String? { ProcessInfo.processInfo.environment["CUTLINE_TEST_MANY_PATHS_PLAIN"] }
 
     /// CUTLINE_TEST_TRACE=nodes,smoothing (0 to 100): the Trace settings on open.
     static var traceSettings: (nodes: Double, smoothing: Double)? {
@@ -326,6 +365,11 @@ enum DebugHooks {
     static func printForTest(_ doc: Document) {
         let environment = ProcessInfo.processInfo.environment
         if environment["CUTLINE_MARKS"] != nil { doc.marks = true }
+        if let width = environment["CUTLINE_TEST_BLEED"].flatMap(Double.init) {
+            doc.bleed = PrintBleed()
+            doc.bleed.enabled = true
+            doc.bleed.width = width
+        }
         guard let outputPath = environment["CUTLINE_TEST_PRINT"] else { return }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             Printing.printDocument(doc, in: nil, pdf: URL(fileURLWithPath: outputPath))
@@ -495,7 +539,9 @@ enum DebugHooks {
 
     static func scheduleSnapshot() {
         guard let outputPath = ProcessInfo.processInfo.environment["CUTLINE_SNAPSHOT"] else { return }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+        // CUTLINE_SNAPSHOT_DELAY=6: later than the usual 2.5 s (for what is drawn a moment after, like the print bleed).
+        let delay = Double(ProcessInfo.processInfo.environment["CUTLINE_SNAPSHOT_DELAY"] ?? "") ?? 2.5
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
             guard let nsWindow = NSApp.windows.first(where: { $0.isVisible }),
                   let frame = nsWindow.contentView?.superview,
                   let image = frame.bitmapImageRepForCachingDisplay(in: frame.bounds) else { return }

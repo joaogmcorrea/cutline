@@ -40,13 +40,20 @@ nonisolated struct CutConfig: Hashable, Codable, Sendable {
     var enabled = true
     var material: String
     var settings: CutSettings
+    /// Tool holder 1 or 2 and what is in it (experimental: not tried on a machine yet, besides the blade in holder 1).
+    var holder = 1
+    var tool = CutTool.blade
 
     init(material: Material) {
         self.material = material.name
         self.settings = material.settings
     }
 
-    private enum CodingKeys: String, CodingKey { case enabled = "ligado", action = "acao", material, settings = "ajustes" }
+    /// The keys stored on disk keep the names of the 1.0 format (Portuguese), so older files still open; the newer
+    /// ones follow them.
+    private enum CodingKeys: String, CodingKey {
+        case enabled = "ligado", action = "acao", material, settings = "ajustes", holder = "suporte", tool = "ferramenta"
+    }
 
     /// Up to 0.7.1 there was also a Cut/Don't cut action, which did the same as turning the color off: "Não cortar"
     /// ("Don't cut") from an old file (or from the app's memory) opens turned off.
@@ -56,14 +63,23 @@ nonisolated struct CutConfig: Hashable, Codable, Sendable {
         settings = try c.decode(CutSettings.self, forKey: .settings)
         enabled = try c.decodeIfPresent(Bool.self, forKey: .enabled) ?? true
         if try c.decodeIfPresent(String.self, forKey: .action) == "Não cortar" { enabled = false }
+        holder = try c.decodeIfPresent(Int.self, forKey: .holder) ?? 1
+        // A tool this version doesn't know (from a newer file) falls back to the blade.
+        tool = (try? c.decodeIfPresent(CutTool.self, forKey: .tool)) ?? .blade
     }
 
+    /// Holder and tool only when they aren't the default: files that don't use them stay as before.
     func encode(to encoder: Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
         try c.encode(enabled, forKey: .enabled)
         try c.encode(material, forKey: .material)
         try c.encode(settings, forKey: .settings)
+        if holder != 1 { try c.encode(holder, forKey: .holder) }
+        if tool != .blade { try c.encode(tool, forKey: .tool) }
     }
+
+    /// Something other than the blade in holder 1 (the experimental part).
+    var experimentalTool: Bool { holder != 1 || tool != .blade }
 
     var sends: Bool { enabled }
     /// The material's values (the app's or "My materials"); nil if the material doesn't exist here (file from
@@ -170,7 +186,7 @@ extension Document {
             let config = config(line.color)
             guard config.sends else { return nil }
             return CutLayer(name: "\(config.material) (\(line.color.summaryText))", paths: line.polylines,
-                            settings: config.settings)
+                            settings: config.settings, holder: config.holder, tool: config.tool)
         }
     }
 }
@@ -247,7 +263,8 @@ extension Document {
         moveTest(to: testPosition)
         let config = config(color)
         let layer = CutLayer(name: String(localized: "Test cut (\(Material.show(config.material)))"),
-                              paths: TestCut.paths(in: testPosition, side: testSide), settings: config.settings)
+                              paths: TestCut.paths(in: testPosition, side: testSide), settings: config.settings,
+                              holder: config.holder, tool: config.tool)
         return Job(name: String(localized: "Test cut"), origin: ObjectIdentifier(self), layers: [layer],
                         logLines: registrationToSend, withMat: withMat, base: cuttingMatSetting)
     }

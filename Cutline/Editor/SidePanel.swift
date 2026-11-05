@@ -296,13 +296,33 @@ private struct LayersSection: View {
     @State private var renaming: Layer.ID?
     @State private var confirmDelete = false
 
+    /// Object rows listed per layer, from the top. One row per object crashed the app with a 74,000-path PDF (SwiftUI's
+    /// attribute graph runs out of room), and nobody scrolls that far: the rest shows as a count.
+    private static var maxRows: Int {
+        #if DEBUG
+        DebugHooks.layerRows ?? 500
+        #else
+        500
+        #endif
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             ForEach(doc.layers) { layer in
                 LayerRow(doc: doc, layer: layer, renaming: $renaming)
                 if layer.isOpen {
-                    ForEach(doc.objects(of: layer).reversed()) { object in
+                    let objects = doc.objects(of: layer)
+                    ForEach(objects.suffix(Self.maxRows).reversed()) { object in
                         ObjectRow(doc: doc, object: object, layer: layer)
+                    }
+                    if objects.count > Self.maxRows {
+                        Text("\(objects.count - Self.maxRows) more objects not listed")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            // Lined up with the object names.
+                            .padding(.leading, 91)
+                            .frame(height: 26)
                     }
                 }
             }

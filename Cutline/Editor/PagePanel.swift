@@ -70,9 +70,46 @@ struct PageSection: View {
                             doc.setMarks(config)
                         }), span: 5...50)
                     }
+                    GridRow {
+                        label("Bleed")
+                        HStack(spacing: 8) {
+                            Toggle("Print bleed", isOn: Binding(get: { doc.bleed.enabled }, set: { on in
+                                var bleed = doc.bleed
+                                bleed.enabled = on
+                                doc.setBleed(bleed)
+                            }))
+                            .toggleStyle(.switch)
+                            .controlSize(.mini)
+                            // The row already says "Bleed" (and the label is long in Portuguese and Spanish).
+                            .labelsHidden()
+                            .help("Prints the color at the edge of the art a little past each cut line")
+                            ExperimentalBadge()
+                        }
+                        // Without it the label wraps and the grid rows grow.
+                        .fixedSize()
+                    }
+                    if doc.bleed.enabled {
+                        GridRow {
+                            label("Width")
+                            lengthField(Binding(get: { doc.bleed.width }, set: { updated in
+                                var bleed = doc.bleed
+                                bleed.width = updated
+                                doc.setBleed(bleed)
+                            }), span: PrintBleed.widths)
+                        }
+                    }
                 }
             }
             .font(.callout)
+            if doc.marks, doc.bleed.enabled {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Prints the color at the edge of the art \(unit.text(doc.bleed.width)) past each closed cut line, so a cut that lands a little off doesn’t show white paper. On the canvas, the red line shows how far it goes.")
+                        .fixedSize(horizontal: false, vertical: true)
+                    ReportProblemLink(feature: .printBleed) { PrintBleed.reportContext(doc) }
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
             if doc.marks, doc.marksConfig.margin == nil {
                 Text("The mark margins came different on each side (from the Studio file); changing them here makes all four equal.")
                     .font(.caption)
