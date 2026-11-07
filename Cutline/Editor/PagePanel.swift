@@ -1,5 +1,6 @@
-// Page section of the side menu (like Silhouette Studio's Page Setup): machine, cutting mat, media and
-// Print & Cut marks. The mat and the marks belong to the document.
+// Page section of the side menu (like Silhouette Studio's Page Setup): machine, cutting mat, the active artboard's size
+// and orientation, and the Print & Cut marks. The mat and the marks belong to the document (each artboard gets its
+// marks).
 import CutlineKit
 import SwiftUI
 
@@ -34,9 +35,28 @@ struct PageSection: View {
                     .labelsHidden()
                     .controlSize(.small)
                 }
+                let artboard = doc.activeArtboard
                 GridRow {
-                    label("Media")
-                    Text(verbatim: "A4 · \(unit.text(Document.page))")
+                    label("Page")
+                    HStack(spacing: 4) {
+                        PresetMenu(doc: doc, artboard: artboard)
+                        Spacer(minLength: 0)
+                        OrientationButtons(doc: doc, artboard: artboard)
+                    }
+                }
+                GridRow {
+                    Text(verbatim: "").gridColumnAlignment(.trailing)
+                    ArtboardSizeFields(doc: doc, artboard: artboard)
+                        .controlSize(.small)
+                }
+                if doc.artboards.count > 1 {
+                    GridRow {
+                        Text(verbatim: "").gridColumnAlignment(.trailing)
+                        Text("Artboard \(doc.activeIndex + 1) of \(doc.artboards.count): \(artboard.title(doc.activeIndex))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
                 }
                 GridRow {
                     label("Print & Cut")
@@ -109,6 +129,15 @@ struct PageSection: View {
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)
+            }
+            if doc.sheetFrame(doc.activeArtboard).turned {
+                // As Silhouette Studio does (Model/RegistrationMarks.swift, SheetFrame).
+                Text(doc.marks
+                     ? "Landscape: to cut, the sheet goes on the mat turned a quarter turn clockwise, as in Silhouette Studio. The marks go where the machine looks for them on the turned sheet: the square at the artboard’s bottom-left corner."
+                     : "Landscape: to cut, the sheet goes on the mat turned a quarter turn clockwise, as in Silhouette Studio (on the 12 × 12, 15 × 15 and 24 × 24 in mats it goes as it is).")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             if doc.marks, doc.marksConfig.margin == nil {
                 Text("The mark margins came different on each side (from the Studio file); changing them here makes all four equal.")

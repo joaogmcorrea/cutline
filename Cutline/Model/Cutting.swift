@@ -144,12 +144,17 @@ extension Document {
 
     /// One row per stroke color, in the chosen order; new colors go in by force
     /// (lightest first: the inner kiss cut before the outer die cut). Left out are
-    /// objects without a stroke (they don't cut), hidden ones and those entirely outside the page (as in Studio).
-    var cutLines: [CutLine] {
+    /// objects without a stroke (they don't cut), hidden ones and those entirely outside every artboard (as in Studio).
+    var cutLines: [CutLine] { cutLines(on: nil) }
+
+    /// The same, only of what touches one artboard (nil = any of them).
+    func cutLines(on artboard: Artboard?) -> [CutLine] {
         var arrivalOrder: [CMYK] = []
         var groups: [CMYK: [CanvasObject]] = [:]
-        let page = CGRect(origin: .zero, size: Self.page)
-        for object in objectsInOrder where object.cutsLine && visible(object) && object.shapePath.boundingRect.intersects(page) {
+        let sheets = artboard.map { [$0.rect] } ?? artboards.map(\.rect)
+        for object in objectsInOrder where object.cutsLine && visible(object) {
+            let box = object.shapePath.boundingRect
+            guard sheets.contains(where: { box.intersects($0) }) else { continue }
             if groups[object.strokeColor] == nil { arrivalOrder.append(object.strokeColor) }
             groups[object.strokeColor, default: []].append(object)
         }
@@ -159,12 +164,23 @@ extension Document {
             .map { CutLine(color: $0, objects: groups[$0]!) }
     }
 
+    /// The cut order with the colors of the artboard being sent (the Send window's table) changed by `change`; the
+    /// colors only on other artboards keep their places. nil if `change` changed nothing.
+    private func reorderingSent(_ change: (inout [CMYK]) -> Bool) -> [CMYK]? {
+        let all = cutLines.map(\.color)
+        var shown = cutLines(on: sendArtboard).map(\.color)
+        guard change(&shown) else { return nil }
+        let members = Set(shown)
+        var next = shown.makeIterator()
+        return all.map { members.contains($0) ? next.next() ?? $0 : $0 }
+    }
+
     func moveLine(_ color: CMYK, upward: Bool) {
-        var order = cutLines.map(\.color)
-        guard let i = order.firstIndex(of: color) else { return }
-        let j = upward ? i - 1 : i + 1
-        guard order.indices.contains(j) else { return }
-        order.swapAt(i, j)
+        guard let order = reorderingSent({ shown in
+            guard let i = shown.firstIndex(of: color), shown.indices.contains(upward ? i - 1 : i + 1) else { return false }
+            shown.swapAt(i, upward ? i - 1 : i + 1)
+            return true
+        }) else { return }
         registrar()
         cutOrder = order
     }
@@ -172,23 +188,31 @@ extension Document {
     /// Dragging in the table: the color goes to position `destination`. A drag that passes several rows becomes a
     /// single undo step.
     func moveLine(_ color: CMYK, to destination: Int) {
-        var order = cutLines.map(\.color)
-        guard let i = order.firstIndex(of: color), order.indices.contains(destination), i != destination else { return }
-        order.remove(at: i)
-        order.insert(color, at: destination)
+        guard let order = reorderingSent({ shown in
+            guard let i = shown.firstIndex(of: color), shown.indices.contains(destination), i != destination else { return false }
+            shown.remove(at: i)
+            shown.insert(color, at: destination)
+            return true
+        }) else { return }
         registerAdjustment("cut order")
         cutOrder = order
     }
 
-    /// What goes to the machine: only the enabled colors with the "Cut" action, in the table's order.
-    var layersToSend: [CutLayer] {
-        cutLines.compactMap { line in
+    /// What goes to the machine from an artboard: only the enabled colors with the "Cut" action, in the table's order,
+    /// in the mm of the sheet as it goes on the mat (`sheetFrame`: its top-left corner is the mat's; a landscape one, turned).
+    func layersToSend(on artboard: Artboard) -> [CutLayer] {
+        let toFed = sheetFrame(artboard).toFed
+        return cutLines(on: artboard).compactMap { line in
             let config = config(line.color)
             guard config.sends else { return nil }
-            return CutLayer(name: "\(config.material) (\(line.color.summaryText))", paths: line.polylines,
+            let paths = line.polylines.map { $0.map { $0.applying(toFed) } }
+            return CutLayer(name: "\(config.material) (\(line.color.summaryText))", paths: paths,
                             settings: config.settings, holder: config.holder, tool: config.tool)
         }
     }
+
+    /// The artboard the Send window cuts: the one chosen there, else the active one.
+    var sendArtboard: Artboard { artboards.first { $0.id == sendArtboardID } ?? activeArtboard }
 }
 
 // MARK: - Test cut
@@ -240,10 +264,11 @@ nonisolated enum TestCut {
 }
 
 extension Document {
-    /// Where the test can go: between the marks with Print & Cut (the rest isn't cut); otherwise, on the page.
-    var testAreaOf: CGRect { marks ? marksConfig.area : CGRect(origin: .zero, size: Self.page) }
+    /// Where the test can go on the artboard being sent (canvas mm): between the marks with Print & Cut (the rest isn't
+    /// cut); otherwise, on the artboard.
+    var testAreaOf: CGRect { marks ? marksConfig.area(on: sheetFrame(sendArtboard)) : sendArtboard.rect }
 
-    /// The test's square on the sheet, in mm.
+    /// The test's square on the sheet, in canvas mm.
     var testBox: CGRect { CGRect(origin: testPosition, size: CGSize(width: testSide, height: testSide)) }
 
     /// Puts the test at a spot on the sheet (without going past the area).
@@ -262,11 +287,13 @@ extension Document {
     func testJob(_ color: CMYK) -> Job {
         moveTest(to: testPosition)
         let config = config(color)
+        let artboard = sendArtboard, frame = sheetFrame(artboard)
+        let paths = TestCut.paths(in: testPosition, side: testSide).map { $0.map { $0.applying(frame.toFed) } }
         let layer = CutLayer(name: String(localized: "Test cut (\(Material.show(config.material)))"),
-                              paths: TestCut.paths(in: testPosition, side: testSide), settings: config.settings,
-                              holder: config.holder, tool: config.tool)
+                              paths: paths, settings: config.settings, holder: config.holder, tool: config.tool)
         return Job(name: String(localized: "Test cut"), origin: ObjectIdentifier(self), layers: [layer],
-                        logLines: registrationToSend, withMat: withMat, base: cuttingMatSetting)
+                   logLines: registrationToSend(artboard), withMat: withMat, base: cuttingMatSetting, trackEnhancing: trackEnhancing,
+                   media: frame.fedSize)
     }
 }
 
@@ -299,5 +326,9 @@ struct Job: Identifiable {
     let withMat: Bool
     /// The chosen mat (nil = the machine's default).
     var base: CuttingMat? = nil
+    /// Track enhancing (the Send window's option, per send).
+    var trackEnhancing = false
+    /// The sheet: the size of the artboard sent, in mm.
+    var media = CGSize(width: 210, height: 297)
     var status = JobStatus.waiting
 }

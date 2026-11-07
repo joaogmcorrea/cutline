@@ -1,6 +1,7 @@
 // Color section of the side panel (as in the prototype and in Illustrator): fill and stroke squares
 // (X toggles, ⇧X swaps, D default, / none), CMYK/HSL/RGB channels with gradients, hex, quick colors,
-// Studio swatches, spectrum and recent colors. Everything is stored as CMYK.
+// Studio swatches, spectrum and recent colors. Everything is stored as CMYK; RGB, HSL and hex are in the RGB working
+// space and every color shown or typed goes through the document's conversion (`doc.colors`, Model/ColorConversion.swift).
 import SwiftUI
 
 enum ColorMode: String, CaseIterable, Identifiable {
@@ -15,6 +16,7 @@ struct ColorSection: View {
     var body: some View {
         let target = doc.colorTarget
         let (current, mixed) = doc.color(target)
+        let colors = doc.colors
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 12) {
                 VStack(spacing: 6) {
@@ -36,7 +38,7 @@ struct ColorSection: View {
 
             HStack(spacing: 6) {
                 Text("#").foregroundStyle(.secondary)
-                HexField(value: current?.hex ?? "") { color in doc.setColor(target, color) }
+                HexField(value: current.map(colors.hex) ?? "", colors: colors) { color in doc.setColor(target, color) }
                 Group {
                     if mixed {
                         Text("mixed colors")
@@ -53,38 +55,46 @@ struct ColorSection: View {
             }
 
             HStack(spacing: 4) {
-                ColorButton(color: nil, chosen: current == nil && !mixed, tip: String(localized: "None (/)")) { doc.setColor(target, nil) }
-                ColorButton(color: CMYK(c: 0, m: 0, y: 0, k: 100), chosen: current == CMYK(c: 0, m: 0, y: 0, k: 100), tip: String(localized: "100% black")) {
+                ColorButton(color: nil, shown: nil, chosen: current == nil && !mixed, tip: String(localized: "None (/)")) {
+                    doc.setColor(target, nil)
+                }
+                ColorButton(color: CMYK(c: 0, m: 0, y: 0, k: 100), shown: colors.color(CMYK(c: 0, m: 0, y: 0, k: 100)), chosen: current == CMYK(c: 0, m: 0, y: 0, k: 100), tip: String(localized: "100% black")) {
                     doc.setColor(target, CMYK(c: 0, m: 0, y: 0, k: 100))
                 }
-                ColorButton(color: CMYK(c: 0, m: 0, y: 0, k: 0), chosen: current == CMYK(c: 0, m: 0, y: 0, k: 0), tip: String(localized: "White")) {
+                ColorButton(color: CMYK(c: 0, m: 0, y: 0, k: 0), shown: .white, chosen: current == CMYK(c: 0, m: 0, y: 0, k: 0), tip: String(localized: "White")) {
                     doc.setColor(target, CMYK(c: 0, m: 0, y: 0, k: 0))
                 }
             }
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 12), spacing: 3) {
                 ForEach(CMYK.swatches, id: \.self) { swatch in
-                    Swatch(color: swatch, chosen: swatch == current) { doc.setColor(target, swatch) }
+                    Swatch(color: swatch, shown: colors.color(swatch), chosen: swatch == current) { doc.setColor(target, swatch) }
                 }
             }
 
-            Spectrum { color, final in doc.setColor(target, color, final: final) }
+            Spectrum(colors: colors) { color, final in doc.setColor(target, color, final: final) }
                 .frame(height: 30)
 
             if !doc.recent.isEmpty {
                 HStack(spacing: 3) {
                     ForEach(doc.recent, id: \.self) { color in
-                        ColorButton(color: color, chosen: color == current, tip: color.summaryText) { doc.setColor(target, color) }
+                        ColorButton(color: color, shown: colors.color(color), chosen: color == current, tip: color.summaryText) {
+                            doc.setColor(target, color)
+                        }
                     }
                 }
             }
 
             Text(target == .strokeColor
                  ? "Colors are always CMYK. The stroke color sets the cut settings; with no stroke, the object isn’t cut."
+                 : Feature.colorProfiles.isOn
+                 ? "Colors are always CMYK (RGB, HSL and hex convert on the fly, with the color profiles). The fill is printed."
                  : "Colors are always CMYK (RGB, HSL and hex convert on the fly). The fill is printed.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+
+            if Feature.colorProfiles.isOn { NoProfileWarning(doc: doc) }
         }
     }
 }
@@ -112,12 +122,14 @@ struct ColorSquares: View {
         let shape = RoundedRectangle(cornerRadius: side * 0.21)
         let isActive = doc.colorTarget == (isStroke ? .strokeColor : .fill)
         return ZStack {
-            if let color, !mixed {
+            if !isStroke, let gradient = doc.shownGradient {
+                GradientSwatch(gradient: gradient, colors: doc.colors, shape: shape)
+            } else if let color, !mixed {
                 if isStroke {
                     shape.fill(Color.white.opacity(0.001))
-                    shape.strokeBorder(color.color, lineWidth: side * 0.21)
+                    shape.strokeBorder(doc.colors.color(color), lineWidth: side * 0.21)
                 } else {
-                    shape.fill(color.color)
+                    shape.fill(doc.colors.color(color))
                 }
             } else {
                 shape.fill(.white)
@@ -134,7 +146,13 @@ struct ColorSquares: View {
         .overlay(shape.inset(by: -3).stroke(Color.accentColor, lineWidth: isActive ? 2 : 0))
         .contentShape(shape)
         .onTapGesture { doc.colorTarget = isStroke ? .strokeColor : .fill }
-        .help(isStroke ? "Stroke — cut color (X toggles)" : "Fill (X toggles)")
+        // Double-click: the Color Picker, as in Illustrator (the first click already brought the square to the front).
+        .simultaneousGesture(TapGesture(count: 2).onEnded {
+            if Feature.colorPicker.isOn { doc.openColorPicker(isStroke ? .strokeColor : .fill) }
+        })
+        .help(Feature.colorPicker.isOn
+              ? (isStroke ? "Stroke — cut color (X toggles; double-click for the Color Picker)" : "Fill (X toggles; double-click for the Color Picker)")
+              : (isStroke ? "Stroke — cut color (X toggles)" : "Fill (X toggles)"))
     }
 }
 
@@ -166,6 +184,7 @@ private struct ColorChannels: View {
     }
 
     private var channels: [Channel] {
+        let colors = doc.colors
         switch mode {
         case .cmyk:
             let fields: [(String, WritableKeyPath<CMYK, Double>)] = [("C", \.c), ("M", \.m), ("Y", \.y), ("K", \.k)]
@@ -174,39 +193,41 @@ private struct ColorChannels: View {
                 of[keyPath: field] = 0
                 until[keyPath: field] = 100
                 return Channel(label: label, value: Int(base[keyPath: field].rounded()), maximum: 100, unit: "%",
-                             colors: [of.srgbColor, until.srgbColor]) { v in
+                             colors: [colors.color(of), colors.color(until)]) { v in
                     var newOne = base
                     newOne[keyPath: field] = Double(v)
                     return newOne
                 }
             }
         case .rgb:
-            let rgb = base.rgb255
+            let rgb = colors.rgb255(base)
             return ["R", "G", "B"].enumerated().map { i, label in
                 var of = rgb, until = rgb
                 of[i] = 0
                 until[i] = 255
                 return Channel(label: label, value: rgb[i], maximum: 255, unit: "",
-                             colors: [CMYK(rgb255: of).srgbColor, CMYK(rgb255: until).srgbColor]) { v in
+                             colors: [colors.color(colors.cmyk(rgb255: of)), colors.color(colors.cmyk(rgb255: until))]) { v in
                     var updated = rgb
                     updated[i] = v
-                    return CMYK(rgb255: updated)
+                    return colors.cmyk(rgb255: updated)
                 }
             }
         case .hsl:
-            let hsl = base.hsl
-            let hues = stride(from: 0, through: 360, by: 60).map { CMYK(hsl: [$0, 100, 50]).srgbColor }
-            let channel = { (i: Int, label: String, maximum: Int, unit: String, colors: [Color]) in
-                Channel(label: label, value: hsl[i], maximum: maximum, unit: unit, colors: colors) { v in
+            let hsl = colors.hsl(base)
+            let hues = stride(from: 0, through: 360, by: 60).map { colors.color(colors.cmyk(hsl: [$0, 100, 50])) }
+            let channel = { (i: Int, label: String, maximum: Int, unit: String, track: [Color]) in
+                Channel(label: label, value: hsl[i], maximum: maximum, unit: unit, colors: track) { v in
                     var updated = hsl
                     updated[i] = v
-                    return CMYK(hsl: updated)
+                    return colors.cmyk(hsl: updated)
                 }
             }
             return [
                 channel(0, "H", 360, "°", hues),
-                channel(1, "S", 100, "%", [CMYK(hsl: [hsl[0], 0, hsl[2]]).srgbColor, CMYK(hsl: [hsl[0], 100, hsl[2]]).srgbColor]),
-                channel(2, "L", 100, "%", [.black, CMYK(hsl: [hsl[0], hsl[1], 50]).srgbColor, .white]),
+                channel(1, "S", 100, "%", [colors.color(colors.cmyk(hsl: [hsl[0], 0, hsl[2]])),
+                                           colors.color(colors.cmyk(hsl: [hsl[0], 100, hsl[2]]))]),
+                channel(2, "L", 100, "%", [colors.color(colors.cmyk(hsl: [hsl[0], hsl[1], 0])),
+                                           colors.color(colors.cmyk(hsl: [hsl[0], hsl[1], 50])), .white]),
             ]
         }
     }
@@ -282,6 +303,7 @@ private struct ColorTrack: View {
 /// Hex field: applies on confirm; invalid text goes back to the current value.
 private struct HexField: View {
     let value: String
+    let colors: ColorConverter
     let apply: (CMYK) -> Void
     @State private var text = ""
 
@@ -294,7 +316,7 @@ private struct HexField: View {
             .onAppear { text = value }
             .onChange(of: value) { _, updated in text = updated }
             .onSubmit {
-                if let color = CMYK(hex: text), color.hex != value { apply(color) } else { text = value }
+                if let color = colors.cmyk(hex: text), colors.hex(color) != value { apply(color) } else { text = value }
             }
     }
 }
@@ -302,6 +324,8 @@ private struct HexField: View {
 /// Small color square (quick and recent); no color = none.
 private struct ColorButton: View {
     let color: CMYK?
+    /// How the screen shows it (`doc.colors`).
+    let shown: Color?
     let chosen: Bool
     let tip: String
     let choose: () -> Void
@@ -310,7 +334,7 @@ private struct ColorButton: View {
         let shape = RoundedRectangle(cornerRadius: 4)
         Button(action: choose) {
             ZStack {
-                if let color { shape.fill(color.color) } else { shape.fill(.white); NoneOption().clipShape(shape) }
+                if color != nil, let shown { shape.fill(shown) } else { shape.fill(.white); NoneOption().clipShape(shape) }
             }
             .frame(width: 18, height: 18)
             .overlay(shape.strokeBorder(chosen ? Color.accentColor : .black.opacity(0.25), lineWidth: chosen ? 2 : 0.5))
@@ -322,6 +346,8 @@ private struct ColorButton: View {
 
 struct Swatch: View {
     let color: CMYK
+    /// How the screen shows it (`doc.colors`).
+    let shown: Color
     let chosen: Bool
     let choose: () -> Void
     @State private var over = false
@@ -329,7 +355,7 @@ struct Swatch: View {
     var body: some View {
         Button(action: choose) {
             RoundedRectangle(cornerRadius: 4)
-                .fill(color.color)
+                .fill(shown)
                 .overlay(RoundedRectangle(cornerRadius: 4)
                     .strokeBorder(chosen ? Color.accentColor : Color.black.opacity(0.18), lineWidth: chosen ? 2 : 0.5))
                 .aspectRatio(1, contentMode: .fit)
@@ -344,6 +370,7 @@ struct Swatch: View {
 
 /// Spectrum: hue horizontally; top to bottom, from white to the pure color to black.
 private struct Spectrum: View {
+    let colors: ColorConverter
     /// (color, finished dragging)
     let choose: (CMYK, Bool) -> Void
 
@@ -352,7 +379,7 @@ private struct Spectrum: View {
             let size = geo.size
             Canvas { ctx, t in
                 let rectangle = Path(CGRect(origin: .zero, size: t))
-                let hues = stride(from: 0, through: 360, by: 30).map { CMYK(hsl: [$0, 100, 50]).srgbColor }
+                let hues = stride(from: 0, through: 360, by: 30).map { colors.color(colors.cmyk(hsl: [$0, 100, 50])) }
                 ctx.fill(rectangle, with: .linearGradient(Gradient(colors: hues), startPoint: .zero, endPoint: CGPoint(x: t.width, y: 0)))
                 ctx.fill(rectangle, with: .linearGradient(Gradient(stops: [
                     .init(color: .white, location: 0), .init(color: .white.opacity(0), location: 0.5),
@@ -371,6 +398,6 @@ private struct Spectrum: View {
 
     private func color(in p: CGPoint, _ t: CGSize) -> CMYK {
         let x = min(max(p.x / max(t.width, 1), 0), 1), y = min(max(p.y / max(t.height, 1), 0), 1)
-        return CMYK(hsl: [Int((x * 360).rounded()) % 360, 100, Int(((1 - y) * 100).rounded())])
+        return colors.cmyk(hsl: [Int((x * 360).rounded()) % 360, 100, Int(((1 - y) * 100).rounded())])
     }
 }

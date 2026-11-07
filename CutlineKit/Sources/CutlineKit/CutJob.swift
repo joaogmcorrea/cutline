@@ -102,11 +102,12 @@ extension Cutter {
     /// Cuts the layers in the given order (on stickers: first the inner kiss cut, last
     /// the outer die cut). With `registration`, reads the marks first and only goes back to the origin at the end,
     /// so the registration isn't lost. `cuttingMat` false = no cutting mat (the machine pulls the sheet directly, `TG0`);
-    /// `mat` picks the mat (nil = the machine's default).
+    /// `mat` picks the mat (nil = the machine's default). `trackEnhancing`: the rollers run the media forward and back
+    /// before cutting (`FY0`); it goes once per job, in the first layer's setup.
     @discardableResult
     public func cut(_ layers: [CutLayer], info: MachineInfo, media: CGSize = Cutter.a4,
                     registration: Registration? = nil, cuttingMat: Bool = true, mat: CuttingMat? = nil,
-                    onProgress: (@Sendable (CutProgress) -> Void)? = nil) async throws -> Status {
+                    trackEnhancing: Bool = false, onProgress: (@Sendable (CutProgress) -> Void)? = nil) async throws -> Status {
         guard !layers.isEmpty else { throw CutterError.invalidSettings(localized("Nothing to cut.")) }
         for layer in layers { try validate(layer.settings, maxSpeed: info.maxSpeed) }
         try validateTools(layers, info: info)
@@ -153,6 +154,7 @@ extension Cutter {
                 setup.mediaWidth = media.width
                 setup.mediaHeight = media.height
                 setup.skipInit = index > 0
+                setup.trackEnhancing = trackEnhancing
                 try await self.setup(setup)
 
                 for pass in 0..<s.passes {

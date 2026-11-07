@@ -213,6 +213,9 @@ public enum CuttingMat: String, Sendable, CaseIterable, Codable {
         }
     }
 
+    /// The mat's size in mm: width (across the machine) × length; nil without a mat and for the PixScan ones.
+    public var sizeMM: CGSize? { sizeInches.map { CGSize(width: $0.width * 25.4, height: $0.length * 25.4) } }
+
     var sizeInches: (length: Double, width: Double)? {
         switch self {
         case .none, .pixscanCameo, .pixscanPortrait: nil

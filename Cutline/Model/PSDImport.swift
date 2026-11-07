@@ -31,10 +31,11 @@ nonisolated struct PSDFile: @unchecked Sendable {
 nonisolated enum PSDImport {
     static func isPhotoshop(_ payload: Data) -> Bool { payload.starts(with: Array("8BPS".utf8)) }
 
-    /// nil when the data isn't a Photoshop file (or is damaged).
-    static func read(_ payload: Data) -> PSDFile? {
+    /// nil when the data isn't a Photoshop file (or is damaged). A CMYK file without its own profile is read in the
+    /// document's CMYK profile (`colors`, as Photoshop uses its working CMYK).
+    static func read(_ payload: Data, colors: ColorConverter) -> PSDFile? {
         guard isPhotoshop(payload) else { return nil }
-        var reader = Reader(bytes: [UInt8](payload))
+        var reader = Reader(bytes: [UInt8](payload), cmykSpace: colors.cmykSpace, intent: colors.intent)
         return try? reader.file()
     }
 
@@ -69,6 +70,9 @@ private nonisolated struct Record {
 /// Reading position over the file's bytes (big-endian, as Photoshop writes them).
 private nonisolated struct Reader {
     let bytes: [UInt8]
+    /// For CMYK files without a profile of their own, and how their ink becomes RGB.
+    let cmykSpace: CGColorSpace
+    let intent: CGColorRenderingIntent
     var i = 0
 
     mutating func take(_ n: Int) throws -> ArraySlice<UInt8> {
@@ -119,7 +123,9 @@ private nonisolated struct Reader {
             }
         }
 
-        let space = mode == 3 ? profile.flatMap { CGColorSpace(iccData: $0 as CFData) } ?? CGColorSpace(name: CGColorSpace.sRGB)!
+        let own = profile.flatMap { CGColorSpace(iccData: $0 as CFData) }
+        let space = mode == 3 ? own.flatMap { $0.model == .rgb ? $0 : nil } ?? CGColorSpace(name: CGColorSpace.sRGB)!
+            : mode == 4 ? own.flatMap { $0.model == .cmyk ? $0 : nil } ?? cmykSpace
             : CGColorSpace(name: CGColorSpace.sRGB)!
         var layers: [PSDLayer] = []
         // The pixels come after all the headers, layer by layer, each channel with its own compression.
@@ -235,7 +241,8 @@ private nonisolated struct Reader {
         return sampleSize == 2 ? stride(from: 0, to: samples.count, by: 2).map { samples[$0] } : samples
     }
 
-    /// The layer in RGBA, cropped to the canvas; nil if nothing in it shows.
+    /// The layer in RGBA, cropped to the canvas; nil if nothing in it shows. `space` is the file's (for CMYK, the one the
+    /// ink is converted from; the layer then comes out in sRGB).
     func compose(_ record: Record, _ planes: [Int: [UInt8]], mode: Int, canvas: (width: Int, height: Int),
                  space: CGColorSpace) -> (image: CGImage, rect: CGRect)? {
         let b = record.box
@@ -248,8 +255,9 @@ private nonisolated struct Reader {
         let mask = record.mask.flatMap { mask in
             planes[-2].flatMap { !mask.off && $0.count == mask.box.width * mask.box.height ? (mask, $0) : nil }
         }
-        // CMYK: Photoshop stores the ink inverted (255 = no ink); ColorSync turns it into RGB.
-        let rgb = mode == 4 ? cmykToRGB(colors, width: b.width, height: b.height) : nil
+        // CMYK: Photoshop stores the ink inverted (255 = no ink); ColorSync turns it into RGB (from `space`, the file's
+        // CMYK profile or the document's).
+        let rgb = mode == 4 ? cmykToRGB(colors, width: b.width, height: b.height, from: space, intent: intent) : nil
         var rgba = [UInt8](repeating: 0, count: w * h * 4)
         var shows = false
         for y in 0..<h {
@@ -274,7 +282,8 @@ private nonisolated struct Reader {
             }
         }
         guard shows, let provider = CGDataProvider(data: Data(rgba) as CFData),
-              let image = CGImage(width: w, height: h, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: w * 4, space: space,
+              let image = CGImage(width: w, height: h, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: w * 4,
+                                  space: mode == 4 ? CGColorSpace(name: CGColorSpace.sRGB)! : space,
                                   bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue), provider: provider,
                                   decode: nil, shouldInterpolate: true, intent: .defaultIntent)
         else { return nil }
@@ -282,13 +291,14 @@ private nonisolated struct Reader {
     }
 }
 
-private nonisolated func cmykToRGB(_ channels: [[UInt8]], width: Int, height: Int) -> [UInt8]? {
+private nonisolated func cmykToRGB(_ channels: [[UInt8]], width: Int, height: Int, from space: CGColorSpace,
+                                   intent: CGColorRenderingIntent) -> [UInt8]? {
     var cmyk = [UInt8](repeating: 0, count: width * height * 4)
     for p in 0..<(width * height) {
         for c in 0..<4 { cmyk[p * 4 + c] = 255 - channels[c][p] }
     }
     var rgb = [UInt8](repeating: 0, count: width * height * 4)
-    guard let space = CGColorSpace(name: CGColorSpace.genericCMYK), let provider = CGDataProvider(data: Data(cmyk) as CFData),
+    guard let provider = CGDataProvider(data: Data(cmyk) as CFData),
           let source = CGImage(width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: width * 4, space: space,
                                bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue), provider: provider, decode: nil,
                                shouldInterpolate: false, intent: .defaultIntent)
@@ -297,6 +307,8 @@ private nonisolated func cmykToRGB(_ channels: [[UInt8]], width: Int, height: In
         guard let ctx = CGContext(data: bytes.baseAddress, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4,
                                   space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)
         else { return false }
+        // As the canvas shows CMYK (Model/ColorConversion.swift).
+        ctx.setRenderingIntent(intent)
         ctx.draw(source, in: CGRect(x: 0, y: 0, width: width, height: height))
         return true
     }

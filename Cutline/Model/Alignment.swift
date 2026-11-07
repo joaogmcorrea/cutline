@@ -33,6 +33,24 @@ nonisolated enum AlignMode: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
+/// Equal gaps between 3 or more pieces (Silhouette Studio's Space Horizontally/Vertically, Illustrator's
+/// Distribute Spacing).
+nonisolated enum SpacingAxis: CaseIterable, Identifiable, Sendable {
+    case horizontal, vertical
+
+    var id: Self { self }
+
+    /// In Assets.xcassets (Tabler).
+    var icon: String { self == .horizontal ? "spaceHorizontally" : "spaceVertically" }
+
+    var name: String {
+        switch self {
+        case .horizontal: String(localized: "Space Horizontally")
+        case .vertical: String(localized: "Space Vertically")
+        }
+    }
+}
+
 extension ShapeKind {
     /// Rectangle, ellipse and star: they have parameters and turn into a path to edit the nodes.
     nonisolated var parametric: Bool {
@@ -43,10 +61,15 @@ extension ShapeKind {
     }
 }
 
+extension CanvasObject {
+    /// Rectangle, ellipse, star and polygon: they have parameters and turn into a path to edit the nodes.
+    var isParametric: Bool { shape.parametric || polygonSides != nil }
+}
+
 extension Document {
-    /// Selection box, in mm.
+    /// Selection box, in mm, square with the page: what the objects cover (a rotated one, its turned outline).
     var selectionBox: CGRect? {
-        let frames = selectedObjects.map(\.frame.standardized)
+        let frames = selectedObjects.map(\.bounds)
         guard let first = frames.first else { return nil }
         return frames.dropFirst().reduce(first) { $0.union($1) }
     }
@@ -56,10 +79,10 @@ extension Document {
     func align(_ mode: AlignMode) {
         guard let box = selectionBox else { return }
         let pieces = selectedPieces
-        let target = pieces.count == 1 ? CGRect(origin: .zero, size: Self.page) : box
+        let target = pieces.count == 1 ? activeArtboard.rect : box
         registrar()
         for piece in pieces {
-            let b = piece.dropFirst().reduce(piece[0].frame.standardized) { $0.union($1.frame.standardized) }
+            let b = piece.dropFirst().reduce(piece[0].bounds) { $0.union($1.bounds) }
             let dx: Double = switch mode {
             case .left: target.minX - b.minX
             case .centerH, .center: target.midX - b.midX
@@ -79,6 +102,40 @@ extension Document {
         }
     }
 
+    /// Space needs at least three pieces (a group counts as one).
+    var canDistribute: Bool { selectedPieces.count >= 3 }
+
+    /// The same gap between the pieces along the axis. The first and the last (by their centers) stay put; the others
+    /// move between them in the same order, keeping their sizes. With more width than room, the gap is negative
+    /// and they overlap evenly (as in Studio and Illustrator).
+    func distribute(_ axis: SpacingAxis) {
+        let horizontal = axis == .horizontal
+        let pieces = selectedPieces.map { piece in
+            (ids: Set(piece.map(\.id)), box: piece.dropFirst().reduce(piece[0].bounds) { $0.union($1.bounds) })
+        }
+        guard pieces.count >= 3 else { return }
+        let start = { (r: CGRect) in horizontal ? r.minX : r.minY }
+        let length = { (r: CGRect) in horizontal ? r.width : r.height }
+        let center = { (r: CGRect) in horizontal ? r.midX : r.midY }
+        let sorted = pieces.sorted { (center($0.box), start($0.box)) < (center($1.box), start($1.box)) }
+        let first = sorted[0].box, last = sorted[sorted.count - 1].box
+        let room = start(last) + length(last) - start(first)
+        let gap = (room - sorted.reduce(0) { $0 + length($1.box) }) / Double(sorted.count - 1)
+        var moves: [CanvasObject.ID: Double] = [:]
+        var position = start(first) + length(first) + gap
+        for piece in sorted.dropFirst().dropLast() {
+            let delta = position - start(piece.box)
+            if abs(delta) > 1e-9 { for id in piece.ids { moves[id] = delta } }
+            position += length(piece.box) + gap
+        }
+        guard !moves.isEmpty else { return }
+        registrar()
+        for i in objects.indices {
+            guard let delta = moves[objects[i].id] else { continue }
+            objects[i].frame = objects[i].frame.standardized.offsetBy(dx: horizontal ? delta : 0, dy: horizontal ? 0 : delta)
+        }
+    }
+
     /// Takes the selection box to `newOne`: moves and stretches each object in the same proportion.
     func fitSelection(to newOne: CGRect) {
         guard let old = selectionBox, old != newOne else { return }
@@ -93,10 +150,10 @@ extension Document {
                       width: max(q.width * sx, 0.1), height: max(q.height * sy, 0.1))
     }
 
-    /// Rectangle, ellipse or star → free path (same outline), already in direct selection.
+    /// Rectangle, ellipse, star or polygon → free path (same outline), already in direct selection.
     func convertToPath() {
-        guard selectedObjects.contains(where: { $0.shape.parametric }) else { return }
-        modifySelection { o in if o.shape.parametric { o.setNodes(o.absoluteNodes) } }
+        guard selectedObjects.contains(where: \.isParametric) else { return }
+        modifySelection { o in if o.isParametric { o.setNodes(o.absoluteNodes) } }
         tool = .direct
     }
 
@@ -118,7 +175,8 @@ extension Document {
         }
         var curves: [CanvasObject.ID: (frame: CGRect, subpaths: [Subpath], name: String)] = [:]
         for object in selectedObjects {
-            guard case .text(let text) = object.shape, let free = CanvasObject.freePath(object.shapePath.cgPath) else { continue }
+            // A rotated text keeps its angle (and its box turned): the letters before the rotation.
+            guard case .text(let text) = object.shape, let free = CanvasObject.freePath(object.localPath.cgPath) else { continue }
             let name = text.content.split(whereSeparator: \.isNewline).joined(separator: " ").trimmingCharacters(in: .whitespaces)
             curves[object.id] = (free.frame, free.subpaths, name)
         }
@@ -127,10 +185,11 @@ extension Document {
         for i in objects.indices {
             guard let curve = curves[objects[i].id] else { continue }
             objects[i].shape = .shapePath(curve.subpaths)
-            objects[i].frame = curve.frame
+            objects[i].setLocalFrame(curve.frame)
+            objects[i].textPath = nil
             if objects[i].label == nil, !curve.name.isEmpty { objects[i].label = curve.name }
         }
-        if tool == .text { tool = .selection }
+        if tool == .text || tool == .typeOnPath { tool = .selection }
         return curves.count
     }
 

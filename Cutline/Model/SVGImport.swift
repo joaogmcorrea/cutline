@@ -501,8 +501,8 @@ nonisolated enum SVGImport {
             }
             guard !colors.isEmpty else { return nil }
             let n = Double(colors.count)
-            return CMYK(red: colors.map(\.0).reduce(0, +) / n, green: colors.map(\.1).reduce(0, +) / n,
-                        blue: colors.map(\.2).reduce(0, +) / n)
+            return VectorImporter.rgb(colors.map(\.0).reduce(0, +) / n, colors.map(\.1).reduce(0, +) / n,
+                                         colors.map(\.2).reduce(0, +) / n)
         }
 
         /// Properties declared on the element: attributes < CSS < style=.
@@ -531,9 +531,9 @@ nonisolated enum SVGImport {
                 }
                 guard let rgb = SVGImport.rgb(t) else { return nil }
                 if SVGImport.transparent(t) { return Paint.noneSelected }
-                return .color(CMYK(red: rgb.0, green: rgb.1, blue: rgb.2))
+                return .color(VectorImporter.rgb(rgb.0, rgb.1, rgb.2))
             }
-            if let v = p["color"], let rgb = SVGImport.rgb(v) { e.color = CMYK(red: rgb.0, green: rgb.1, blue: rgb.2) }
+            if let v = p["color"], let rgb = SVGImport.rgb(v) { e.color = VectorImporter.rgb(rgb.0, rgb.1, rgb.2) }
             if let v = p["fill"], v != "inherit", let newOne = paint(v) { e.fill = newOne }
             if let v = p["stroke"], v != "inherit", let newOne = paint(v) { e.stroke = newOne }
             if let v = p["stroke-width"], v != "inherit", let w = length(v) { e.strokeWidth = max(w, 0) }

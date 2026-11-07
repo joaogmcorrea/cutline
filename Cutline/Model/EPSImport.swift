@@ -1,7 +1,7 @@
 // Import EPS (and the old .ai, which is PostScript): macOS 26 no longer interprets PostScript (CGPSConverter
 // returns nothing, NSEPSImageRep doesn't open, there is no pstopdf), so Cutline has a mini interpreter of its own.
 // Painted paths become objects with the common painting rule (Model/VectorImport.swift); EPS has no
-// page, so the artwork (the %%BoundingBox) goes in the center of the A4. Three dialects:
+// page, so the artwork (the %%BoundingBox) goes in the center of the artboard (an A4 by default). Three dialects:
 // - Modern Illustrator (Adobe_AGM_Core prolog, version 9 onward): the prolog is skipped and only the page runs,
 //   with the AGM shortcuts (mo li cv cp f ef @ clp ct cmyk rgb sep…) defined here. A gradient (shfill) becomes the
 //   clipping outline with the average color.
@@ -49,7 +49,8 @@ nonisolated enum EPSImport {
         var result = VectorImport(texts: interpreter.texts, images: interpreter.images + interpreter.font.skippedImages)
         guard let box, !box.isNull, !box.isInfinite else { return result }
         let mm = 25.4 / 72
-        let dx = (Document.page.width - box.width * mm) / 2, dy = (Document.page.height - box.height * mm) / 2
+        let sheet = VectorImporter.sheet.size
+        let dx = (sheet.width - box.width * mm) / 2, dy = (sheet.height - box.height * mm) / 2
         let toPage = CGAffineTransform(translationX: -box.minX, y: -box.maxY)
             .concatenating(CGAffineTransform(scaleX: mm, y: -mm))
             .concatenating(CGAffineTransform(translationX: dx, y: dy))

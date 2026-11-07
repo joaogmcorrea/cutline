@@ -1,7 +1,8 @@
 // Import vector files (File › Import…): PDF, AI, SVG and EPS become free paths in the active layer.
 // The format is recognized by the content, not the extension (the modern .ai is a PDF; the old one, PostScript).
 // The painting rule is the same for all four: stroke → cut color (thin strokes, up to 0.5 pt, become 0 pt: cut
-// only); fill only → printed color, no cut; texts and images don't go in (they're counted for the notice).
+// only); fill only → printed color, no cut. A PDF's text comes in as paths and its images as image objects; SVG and
+// EPS text and images don't go in (they're counted for the notice), nor what a PDF has that can't be read.
 // Readers: Model/PDFImport.swift, Model/SVGImport.swift and Model/EPSImport.swift.
 import Compression
 import CoreGraphics
@@ -13,20 +14,31 @@ nonisolated struct VectorImport {
     /// Texts and images found and left out.
     var texts = 0
     var images = 0
+    /// The data of the image objects' images, by key (`Document.images`).
+    var imageData: [String: Data] = [:]
+    /// How many of the objects are letters (text that came in as paths).
+    var textObjects = 0
 }
 
 extension VectorImport {
-    /// The notice after the import: "Imported from “x.pdf”: 12 paths · 2 images not imported." `lead` takes the place of
-    /// the path count (a flattened or simplified file says what went in).
-    func notice(from name: String, lead: [String]? = nil) -> String {
+    /// The notice after the import: "Imported from “x.pdf”: 12 paths · 3 images · 2 images not imported." `lead` takes the
+    /// place of the counts (a flattened or simplified file says what went in). `fromCanva`: Canva has no outlines to
+    /// convert the text to, so the notice doesn't send the person to Illustrator.
+    func notice(from name: String, lead: [String]? = nil, fromCanva: Bool = false) -> String {
         var parts: [String] = []
-        if texts > 0 { parts.append(String(localized: "text not imported (convert it to outlines in Illustrator)")) }
+        if texts > 0 {
+            parts.append(fromCanva ? String(localized: "text not imported")
+                         : String(localized: "text not imported (convert it to outlines in Illustrator)"))
+        }
         if images > 0 { parts.append(String(localized: "\(images) images not imported")) }
         if objects.isEmpty {
             return parts.isEmpty ? String(localized: "No paths to import in “\(name)”.")
                 : String(localized: "No paths to import in “\(name)”: \(parts.joined(separator: " · ")).")
         }
-        parts.insert(contentsOf: lead ?? [String(localized: "\(objects.count) paths")], at: 0)
+        let pictures = objects.count { $0.image != nil }
+        var counts = pictures < objects.count ? [String(localized: "\(objects.count - pictures) paths")] : []
+        if pictures > 0 { counts.append(String(localized: "\(pictures) images")) }
+        parts.insert(contentsOf: lead ?? counts, at: 0)
         return String(localized: "Imported from “\(name)”: \(parts.joined(separator: " · ")).")
     }
 }
@@ -51,14 +63,34 @@ nonisolated enum VectorImporter {
         }
     }
 
-    /// Reads any of the formats (by the content).
-    static func read(_ payload: Data) throws -> VectorImport {
+    /// The conversion of the document the file goes into (its RGB working space → its CMYK profile), bound by
+    /// `read(_:colors:)` while the readers run (they reach it through `color(_:)` and `rgb(_:_:_:)`).
+    @TaskLocal static var colors: ColorConverter?
+
+    /// The artboard the file goes on (canvas mm), bound by `read(_:colors:sheet:)`: an EPS goes in its center.
+    @TaskLocal static var sheet = CGRect(origin: .zero, size: PagePreset.a4.size)
+
+    /// Reads any of the formats (by the content). The file's RGB colors become CMYK with `colors`. The file's page goes on
+    /// `sheet` (the active artboard): its top-left corner at the artboard's.
+    static func read(_ payload: Data, colors: ColorConverter, sheet: CGRect = CGRect(origin: .zero, size: PagePreset.a4.size)) throws -> VectorImport {
+        var result = try $colors.withValue(colors) { try $sheet.withValue(sheet) { try read(payload) } }
+        if sheet.origin != .zero {
+            result.objects = result.objects.map { o in
+                var o = o
+                o.frame = o.frame.offsetBy(dx: sheet.minX, dy: sheet.minY)
+                return o
+            }
+        }
+        return result
+    }
+
+    private static func read(_ payload: Data) throws -> VectorImport {
         switch format(payload) {
         case .pdf:
             let result = try PDFImport.read(payload)
             // AI saved without "PDF compatible": the page only has Illustrator's message (text, no drawing or image).
-            if result.objects.isEmpty, result.images == 0, result.texts > 0,
-               payload.range(of: Data("AIPrivateData".utf8)) != nil { throw Failure.aiWithoutPDF }
+            if result.objects.count == result.textObjects, result.images == 0, result.imageData.isEmpty,
+               result.texts + result.textObjects > 0, payload.range(of: Data("AIPrivateData".utf8)) != nil { throw Failure.aiWithoutPDF }
             return result
         case .postscript:
             return try EPSImport.read(payload)
@@ -98,17 +130,23 @@ nonisolated enum VectorImporter {
         return object
     }
 
-    /// Color with 1 (gray, 1 = white), 3 (RGB) or 4 (CMYK) components from 0 to 1.
+    /// Color with 1 (gray, 1 = white: black ink only), 3 (RGB, through the profiles) or 4 (CMYK, the numbers as they
+    /// are) components from 0 to 1.
     static func color(_ v: [Double]) -> CMYK? {
         let limit = { (x: Double) in min(max(x, 0), 1) }
         switch v.count {
         case 1: return CMYK(c: 0, m: 0, y: 0, k: ((1 - limit(v[0])) * 100).rounded())
-        case 3: return CMYK(red: v[0], green: v[1], blue: v[2])
+        case 3: return rgb(v[0], v[1], v[2])
         case 4:
             return CMYK(c: (limit(v[0]) * 100).rounded(), m: (limit(v[1]) * 100).rounded(),
                         y: (limit(v[2]) * 100).rounded(), k: (limit(v[3]) * 100).rounded())
         default: return nil
         }
+    }
+
+    /// An RGB color of the file (0–1) in the document's CMYK.
+    static func rgb(_ r: Double, _ g: Double, _ b: Double) -> CMYK {
+        (colors ?? ColorSettings.shared.converter()).cmyk(red: r, green: g, blue: b)
     }
 
     /// Content of a gzip file (the .svgz); nil if it isn't gzip.

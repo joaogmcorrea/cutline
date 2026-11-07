@@ -1,7 +1,8 @@
 // Import PDF and AI (Illustrator saved "PDF compatible"): the vector paths of the 1st page become
 // objects, at the same position on the page, with the common painting rule (Model/VectorImport.swift); the file's
-// CMYK colors go in as they are. The PDF's texts and images don't go in (count and report them). Read with
-// CGPDFScanner (the page content's operators).
+// CMYK colors go in as they are. The text comes in as paths, from the fonts embedded in the PDF (Model/PDFText.swift,
+// Model/PDFFonts.swift), and the images as image objects (Model/PDFImages.swift); what can't be read is counted and
+// reported. Read with CGPDFScanner (the page content's operators).
 // Cutline has no clipping masks and paints every fill even-odd (like Silhouette Studio), so the import bakes both into
 // the geometry (Model/ImportClipping.swift): what a clipping path (W/W* n, a form's /BBox) hides is cut away from the
 // paths, and a nonzero fill (f, B) whose overlaps even-odd would paint as holes becomes its outline.
@@ -16,7 +17,9 @@ nonisolated enum PDFImport {
         let reader = Reader(box: box)
         let content = CGPDFContentStreamCreateWithPage(page)
         reader.read(content)
-        return VectorImport(objects: reader.objects, texts: reader.texts, images: reader.images)
+        reader.flushText()
+        return VectorImport(objects: reader.objects, texts: reader.texts, images: reader.images, imageData: reader.imageData,
+                            textObjects: reader.textObjects)
     }
 
     /// Interpreter state (CGPDFScanner calls C functions; the state goes through the `info` pointer).
@@ -30,6 +33,19 @@ nonisolated enum PDFImport {
             var strokeWidth = 1.0
             /// What the clipping paths leave visible, in page mm; nil = nothing clipped.
             var clip: ImportClipping.Region?
+            /// The text state (Model/PDFText.swift); the font is nil when its glyphs can't be had.
+            var font: PDFFont?
+            var fontSize = 0.0
+            var charSpacing = 0.0
+            var wordSpacing = 0.0
+            var horizontalScale = 1.0
+            var leading = 0.0
+            var rise = 0.0
+            var renderMode = 0
+            /// The ExtGState's ca and CA: text and images painted fully transparent stay out (Chrome writes outlined
+            /// text as a transparent text with the outline on top).
+            var fillAlpha = 1.0
+            var strokeAlpha = 1.0
         }
 
         var state = ConnectionState()
@@ -38,9 +54,21 @@ nonisolated enum PDFImport {
         /// W or W* seen: the current path also clips, from the next painting operator on (usually n).
         var pendingClip: CGPathFillRule?
         var objects: [CanvasObject] = []
+        /// Texts and images left out (unreadable font or image).
         var texts = 0
         var images = 0
         var contents: [CGPDFContentStreamRef] = []
+        // Text (Model/PDFText.swift): the text object, the letters waiting to become an object, the fonts read and the
+        // Type 3 glyph being run.
+        var text = TextObject()
+        var run: TextRun?
+        var fonts: [CGPDFDictionaryRef: PDFFont?] = [:]
+        var glyph: GlyphCapture?
+        var textObjects = 0
+        // Images (Model/PDFImages.swift): the data by key, and each image XObject's key (an image drawn many times is
+        // stored once).
+        var imageData: [String: Data] = [:]
+        var imageKeys: [CGPDFStreamRef: PDFImages.Placed] = [:]
         let toPage: CGAffineTransform
         private var depth = 0
 
@@ -73,7 +101,11 @@ nonisolated enum PDFImport {
                 pendingClip = nil
             }
             guard !shapePath.isEmpty, let page = shapePath.copy(using: [state.ctm.concatenating(toPage)]) else { return }
-            if strokeColor || fill {
+            if strokeColor || fill, ignoresColor {
+                // Inside an uncolored Type 3 glyph: the shape is part of the letter.
+                capture(page, stroke: strokeColor, fill: fill, evenOdd: evenOdd)
+            } else if strokeColor || fill {
+                flushText()
                 // Width at the page's scale (pt).
                 let scale = sqrt(abs(state.ctm.a * state.ctm.d - state.ctm.b * state.ctm.c))
                 objects += ImportClipping.objects(page, strokeColor: strokeColor ? state.strokeColor : nil,
@@ -151,30 +183,43 @@ nonisolated enum PDFImport {
             CGPDFOperatorTableSetCallback(t, "W") { _, info in reader(info)?.pendingClip = .winding }
             CGPDFOperatorTableSetCallback(t, "W*") { _, info in reader(info)?.pendingClip = .evenOdd }
             CGPDFOperatorTableSetCallback(t, "n") { _, info in reader(info)?.paintPath(strokeColor: false, fill: false) }
-            // Colors.
-            CGPDFOperatorTableSetCallback(t, "G") { s, info in reader(info)?.state.strokeColor = numbers(s, 1).flatMap(color) }
-            CGPDFOperatorTableSetCallback(t, "g") { s, info in reader(info)?.state.fill = numbers(s, 1).flatMap(color) }
-            CGPDFOperatorTableSetCallback(t, "RG") { s, info in reader(info)?.state.strokeColor = numbers(s, 3).flatMap(color) }
-            CGPDFOperatorTableSetCallback(t, "rg") { s, info in reader(info)?.state.fill = numbers(s, 3).flatMap(color) }
-            CGPDFOperatorTableSetCallback(t, "K") { s, info in reader(info)?.state.strokeColor = numbers(s, 4).flatMap(color) }
-            CGPDFOperatorTableSetCallback(t, "k") { s, info in reader(info)?.state.fill = numbers(s, 4).flatMap(color) }
+            // Colors (inside an uncolored Type 3 glyph they don't count: the letter takes the text's).
+            CGPDFOperatorTableSetCallback(t, "G") { s, info in painter(info)?.state.strokeColor = numbers(s, 1).flatMap(color) }
+            CGPDFOperatorTableSetCallback(t, "g") { s, info in painter(info)?.state.fill = numbers(s, 1).flatMap(color) }
+            CGPDFOperatorTableSetCallback(t, "RG") { s, info in painter(info)?.state.strokeColor = numbers(s, 3).flatMap(color) }
+            CGPDFOperatorTableSetCallback(t, "rg") { s, info in painter(info)?.state.fill = numbers(s, 3).flatMap(color) }
+            CGPDFOperatorTableSetCallback(t, "K") { s, info in painter(info)?.state.strokeColor = numbers(s, 4).flatMap(color) }
+            CGPDFOperatorTableSetCallback(t, "k") { s, info in painter(info)?.state.fill = numbers(s, 4).flatMap(color) }
             for op in ["SC", "SCN"] {
                 CGPDFOperatorTableSetCallback(t, op) { s, info in
-                    guard let l = reader(info) else { return }
+                    guard let l = painter(info) else { return }
                     if let c = color(allNumbers(s)) { l.state.strokeColor = c }
                 }
             }
             for op in ["sc", "scn"] {
                 CGPDFOperatorTableSetCallback(t, op) { s, info in
-                    guard let l = reader(info) else { return }
+                    guard let l = painter(info) else { return }
                     if let c = color(allNumbers(s)) { l.state.fill = c }
                 }
             }
-            // Text and images: only counted.
-            for op in ["Tj", "TJ", "'", "\""] {
-                CGPDFOperatorTableSetCallback(t, op) { _, info in reader(info)?.texts += 1 }
+            // The graphics state's transparency (ca, CA), for text and images.
+            CGPDFOperatorTableSetCallback(t, "gs") { s, info in
+                guard let l = reader(info), let content = l.contents.last else { return }
+                var name: UnsafePointer<CChar>?
+                guard CGPDFScannerPopName(s, &name), let name,
+                      let parameters = PDFDict(CGPDFContentStreamGetResource(content, "ExtGState", name)) else { return }
+                if let alpha = parameters.number("ca") { l.state.fillAlpha = alpha }
+                if let alpha = parameters.number("CA") { l.state.strokeAlpha = alpha }
             }
-            CGPDFOperatorTableSetCallback(t, "BI") { _, info in reader(info)?.images += 1 }
+            // Text (Model/PDFText.swift).
+            registerText(t)
+            // An inline image (BI … ID … EI): CGPDFScanner hands it over at EI, as a stream.
+            CGPDFOperatorTableSetCallback(t, "EI") { s, info in
+                var stream: CGPDFStreamRef?
+                guard let l = reader(info) else { return }
+                guard CGPDFScannerPopStream(s, &stream), let stream else { return l.images += 1 }
+                l.paintImage(PDFStream(stream, inline: true))
+            }
             // XObject: form (nested content, common in Illustrator) or image.
             CGPDFOperatorTableSetCallback(t, "Do") { s, info in
                 guard let l = reader(info), let content = l.contents.last else { return }
@@ -187,7 +232,7 @@ nonisolated enum PDFImport {
                 guard CGPDFDictionaryGetName(dictionary, "Subtype", &subtype), let subtype else { return }
                 switch String(cString: subtype) {
                 case "Image":
-                    l.images += 1
+                    l.paintImage(PDFStream(stream))
                 case "Form":
                     let previous = l.state
                     var matrix: CGPDFArrayRef?
@@ -221,6 +266,11 @@ nonisolated enum PDFImport {
 // Free functions: CGPDFScanner's callbacks are C function pointers and can't capture anything.
 private nonisolated func reader(_ info: UnsafeMutableRawPointer?) -> PDFImport.Reader? {
     info.map { Unmanaged<PDFImport.Reader>.fromOpaque($0).takeUnretainedValue() }
+}
+
+/// The reader for a color operator; nil inside an uncolored Type 3 glyph, where colors don't count.
+private nonisolated func painter(_ info: UnsafeMutableRawPointer?) -> PDFImport.Reader? {
+    reader(info).flatMap { $0.ignoresColor ? nil : $0 }
 }
 
 private nonisolated func numbers(_ scanner: CGPDFScannerRef, _ n: Int) -> [Double]? {

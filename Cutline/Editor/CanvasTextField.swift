@@ -24,38 +24,102 @@ struct EditGeometry {
     /// The text's point (mm) and stretch, as they are now (Document.editAnchor).
     let origin: CGPoint
     let scale: CGSize
+    /// Type on a Path: the letters along the path (the cursor, the selection and the clicks follow it); body pt is then
+    /// page mm ÷ `mmPerPt`, from `origin`.
+    var pathLayout: PathTextLayout?
+    /// The text's rotation (page mm): `origin`, the layout and the path are before it; the cursor, the selection and the
+    /// clicks are turned with the letters.
+    var turn: CGAffineTransform = .identity
+
+    var turned: Bool { turn != .identity }
 
     var textLayout: TextBox.TextLayout { text.textLayout }
+
+    /// Body pt → page mm.
+    func mm(_ p: CGPoint) -> CGPoint {
+        let mm = TextBox.mmPerPt
+        return CGPoint(x: origin.x + p.x * mm * scale.width, y: origin.y + p.y * mm * scale.height)
+    }
+
+    /// Page mm → body pt.
+    func body(_ p: CGPoint) -> CGPoint {
+        let mm = TextBox.mmPerPt
+        return CGPoint(x: (p.x - origin.x) / (mm * scale.width), y: (p.y - origin.y) / (mm * scale.height))
+    }
+
+    /// The position in the text (UTF-16) under a point in body pt (a click in the invisible field).
+    func index(atBody p: CGPoint) -> Int {
+        if let pathLayout { return pathLayout.index(near: mm(p)) }
+        return textLayout.index(in: p)
+    }
 
     /// Body pt → canvas points.
     func canvas(_ p: CGPoint) -> CGPoint {
         let mm = TextBox.mmPerPt
-        return viewState.canvas(CGPoint(x: origin.x + p.x * mm * scale.width, y: origin.y + p.y * mm * scale.height))
+        return screen(CGPoint(x: origin.x + p.x * mm * scale.width, y: origin.y + p.y * mm * scale.height))
     }
 
-    /// Page mm → body pt.
+    /// Page mm before the rotation (the layout's) → canvas points.
+    func screen(_ p: CGPoint) -> CGPoint { viewState.canvas(turned ? p.applying(turn) : p) }
+
+    /// Page mm (a click) → body pt.
     func pointSize(_ p: CGPoint) -> CGPoint {
         let mm = TextBox.mmPerPt
-        return CGPoint(x: (p.x - origin.x) / (mm * scale.width), y: (p.y - origin.y) / (mm * scale.height))
+        let q = turned ? p.applying(turn.inverted()) : p
+        return CGPoint(x: (q.x - origin.x) / (mm * scale.width), y: (q.y - origin.y) / (mm * scale.height))
+    }
+
+    /// A point in the invisible field (points from its top-left corner) → the position in the text. A turned field is
+    /// the turned letters' box on the canvas, so the click goes back through the rotation.
+    func index(atField p: CGPoint) -> Int {
+        let frame = fieldFrame
+        return index(atBody: pointSize(viewState.mm(CGPoint(x: frame.minX + p.x, y: frame.minY + p.y))))
+    }
+
+    /// A run's rectangle (body pt) on the canvas, in the field's points (the box around it when turned).
+    func fieldRect(_ span: NSRange) -> CGRect {
+        let r = rectangle(span), frame = fieldFrame
+        let points = [CGPoint(x: r.minX, y: r.minY), CGPoint(x: r.maxX, y: r.minY), CGPoint(x: r.maxX, y: r.maxY),
+                      CGPoint(x: r.minX, y: r.maxY)].map(canvas)
+        let xs = points.map(\.x), ys = points.map(\.y)
+        return CGRect(x: xs.min()! - frame.minX, y: ys.min()! - frame.minY, width: xs.max()! - xs.min()!, height: ys.max()! - ys.min()!)
     }
 
     /// Area of the invisible field in body pt: the lines, with slack for the cursor and for letters that go past the
     /// start of the line (italics, scripts).
     var fieldBounds: CGRect {
+        if let pathLayout {
+            // Over the letters and the path, with slack.
+            let start = CGRect(origin: pathLayout.point(pathLayout.startDistance, offset: 0), size: .zero)
+            let letters = pathLayout.outline.boundingBoxOfPath
+            let all = (letters.isNull || letters.isEmpty ? start : letters.union(start)).insetBy(dx: -5, dy: -5)
+            let a = body(all.origin), b = body(CGPoint(x: all.maxX, y: all.maxY))
+            return CGRect(x: a.x, y: a.y, width: b.x - a.x, height: b.y - a.y)
+        }
         let d = textLayout, emSize = text.largestSize
         let x0 = d.minX - 0.3 * emSize, x1 = d.maxX + emSize
         return CGRect(x: x0, y: 0, width: x1 - x0, height: d.height + 0.2 * emSize)
     }
 
-    /// The same area in canvas points.
+    /// The same area in canvas points (turned: the box around it).
     var fieldFrame: CGRect {
         let r = fieldBounds
-        let a = canvas(CGPoint(x: r.minX, y: r.minY)), b = canvas(CGPoint(x: r.maxX, y: r.maxY))
-        return CGRect(x: a.x, y: a.y, width: b.x - a.x, height: b.y - a.y)
+        guard turned else {
+            let a = canvas(CGPoint(x: r.minX, y: r.minY)), b = canvas(CGPoint(x: r.maxX, y: r.maxY))
+            return CGRect(x: a.x, y: a.y, width: b.x - a.x, height: b.y - a.y)
+        }
+        let points = [CGPoint(x: r.minX, y: r.minY), CGPoint(x: r.maxX, y: r.minY), CGPoint(x: r.maxX, y: r.maxY),
+                      CGPoint(x: r.minX, y: r.maxY)].map(canvas)
+        let xs = points.map(\.x), ys = points.map(\.y)
+        return CGRect(x: xs.min()!, y: ys.min()!, width: xs.max()! - xs.min()!, height: ys.max()! - ys.min()!)
     }
 
     /// Rectangle (body pt) of a run in its line, from the top of the letters to the foot.
     func rectangle(_ span: NSRange) -> CGRect {
+        if let pathLayout {
+            let p = body(pathLayout.point(pathLayout.distance(of: span.location), offset: 0))
+            return CGRect(x: p.x, y: p.y - text.largestSize, width: 1, height: text.largestSize)
+        }
         let d = textLayout
         let (i, x0) = d.position(span.location)
         let x1 = d.position(min(NSMaxRange(span), d.lines[i].end)).x
@@ -76,6 +140,7 @@ struct EditMarks: View {
     }
 
     private func render(_ ctx: inout GraphicsContext, now: Date) {
+        if let path = geometry.pathLayout { return renderOnPath(&ctx, path, now: now) }
         let d = geometry.textLayout
         let selection = cursor.selection
         if selection.length > 0 {
@@ -102,9 +167,37 @@ struct EditMarks: View {
         }
     }
 
+    /// Type on a Path: the selected letters' quads and the cursor across the path, at the letters' height.
+    private func renderOnPath(_ ctx: inout GraphicsContext, _ path: PathTextLayout, now: Date) {
+        let selection = cursor.selection
+        let canvas = { (p: CGPoint) in geometry.screen(p) }
+        if selection.length > 0 {
+            for letter in path.letters where letter.start < NSMaxRange(selection) && letter.end > selection.location {
+                var quad = Path()
+                quad.move(to: canvas(path.point(letter.from, offset: -path.below)))
+                quad.addLine(to: canvas(path.point(letter.to, offset: -path.below)))
+                quad.addLine(to: canvas(path.point(letter.to, offset: path.above)))
+                quad.addLine(to: canvas(path.point(letter.from, offset: path.above)))
+                quad.closeSubpath()
+                ctx.fill(quad, with: .color(.accentColor.opacity(0.28)))
+            }
+        } else {
+            let tempo = now.timeIntervalSince(cursor.changed)
+            if tempo < 0.5 || Int(tempo / 0.5) % 2 == 0 || Self.fixedCursor {
+                let d = path.distance(of: selection.location)
+                var line = Path()
+                line.move(to: canvas(path.point(d, offset: -path.below)))
+                line.addLine(to: canvas(path.point(d, offset: path.above)))
+                ctx.stroke(line, with: .color(.accentColor), lineWidth: 1.5)
+            }
+        }
+    }
+
     private func square(_ ctx: inout GraphicsContext, _ r: CGRect) {
-        let a = geometry.canvas(CGPoint(x: r.minX, y: r.minY)), b = geometry.canvas(CGPoint(x: r.maxX, y: r.maxY))
-        ctx.fill(Path(CGRect(x: a.x, y: a.y, width: b.x - a.x, height: b.y - a.y)), with: .color(.accentColor.opacity(0.28)))
+        // Four corners, so a turned text's selection turns with it.
+        let corners = [CGPoint(x: r.minX, y: r.minY), CGPoint(x: r.maxX, y: r.minY), CGPoint(x: r.maxX, y: r.maxY),
+                       CGPoint(x: r.minX, y: r.maxY)].map(geometry.canvas)
+        ctx.fill(Path { $0.addLines(corners); $0.closeSubpath() }, with: .color(.accentColor.opacity(0.28)))
     }
 
     private func trace(_ ctx: inout GraphicsContext, of a: CGPoint, until b: CGPoint) {
@@ -169,8 +262,11 @@ struct CanvasTextField: NSViewRepresentable {
 
         let support = Support(field: field)
         support.limits = geometry.fieldBounds
+        // A turned text's field only receives the keyboard: its own drawing (an inactive window's gray selection) would
+        // come out squeezed into the box around the turned letters.
+        field.alphaValue = geometry.turned ? 0 : 1
         // The cursor starts where the click was (or at the end of the text).
-        let start = geometry.edit.click.map { geometry.textLayout.index(in: geometry.pointSize($0)) }
+        let start = geometry.edit.click.map { geometry.index(atBody: geometry.pointSize($0)) }
             ?? (geometry.text.content as NSString).length
         support.onEnterWindow = { [weak field, weak coordinator] nsWindow in
             guard let field else { return }
@@ -188,6 +284,7 @@ struct CanvasTextField: NSViewRepresentable {
         context.coordinator.geometry = geometry
         context.coordinator.sync()
         support.limits = geometry.fieldBounds
+        support.field.alphaValue = geometry.turned ? 0 : 1
     }
 
     /// Receives the size given by the canvas and shows the field in it, with coordinates in body pt.
@@ -237,7 +334,7 @@ struct CanvasTextField: NSViewRepresentable {
 
         /// Click places the cursor; dragging selects; double click, the word; triple, the line; ⇧ extends.
         override func mouseDown(with event: NSEvent) {
-            guard let d = coordinator?.geometry?.textLayout else { return super.mouseDown(with: event) }
+            guard let geometry = coordinator?.geometry else { return super.mouseDown(with: event) }
             window?.makeFirstResponder(self)
             if hasMarkedText() { unmarkText() }
             let granularity: NSSelectionGranularity = switch event.clickCount {
@@ -245,7 +342,11 @@ struct CanvasTextField: NSViewRepresentable {
             case 2: .selectByWord
             default: .selectByParagraph
             }
-            func index(_ e: NSEvent) -> Int { d.index(in: convert(e.locationInWindow, from: nil)) }
+            func index(_ e: NSEvent) -> Int {
+                // A turned text's field is the box around its turned letters: the click goes back through the rotation.
+                if geometry.turned, let support = superview { return geometry.index(atField: support.convert(e.locationInWindow, from: nil)) }
+                return geometry.index(atBody: convert(e.locationInWindow, from: nil))
+            }
             func span(_ a: Int, _ b: Int) -> NSRange {
                 let r = NSRange(location: min(a, b), length: abs(a - b))
                 return granularity == .selectByCharacter ? r : selectionRange(forProposedRange: r, granularity: granularity)
@@ -280,6 +381,11 @@ struct CanvasTextField: NSViewRepresentable {
         override func moveDown(_ sender: Any?) { move(1) }
 
         private func move(_ orientation: Int) {
+            // On a path there is one line: ↑ and ↓ go to the start and the end.
+            if let path = coordinator?.geometry?.pathLayout {
+                setSelectedRange(NSRange(location: orientation < 0 ? 0 : min((string as NSString).length, path.fitting), length: 0))
+                return
+            }
             guard let d = coordinator?.geometry?.textLayout else { return }
             let r = selectedRange()
             setSelectedRange(NSRange(location: d.neighbor(orientation < 0 ? r.location : NSMaxRange(r), orientation), length: 0))
@@ -290,6 +396,7 @@ struct CanvasTextField: NSViewRepresentable {
                 return super.firstRect(forCharacterRange: span, actualRange: actualRange)
             }
             actualRange?.pointee = span
+            if geometry.turned, let support = superview { return window.convertToScreen(support.convert(geometry.fieldRect(span), to: nil)) }
             return window.convertToScreen(convert(geometry.rectangle(span), to: nil))
         }
     }
@@ -405,6 +512,8 @@ struct CanvasTextField: NSViewRepresentable {
         }
 
         func textView(_ textView: NSTextView, doCommandBy selector: Selector) -> Bool {
+            // On a path, Return doesn't break the line (there is only one), as in Illustrator's path type.
+            if geometry?.pathLayout != nil, selector == #selector(NSResponder.insertNewline(_:)) { return true }
             // Esc ends editing and goes back to selection with the text selected (as in Illustrator).
             guard selector == #selector(NSResponder.cancelOperation(_:)) || selector == #selector(NSTextView.complete(_:)) else {
                 return false
@@ -417,6 +526,11 @@ struct CanvasTextField: NSViewRepresentable {
         /// Line breaks from other systems (pasted from another app) become the regular break, the only one the
         /// text's lines know.
         func textView(_ textView: NSTextView, shouldChangeTextIn range: NSRange, replacementString text: String?) -> Bool {
+            // On a path: pasted line breaks become spaces (one line).
+            if geometry?.pathLayout != nil, let text, text.contains(where: \.isNewline) {
+                textView.insertText(String(text.map { $0.isNewline ? " " : $0 }), replacementRange: range)
+                return false
+            }
             guard let text, text.contains(where: { $0 == "\r" || $0 == "\r\n" || $0 == "\u{2028}" || $0 == "\u{2029}" }) else {
                 return true
             }

@@ -1,44 +1,61 @@
 // Side menu (right), like Adobe's docks: each panel is pinned in the glass column (sections
 // separated by dividers, collapsible by the title) or collapsed into an icon in the strip beside it, which opens the
 // panel floating when clicked. The pin pins or collapses; » collapses all, « pins all. The Color and
-// Stroke sections are in ColorPanel.swift and StrokePanel.swift; Page in PagePanel.swift; Character and Paragraph
-// in TextPanel.swift.
+// Stroke sections are in ColorPanel.swift and StrokePanel.swift; Page in PagePanel.swift; Artboards in
+// ArtboardsPanel.swift; Character and Paragraph in TextPanel.swift.
 import SwiftUI
 
 /// Side menu panels, in the order they appear.
 enum Panel: String, CaseIterable, Identifiable {
-    case page = "pagina", color = "cor", stroke = "traco", character = "caractere", paragraph = "paragrafo", pathfinder, offset, layers = "camadas"
+    case page = "pagina", artboards = "pranchetas", color = "cor", gradient = "degrade", stroke = "traco", character = "caractere", paragraph = "paragrafo", pathfinder, offset, layers = "camadas", links = "vinculos"
 
     var id: Self { self }
+
+    /// The panel of a feature not released yet stays out of the column and the Window menu (ReleaseGate.swift).
+    var isAvailable: Bool {
+        switch self {
+        case .gradient: Feature.gradients.isOn
+        case .links: Feature.linkedImages.isOn
+        default: true
+        }
+    }
+
+    static var available: [Panel] { allCases.filter(\.isAvailable) }
 
     var title: String {
         switch self {
         case .page: String(localized: "Page")
+        case .artboards: String(localized: "Artboards")
         case .color: String(localized: "Color")
+        case .gradient: String(localized: "Gradient")
         case .stroke: String(localized: "Stroke")
         case .character: String(localized: "Character")
         case .paragraph: String(localized: "Paragraph")
         case .pathfinder: String(localized: "Pathfinder")
         case .offset: String(localized: "Offset")
         case .layers: String(localized: "Layers")
+        case .links: String(localized: "Links")
         }
     }
 
     var icon: ImageResource {
         switch self {
         case .page: .panelPage
+        case .artboards: .panelArtboards
         case .color: .panelColors
+        case .gradient: .panelGradient
         case .stroke: .panelStroke
         case .character: .panelCharacter
         case .paragraph: .panelParagraph
         case .pathfinder: .panelPathfinder
         case .offset: .panelOffset
         case .layers: .panelLayers
+        case .links: .panelLinks
         }
     }
 
     /// Collapsed into icons the first time the app opens.
-    static let defaultCollapsed = "pathfinder,offset"
+    static let defaultCollapsed = "pranchetas,pathfinder,offset,vinculos"
 
     /// The collapsed (or hidden) ones, stored as "pathfinder,camadas" (an app preference; the 1.0 names).
     static func parsedSet(_ text: String) -> Set<Panel> {
@@ -78,7 +95,7 @@ struct SidePanel: View {
 
     /// Space the menu takes on the right (column + strip + margins), for the rulers and the free area.
     static func isBusy(collapsedSet: String, hiddenOnes: String) -> Double {
-        let visibleOnes = Set(Panel.allCases).subtracting(Panel.parsedSet(hiddenOnes))
+        let visibleOnes = Set(Panel.available).subtracting(Panel.parsedSet(hiddenOnes))
         let iconized = visibleOnes.intersection(Panel.parsedSet(collapsedSet))
         let column = visibleOnes.count > iconized.count ? width : 0
         let span = iconized.isEmpty ? 0 : stripWidth + (column > 0 ? 8 : 0)
@@ -89,7 +106,7 @@ struct SidePanel: View {
     private var hiddenOnes: Set<Panel> { Panel.parsedSet(hiddenText) }
 
     var body: some View {
-        let visibleOnes = Panel.allCases.filter { !hiddenOnes.contains($0) }
+        let visibleOnes = Panel.available.filter { !hiddenOnes.contains($0) }
         let pinnedOnes = visibleOnes.filter { !collapsedSet.contains($0) }
         let iconized = visibleOnes.filter { collapsedSet.contains($0) }
         HStack(alignment: .top, spacing: 8) {
@@ -112,7 +129,7 @@ struct SidePanel: View {
             VStack(spacing: 0) {
                 HStack {
                     Spacer()
-                    Button("Collapse All to Icons", image: .collapseAll) { setCollapsed(Set(Panel.allCases)) }
+                    Button("Collapse All to Icons", image: .collapseAll) { setCollapsed(Set(Panel.available)) }
                         .labelStyle(.iconOnly)
                         .buttonStyle(.borderless)
                         .foregroundStyle(.secondary)
@@ -226,13 +243,16 @@ struct SidePanel: View {
     private func content(_ panel: Panel) -> some View {
         switch panel {
         case .page: PageSection(doc: doc)
+        case .artboards: ArtboardsSection(doc: doc)
         case .color: ColorSection(doc: doc, mode: colorMode)
+        case .gradient: GradientSection(doc: doc)
         case .stroke: StrokeSection(doc: doc)
         case .character: CharacterSection(doc: doc)
         case .paragraph: ParagraphSection(doc: doc)
         case .pathfinder: PathfinderSection(doc: doc)
         case .offset: OffsetSection(doc: doc)
         case .layers: LayersSection(doc: doc)
+        case .links: LinksSection(doc: doc)
         }
     }
 
@@ -308,6 +328,11 @@ private struct LayersSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
+            if Feature.layerBlending.isOn, let active = doc.layers.first(where: { $0.id == doc.activeLayer }) {
+                LayerBlending(doc: doc, layer: active)
+                    .padding(.horizontal, 8)
+                    .padding(.bottom, 6)
+            }
             ForEach(doc.layers) { layer in
                 LayerRow(doc: doc, layer: layer, renaming: $renaming)
                 if layer.isOpen {
@@ -363,6 +388,47 @@ private struct LayersSection: View {
         let n = doc.objects(of: active).count
         return n == 1 ? String(localized: "Delete “\(active.name)” and its object?")
             : String(localized: "Delete “\(active.name)” and its \(n) objects?")
+    }
+}
+
+/// The active layer's blending mode and opacity, like the top of Photoshop's Layers panel (Illustrator keeps them in
+/// its Transparency panel): what the layer prints mixes with the layers under it, on the canvas, in the print and in the
+/// Finder's previews. The cut doesn't change.
+private struct LayerBlending: View {
+    @Bindable var doc: Document
+    let layer: Layer
+
+    var body: some View {
+        VStack(spacing: 4) {
+            HStack(spacing: 6) {
+                Picker("Blending Mode", selection: Binding(get: { layer.blend ?? .normal }, set: { doc.setLayerBlend(layer.id, $0) })) {
+                    ForEach(Array(LayerBlend.groups.enumerated()), id: \.offset) { index, group in
+                        if index > 0 { Divider() }
+                        ForEach(group) { Text($0.name).tag($0) }
+                    }
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .controlSize(.small)
+                .frame(maxWidth: 130)
+                .help("Blending mode of the active layer (“\(layer.name)”)")
+                Spacer(minLength: 4)
+                Text("Opacity").font(.caption).foregroundStyle(.secondary)
+                TextField("Opacity", value: Binding(get: { Int((layer.alpha * 100).rounded()) }, set: {
+                    doc.setLayerOpacity(layer.id, Double($0))
+                }), format: .number)
+                    .labelsHidden()
+                    .textFieldStyle(.roundedBorder)
+                    .controlSize(.small)
+                    .multilineTextAlignment(.trailing)
+                    .monospacedDigit()
+                    .frame(width: 40)
+                Text(verbatim: "%").font(.caption).foregroundStyle(.secondary)
+            }
+            Slider(value: Binding(get: { layer.alpha * 100 }, set: { doc.setLayerOpacity(layer.id, $0, final: false) }), in: 0...100)
+                .controlSize(.mini)
+                .help("Opacity of the active layer (“\(layer.name)”)")
+        }
     }
 }
 
@@ -422,6 +488,15 @@ private struct LayerRow: View {
                     .help("Double-click to rename")
             }
             Spacer(minLength: 4)
+            if !layer.isPlain {
+                // Opacity or a blending mode: what the layer prints mixes with what is under it.
+                HStack(spacing: 2) {
+                    Image(.blendMode).resizable().frame(width: 11, height: 11)
+                    if layer.opacity != nil { Text(verbatim: "\(Int(layer.alpha * 100))%").font(.caption2).monospacedDigit() }
+                }
+                .foregroundStyle(.secondary)
+                .help(String(localized: "\((layer.blend ?? .normal).name) · \(Int(layer.alpha * 100)) % opacity"))
+            }
             if hasSelection {
                 RoundedRectangle(cornerRadius: 1.5).fill(layer.barColor).frame(width: 7, height: 7)
             }
@@ -517,10 +592,12 @@ private struct ObjectRow: View {
         return ZStack {
             if object.image != nil {
                 shape.fill(.gray.opacity(0.35))
+            } else if let gradient = object.gradient, object.fill != nil {
+                GradientSwatch(gradient: gradient, colors: doc.colors, shape: shape)
             } else if let fill = object.fill {
-                shape.fill(fill.color)
+                shape.fill(doc.colors.color(fill))
             }
-            if object.cutsLine { shape.strokeBorder(object.strokeColor.color, lineWidth: 2) }
+            if object.cutsLine { shape.strokeBorder(doc.colors.color(object.strokeColor), lineWidth: 2) }
         }
         .frame(width: 12, height: 12)
         .overlay(shape.strokeBorder(.primary.opacity(0.25), lineWidth: 0.5))

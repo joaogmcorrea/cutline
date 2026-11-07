@@ -57,6 +57,8 @@ public struct StudioDocument: Sendable {
         public var cuts: Bool
         /// Where it is in the file's tree: the index in the top-level list and, inside groups, in the children.
         public var source: [Int] = []
+        /// The object's matrix composed with its groups' (its local outline → page mm): where Studio keeps a rotation.
+        public var transform: CGAffineTransform = .identity
 
         public var path: CGPath {
             let path = CGMutablePath()
@@ -183,7 +185,7 @@ public struct StudioDocument: Sendable {
                 if images[key] != nil { fill = .image(key: key, transform: toLocal.concatenating(t)) }
             }
             objects.append(Object(kind: raw.name, subpaths: subpaths, line: style.line, fill: fill, cuts: raw.flag != 1,
-                                  source: path + [index]))
+                                  source: path + [index], transform: t))
         }
     }
 }

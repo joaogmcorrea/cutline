@@ -1,23 +1,12 @@
-// Help › Report a Bug… / Request a Feature…: a window with what happened, how to reproduce it and what was
-// expected (or the feature and what it would be for), plus the technical details (versions, Mac, machine and the
-// driver log), which the person sees before sending. It goes as a GitHub issue (prefilled new-issue page) or by
-// email (with the latest cut log attached); it can also just be copied.
+// Help › Report a Bug…: a window with what happened, how to reproduce it and what was expected, plus the technical
+// details (versions, Mac, machine and the driver log), which the person sees before sending. It goes as a GitHub issue
+// (prefilled new-issue page) or by email (with the latest cut log attached); it can also just be copied.
+// Help › Request a Feature… opens the public roadmap instead, where suggestions get votes (since 05/11/2026).
 // The experimental features (tool holder 2 and tools, print bleed) open it from their own "Report a Problem…" link,
 // already titled and with what's needed to look into them (`ReportRequest.context`).
 import AppKit
 import CutlineKit
 import SwiftUI
-
-enum ReportKind: String, Codable, Hashable, CaseIterable {
-    case bug, feature
-
-    var title: String {
-        switch self {
-        case .bug: String(localized: "Report a Bug")
-        case .feature: String(localized: "Request a Feature")
-        }
-    }
-}
 
 /// Features marked "Experimental" in the interface: not tried on a machine yet.
 enum ExperimentalFeature: String, Codable, Hashable {
@@ -31,10 +20,9 @@ enum ExperimentalFeature: String, Codable, Hashable {
     }
 }
 
-/// What opens a report window: the kind and, from an experimental feature, which one and its details (built where the
-/// link is, which knows the document and the machine).
+/// What opens a report window: from an experimental feature, which one and its details (built where the link is, which
+/// knows the document and the machine).
 struct ReportRequest: Codable, Hashable {
-    var kind: ReportKind
     var feature: ExperimentalFeature? = nil
     var context: String? = nil
 }
@@ -44,17 +32,18 @@ enum Contact {
     static let repository = "joaogmcorrea/cutline"
     static let email = "cutline@joaocorrea.design"
     static var gitHubPage: URL { URL(string: "https://github.com/\(repository)")! }
+    /// The public roadmap, with the suggestion form already open: feature requests go there and get votes.
+    static let suggestFeature = URL(string: "https://cutline.joaocorrea.design/roadmap/#suggest")!
 }
 
 /// The fields the person fills in and the text built from them.
 struct Report {
-    var kind: ReportKind
     var summary = ""
-    /// Bug: what happened. Feature: what Cutline should do.
+    /// What happened.
     var summaryText = ""
-    /// Bug: the steps. Feature: what it would be for.
-    var detail = ""
-    /// Bug: what should have happened.
+    /// The steps.
+    var detail = Report.emptySteps
+    /// What should have happened.
     var expected = ""
     var includeTechnical = true
     /// Reported from an experimental feature's link, with its details.
@@ -69,10 +58,7 @@ struct Report {
             && !summaryText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    var finalTitle: String {
-        let summary = summary.trimmingCharacters(in: .whitespacesAndNewlines)
-        return kind == .bug ? summary : "[" + String(localized: "Feature") + "] " + summary
-    }
+    var finalTitle: String { summary.trimmingCharacters(in: .whitespacesAndNewlines) }
 
     /// The text in Markdown. On GitHub, the log goes in a collapsible block.
     func text(_ technical: TechnicalInfo?, logLineCount: Int? = nil, forGitHub: Bool = true) -> String {
@@ -82,15 +68,9 @@ struct Report {
             guard !pointSize.isEmpty else { return }
             parts.append("### \(title)\n\n\(pointSize)")
         }
-        switch kind {
-        case .bug:
-            section(String(localized: "What happened"), summaryText)
-            section(String(localized: "Steps to reproduce"), detail == Self.emptySteps ? "" : detail)
-            section(String(localized: "What should have happened"), expected)
-        case .feature:
-            section(String(localized: "What Cutline should do"), summaryText)
-            section(String(localized: "What it would be for"), detail)
-        }
+        section(String(localized: "What happened"), summaryText)
+        section(String(localized: "Steps to reproduce"), detail == Self.emptySteps ? "" : detail)
+        section(String(localized: "What should have happened"), expected)
         if let technical {
             parts.append("### " + String(localized: "Technical details") + "\n\n" + technical.summary)
             if let context, !context.isEmpty { parts.append(context) }
@@ -113,7 +93,7 @@ struct Report {
             var components = URLComponents(string: "https://github.com/\(Contact.repository)/issues/new")!
             components.queryItems = [URLQueryItem(name: "title", value: finalTitle),
                                       URLQueryItem(name: "body", value: pointSize),
-                                      URLQueryItem(name: "labels", value: kind == .bug ? (feature == nil ? "bug" : "bug,experimental") : "enhancement")]
+                                      URLQueryItem(name: "labels", value: feature == nil ? "bug" : "bug,experimental")]
             return components.url!
         }
         var lines = technical?.logLines.count ?? 0
@@ -226,7 +206,7 @@ struct ReportWindow: View {
     @State private var notice: String?
 
     init(request: ReportRequest) {
-        var report = Report(kind: request.kind, detail: request.kind == .bug ? Report.emptySteps : "")
+        var report = Report()
         if let feature = request.feature {
             report.feature = feature
             report.context = request.context
@@ -241,25 +221,12 @@ struct ReportWindow: View {
         VStack(spacing: 0) {
             Form {
                 Section {
-                    Picker("Type", selection: $report.kind) {
-                        Text("Bug").tag(ReportKind.bug)
-                        Text("Feature request").tag(ReportKind.feature)
-                    }
-                    .pickerStyle(.segmented)
-                    TextField("Summary", text: $report.summary,
-                              prompt: Text(report.kind == .bug ? "In one line, what went wrong"
-                                                                       : "In one line, what you’d like"))
+                    TextField("Summary", text: $report.summary, prompt: Text("In one line, what went wrong"))
                 }
-                if report.kind == .bug {
-                    field("What happened?", $report.summaryText,
-                          "Tell what you did and what Cutline did (error message, what the machine cut…)")
-                    field("Steps to reproduce", $report.detail, "The steps, one per line")
-                    field("What should have happened?", $report.expected, "What you expected to see")
-                } else {
-                    field("What should Cutline do?", $report.summaryText, "Describe the feature")
-                    field("What would it be for?", $report.detail,
-                          "What you’d do with it (and how you do it today, in Silhouette Studio or another app)")
-                }
+                field("What happened?", $report.summaryText,
+                      "Tell what you did and what Cutline did (error message, what the machine cut…)")
+                field("Steps to reproduce", $report.detail, "The steps, one per line")
+                field("What should have happened?", $report.expected, "What you expected to see")
                 Section {
                     Toggle("Include Cutline, Mac and machine details", isOn: $report.includeTechnical)
                     if let technical {
@@ -271,18 +238,16 @@ struct ReportWindow: View {
                         }
                     }
                 } footer: {
-                    if report.kind == .bug {
-                        VStack(alignment: .leading, spacing: 6) {
-                            if report.feature == .printBleed {
-                                Text("A photo of the printed and cut sheet helps a lot: attach it to the issue or the email, with the document.")
-                            }
-                            Text("If the problem happens with a file, attach the document (.cutline, .studio3, PDF…). Cut logs are in ~/Library/Logs/Cutline; the latest one is attached to the email.")
-                            Button("Show cut logs") { showLogs() }
-                                .buttonStyle(.link)
+                    VStack(alignment: .leading, spacing: 6) {
+                        if report.feature == .printBleed {
+                            Text("A photo of the printed and cut sheet helps a lot: attach it to the issue or the email, with the document.")
                         }
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        Text("If the problem happens with a file, attach the document (.cutline, .studio3, PDF…). Cut logs are in ~/Library/Logs/Cutline; the latest one is attached to the email.")
+                        Button("Show cut logs") { showLogs() }
+                            .buttonStyle(.link)
                     }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 }
             }
             .formStyle(.grouped)
@@ -305,13 +270,8 @@ struct ReportWindow: View {
             .padding(14)
         }
         .frame(minWidth: 540, idealWidth: 580, minHeight: 640, idealHeight: 720)
-        .navigationTitle(report.kind.title)
+        .navigationTitle(String(localized: "Report a Bug"))
         .background(NoTabs())
-        .onChange(of: report.kind) { _, kind in
-            // The numbered steps are only for bugs.
-            if kind == .feature, report.detail == Report.emptySteps { report.detail = "" }
-            if kind == .bug, report.detail.isEmpty { report.detail = Report.emptySteps }
-        }
         #if DEBUG
         .onAppear { DebugHooks.fillReport(&report, send: { openGitHub() }) }
         #endif
@@ -410,7 +370,7 @@ struct ReportProblemLink: View {
 
     var body: some View {
         Button("Report a Problem…") {
-            openWindowAction(value: ReportRequest(kind: .bug, feature: feature, context: context()))
+            openWindowAction(value: ReportRequest(feature: feature, context: context()))
         }
         .buttonStyle(.link)
         // A caption's secondary color would make it look like plain text.
@@ -431,14 +391,17 @@ private struct NoTabs: NSViewRepresentable {
     }
 }
 
-/// Help: report a bug, request a feature and the project page.
+/// Help: report a bug, request a feature (on the roadmap, in the browser) and the project page.
 struct HelpCommands: Commands {
     @Environment(\.openWindow) private var openWindowAction
 
     var body: some Commands {
         CommandGroup(replacing: .help) {
-            Button("Report a Bug…") { openWindowAction(value: ReportRequest(kind: .bug)) }
-            Button("Request a Feature…") { openWindowAction(value: ReportRequest(kind: .feature)) }
+            Button("Report a Bug…") { openWindowAction(value: ReportRequest()) }
+            Link("Request a Feature…", destination: Contact.suggestFeature)
+            Divider()
+            // The "Send to Cutline" script into Illustrator's File › Scripts (Illustrator/IllustratorScript.swift).
+            Button("Install Illustrator Script…") { IllustratorScript.install() }
             Divider()
             Link("Cutline on GitHub", destination: Contact.gitHubPage)
         }

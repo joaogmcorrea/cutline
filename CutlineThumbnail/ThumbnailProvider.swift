@@ -7,20 +7,24 @@ import QuickLookThumbnailing
 nonisolated final class ThumbnailProvider: QLThumbnailProvider {
     override func provideThumbnail(for request: QLFileThumbnailRequest,
                                    _ handler: @escaping (QLThumbnailReply?, Error?) -> Void) {
-        // The A4 page as large as the requested box allows.
-        let box = request.maximumSize, page = CGSize(width: 210, height: 297)
-        let fit = min(box.width / page.width, box.height / page.height)
-        let size = CGSize(width: (page.width * fit).rounded(), height: (page.height * fit).rounded())
-        let url = request.fileURL, pixels = Int(size.width * request.scale)
+        let box = request.maximumSize, url = request.fileURL, scale = request.scale
         // Quick Look takes the answer later, from any thread.
         nonisolated(unsafe) let handler = handler
         Task {
-            guard let image = await MainActor.run(body: { PagePreview.image(of: url, width: pixels) }) else {
+            // The sheet (the 1st artboard) as large as the requested box allows.
+            let drawn = await MainActor.run { () -> (CGImage, CGSize)? in
+                guard let sheet = PagePreview.file(at: url)?.sheet, sheet.width > 0, sheet.height > 0 else { return nil }
+                let fit = min(box.width / sheet.width, box.height / sheet.height)
+                let size = CGSize(width: (sheet.width * fit).rounded(), height: (sheet.height * fit).rounded())
+                return PagePreview.image(of: url, width: Int(size.width * scale)).map { ($0, size) }
+            }
+            guard let (image, size) = drawn else {
                 return handler(nil, CocoaError(.fileReadCorruptFile))
             }
+            nonisolated(unsafe) let picture = image
             handler(QLThumbnailReply(contextSize: size) { context in
                 // The context may already be scaled to the screen: its clip box is the whole thumbnail in its own units.
-                context.draw(image, in: context.boundingBoxOfClipPath)
+                context.draw(picture, in: context.boundingBoxOfClipPath)
                 return true
             }, nil)
         }

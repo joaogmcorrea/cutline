@@ -33,7 +33,6 @@ struct MainWindow: View {
     @State private var nsWindow = WeakWindow()
     @State private var sendWindowOpen = false
     @AppStorage("reguas") private var rulersOn = true
-    @State private var importing = false
     @State private var tracingNow: ImageToTrace?
     @State private var layeredNow: LayeredImage?
     @State private var manyPathsNow: ManyPaths?
@@ -58,8 +57,11 @@ struct MainWindow: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
             }
         }
-        // Files dragged from the Finder onto the window (the point is in canvas space, which sits behind).
-        .dropDestination(for: URL.self) { urls, point in drop(urls, in: point) } isTargeted: { dropping = $0 }
+        // Files dragged from the Finder onto the window (the point is in canvas space, which sits behind); an image over a
+        // shape highlights it (it goes inside: Editor/ImageInsideShape.swift).
+        .onDrop(of: [.fileURL], delegate: FileDrop(doc: doc, viewState: control.viewState, dropping: $dropping) { urls, point in
+            _ = drop(urls, in: point)
+        })
         .overlay {
             if dropping {
                 RoundedRectangle(cornerRadius: 14)
@@ -72,12 +74,20 @@ struct MainWindow: View {
             // The canvas starts below the tabs (outside the title bar area).
             CanvasView(doc: doc, viewState: $control.viewState, rulers: rulerGeometry)
                 .onGeometryChange(for: CGSize.self, of: \.size) { canvasSize = $0 }
+                // The linked images' files (Editor/LinksPanel.swift).
+                .modifier(LinkWatcher(doc: doc))
+                // A photo, sketch or scan from an iPhone or iPad (Editor/DeviceImport.swift).
+                .modifier(DeviceImportReceiver(doc: doc, tracing: $tracingNow, manyPaths: $manyPathsNow))
         }
         // The page refits to the window (and to the rulers and panel) until the user touches the zoom or position.
         .onChange(of: freeArea, initial: true) { _, newOne in
             control.freeArea = newOne
+            control.activeArtboard = doc.activeArtboard.rect
             if !control.viewState.manual, canvasSize.width > 300, canvasSize.height > 300 { control.adjust() }
         }
+        // Fit in Window shows the active artboard; Fit All in Window, all of them.
+        .onChange(of: doc.activeArtboard.rect, initial: true) { _, newOne in control.activeArtboard = newOne }
+        .onChange(of: doc.artboardsBox, initial: true) { _, newOne in control.allArtboards = newOne }
         .onChange(of: control.viewState.mm(CGPoint(x: control.freeArea.midX, y: control.freeArea.midY)), initial: true) { _, center in
             doc.visibleCenter = center
         }
@@ -91,14 +101,17 @@ struct MainWindow: View {
         }
         .background { Color.clear.sheet(item: $tracingNow) { TraceWindow(doc: doc, origin: $0) } }
         .background { Color.clear.sheet(item: $layeredNow) { LayeredImageWindow(doc: doc, origin: $0) } }
-        .background { Color.clear.sheet(item: $manyPathsNow) { ManyPathsWindow(doc: doc, origin: $0) } }
-        .fileImporter(isPresented: $importing, allowedContentTypes: Import.kinds) { result in
-            if case .success(let url) = result { openImported(url, ask: true) }
+        // (Also Edit › Assign Profile…'s sheet: in the same background, so the chain stays short enough to type-check.)
+        .background {
+            Color.clear.sheet(item: $manyPathsNow) { ManyPathsWindow(doc: doc, origin: $0) }.modifier(AssignProfileSheet(doc: doc))
+                .modifier(ColorPickerSheet(doc: doc)).modifier(PathTextOptionsSheet(doc: doc)).modifier(RotateSheet(doc: doc))
         }
         .focusedSceneValue(\.document, doc)
         .focusedSceneValue(\.viewControl, control)
-        .onChange(of: doc.importRequest) { _, _ in importing = true }
+        .onChange(of: doc.importRequest) { _, _ in chooseFileToImport() }
         .onChange(of: doc.printRequest) { _, _ in printDocument() }
+        .onChange(of: doc.saveSelectionRequest) { _, _ in saveSelection() }
+        .onChange(of: doc.mergeRequest) { _, _ in chooseFileToMerge() }
         .onChange(of: doc.sendRequest) { _, _ in if !doc.objects.isEmpty { sendWindowOpen = true } }
         .onChange(of: controlBarVisible) { _, visible in
             if let nsWindow = nsWindow.nsWindow { ControlBar.display(visible, in: nsWindow) }
@@ -116,6 +129,7 @@ struct MainWindow: View {
             turnOffFromStudioFile(nsWindow)
             #if DEBUG
             DebugHooks.saveForTest(nsWindow)
+            DebugHooks.deviceImportForTest(nsWindow, doc: doc)
             #endif
         })
         .onAppear {
@@ -126,6 +140,10 @@ struct MainWindow: View {
             switch doc.objects.isEmpty ? StartScreen.takeSetup() : nil {
             case .printAndCut: doc.marks = true
             case .importing(let url): openImported(url)
+            case .canva(let url, let title): openPage(url, title: title, from: .canva)
+            case .illustrator(let url):
+                openPage(url, title: IllustratorScript.title(of: url), from: .illustrator)
+                IllustratorScript.discard(url)
             case nil: break
             }
         }
@@ -143,11 +161,14 @@ struct MainWindow: View {
             if DebugHooks.openSettings { openSettings() }
             DebugHooks.editTextForTest(doc)
             DebugHooks.modifyForTest(doc)
+            DebugHooks.openPickerForTest(doc)
+            DebugHooks.showFontListForTest(doc)
             DebugHooks.pathfinderForTest(doc)
-            if let url = DebugHooks.importForTest { openImported(url) }
+            if let url = DebugHooks.importForTest { openImported(url, link: DebugHooks.linkImport) }
             if let url = DebugHooks.dropForTest {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    _ = drop([url], in: CGPoint(x: canvasSize.width / 2, y: canvasSize.height / 2))
+                    let point = DebugHooks.dropPointForTest.map(control.viewState.canvas) ?? CGPoint(x: canvasSize.width / 2, y: canvasSize.height / 2)
+                    _ = drop([url], in: point)
                 }
             }
             DebugHooks.printForTest(doc)
@@ -158,35 +179,44 @@ struct MainWindow: View {
                 DebugHooks.showPlain(SendWindow(doc: doc).environment(machine), title: "CutlineTestSend", size: CGSize(width: 1000, height: 680))
             }
             if let request = DebugHooks.reportRequest(doc: doc, machine: machine) { openWindowAction(value: request) }
+            if DebugHooks.openCanvaOnce() { openWindowAction(id: CanvaWindow.id) }
+            DebugHooks.installScriptForTest()
         }
         #endif
     }
 
     /// An opened .studio3 becomes a new Cutline document, still without a file (as Keynote does with a
     /// PowerPoint): macOS never writes the original, and ⌘S asks whether to save over it (the location is in
-    /// `doc.studio`) or as a Cutline document (Model/StudioSave.swift).
-    private func turnOffFromStudioFile(_ nsWindow: NSWindow?) {
-        guard doc.cameFromStudio, let document = nsWindow?.windowController?.document as? NSDocument else { return }
-        doc.cameFromStudio = false
-        guard let kind = document.fileType.flatMap({ UTType($0) }), kind.conforms(to: .studio3) else { return }
-        let name = document.fileURL?.deletingPathExtension().lastPathComponent
-        doc.studio?.url = document.fileURL
-        document.fileURL = nil
-        document.fileType = UTType.cutlineDocument.identifier
-        if let name {
-            document.displayName = name
-            nsWindow?.windowController?.synchronizeWindowTitleWithDocumentName()
+    /// `doc.studio`) or as a Cutline document (Model/StudioSave.swift). The window can show up before it has its
+    /// document: then it tries again a moment later (and ⌘S detaches it too, in case it never got one in time).
+    private func turnOffFromStudioFile(_ nsWindow: NSWindow?, attempt: Int = 0) {
+        guard doc.cameFromStudio else { return }
+        #if DEBUG
+        if DebugHooks.keepStudioAttached { return }
+        #endif
+        guard let document = nsWindow?.windowController?.document as? NSDocument else {
+            if attempt < 20, nsWindow != nil {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { turnOffFromStudioFile(nsWindow, attempt: attempt + 1) }
+            }
+            return
         }
+        StudioSave.detach(doc, from: document, nsWindow: nsWindow)
     }
 
-    /// Files dropped on the window: documents (.cutline, .studio3) each open in their own window; the rest goes in
-    /// as with Import… — an image asks what to do and is centered where it was dropped.
+    /// Files dropped on the window: documents (.cutline, .studio3) merge into this one, as with File › Merge… (to open
+    /// one in its own window: File › Open, or drop it on the Dock icon); the rest goes in as with Import… — an image asks
+    /// what to do and is centered where it was dropped.
     private func drop(_ urls: [URL], in point: CGPoint) -> Bool {
         let files = urls.filter(\.isFileURL)
+        // One image over a shape: it goes inside, filling it (as Silhouette Studio's Fill Pattern), without the question.
+        if files.count == 1, let target = doc.imageTarget(at: control.viewState.mm(point)), doc.putImageFile(files[0], into: target) {
+            doc.tool = .selection
+            return true
+        }
         for url in files {
             let kind = UTType(filenameExtension: url.pathExtension) ?? .data
-            if kind.conforms(to: .cutlineDocument) || kind.conforms(to: .studio3) {
-                NSDocumentController.shared.openDocument(withContentsOf: url, display: true) { _, _, _ in }
+            if Document.mergeable.contains(where: kind.conforms(to:)) {
+                merge(url)
             } else {
                 openImported(url, center: control.viewState.mm(point))
             }
@@ -199,11 +229,60 @@ struct MainWindow: View {
     /// any other image → Trace window, which first asks whether the image goes alone, with the outer
     /// contour or with the inner ones (`ask`; the Trace tool goes straight to the settings). The content decides:
     /// .ai and .svg are also "images" to macOS, and the Trace tool's panel accepts both.
-    private func openImported(_ url: URL, ask: Bool = true, center: CGPoint? = nil) {
+    /// File › Import…: the open panel on this window, with Link (Editor/LinksPanel.swift).
+    private func chooseFileToImport() {
+        guard let nsWindow = nsWindow.nsWindow, nsWindow.attachedSheet == nil else { return }
+        doc.finishText()
+        ImportPanel.choose(Import.kinds, in: nsWindow) { url, link in openImported(url, ask: true, link: link) }
+    }
+
+    /// Where a page for a new document comes from.
+    enum PageSource { case canva, illustrator }
+
+    /// A page exported by Open from Canva… (Canva/CanvaWindow.swift) or sent by Illustrator's script (Illustrator/), in
+    /// this new document: the 1st artboard takes the page's size, the PDF comes in as any imported PDF (with the
+    /// many-paths question, if it comes to that), and the document is named after the design or the Illustrator document
+    /// (the window's tab, and Save's suggested name).
+    private func openPage(_ url: URL, title: String, from source: PageSource) {
+        if let pdf = CGPDFDocument(url as CFURL), let page = pdf.page(at: 1) {
+            let box = page.getBoxRect(.cropBox), mm = 25.4 / 72
+            let size = CGSize(width: Artboard.limited(box.width * mm), height: Artboard.limited(box.height * mm))
+            if !box.isEmpty, size != doc.artboards[0].size {
+                doc.artboards[0].rect = CGRect(origin: .zero, size: size)
+                control.activeArtboard = doc.activeArtboard.rect
+                DispatchQueue.main.async { if canvasSize.width > 300, canvasSize.height > 300 { control.adjust() } }
+            }
+        }
+        // From Illustrator, the notice names the Illustrator document, not the temporary file.
+        openImported(url, name: source == .illustrator ? title : nil, fromCanva: source == .canva)
+        nameDocument(title, from: source)
+    }
+
+    /// The untitled document takes the design's name, once the window has its document.
+    private func nameDocument(_ title: String, from source: PageSource, attempt: Int = 0) {
+        guard let document = nsWindow.nsWindow?.windowController?.document as? NSDocument else {
+            if attempt < 30 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { nameDocument(title, from: source, attempt: attempt + 1) }
+            }
+            return
+        }
+        document.displayName = title
+        document.windowControllers.forEach { $0.synchronizeWindowTitleWithDocumentName() }
+        #if DEBUG
+        DebugHooks.pageOpened(doc, document: document, from: source == .canva ? "canva" : "illustrator")
+        #endif
+    }
+
+    /// `link`: an image goes in linked (its file isn't copied into the document); vectors always come in as paths.
+    /// `name`: the file's name in the notices (its own by default). `fromCanva`: the notice doesn't send the person to
+    /// Illustrator for the text.
+    private func openImported(_ url: URL, ask: Bool = true, center: CGPoint? = nil, link: Bool = false, name: String? = nil,
+                              fromCanva: Bool = false) {
         let access = url.startAccessingSecurityScopedResource()
         defer { if access { url.stopAccessingSecurityScopedResource() } }
+        let name = name ?? url.lastPathComponent
         guard let payload = try? Data(contentsOf: url) else {
-            doc.notice = String(localized: "“\(url.lastPathComponent)” couldn’t be opened.")
+            doc.notice = String(localized: "“\(name)” couldn’t be opened.")
             return
         }
         let kind = UTType(filenameExtension: url.pathExtension) ?? .data
@@ -213,22 +292,27 @@ struct MainWindow: View {
                 guard var image = ImageToTrace(url: url) else { doc.notice = String(localized: "The image couldn’t be opened."); return }
                 image.ask = ask
                 image.center = center
+                image.sheet = doc.activeArtboard.rect
+                if link { image.linkURL = url }
                 tracingNow = image
             }
             guard PSDImport.isPhotoshop(payload) else { return openImage() }
             // Reading every layer takes a moment on big files: off the main thread. Flattened, it goes as one image.
             Task {
-                let file = await Task.detached { PSDImport.read(payload) }.value
+                let colors = doc.colors
+                let file = await Task.detached { PSDImport.read(payload, colors: colors) }.value
                 guard let file, !file.layers.isEmpty else { return openImage() }
-                layeredNow = LayeredImage(name: url.deletingPathExtension().lastPathComponent, file: file, center: center)
+                layeredNow = LayeredImage(name: url.deletingPathExtension().lastPathComponent, file: file, center: center,
+                                          sheet: doc.activeArtboard.rect)
+                if link { doc.notice = String(localized: "A Photoshop file’s layers go into the document: only a whole image can be linked.") }
             }
             return
         }
         do {
-            let result = try VectorImporter.read(payload)
+            let result = try VectorImporter.read(payload, colors: doc.colors, sheet: doc.activeArtboard.rect)
             // Tens of thousands of paths (a texture, an image trace): flatten, simplify or bring them all.
             if result.objects.count > ManyPaths.threshold {
-                let origin = ManyPaths(name: url.lastPathComponent, result: result)
+                let origin = ManyPaths(name: name, result: result, fromCanva: fromCanva)
                 #if DEBUG
                 if let output = DebugHooks.manyPathsPlain {
                     DebugHooks.showPlain(ManyPathsWindow(doc: doc, origin: origin), title: "CutlineTestManyPaths",
@@ -239,10 +323,59 @@ struct MainWindow: View {
                 manyPathsNow = origin
                 return
             }
-            doc.insertImported(result.objects)
-            doc.notice = result.notice(from: url.lastPathComponent)
+            doc.insertImported(result.objects, images: result.imageData)
+            doc.notice = result.notice(from: name, fromCanva: fromCanva)
         } catch {
             doc.notice = error.localizedDescription
+        }
+    }
+
+    /// File › Merge…: the open panel on this window, for a .cutline or .studio3 to bring into this document.
+    private func chooseFileToMerge() {
+        guard let nsWindow = nsWindow.nsWindow, nsWindow.attachedSheet == nil else { return }
+        doc.finishText()
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = Document.mergeable
+        panel.allowsMultipleSelection = false
+        panel.message = String(localized: "Choose a Cutline or Silhouette Studio document to bring into this one.")
+        panel.prompt = String(localized: "Merge")
+        panel.beginSheetModal(for: nsWindow) { response in
+            if response == .OK, let url = panel.url { merge(url) }
+        }
+    }
+
+    private func merge(_ url: URL) {
+        let access = url.startAccessingSecurityScopedResource()
+        defer { if access { url.stopAccessingSecurityScopedResource() } }
+        do {
+            doc.notice = try doc.merge(url)
+        } catch {
+            doc.notice = String(localized: "“\(url.lastPathComponent)” couldn’t be merged: \(error.localizedDescription)")
+        }
+    }
+
+    /// File › Save Selection…: the save panel on this window, for a new Cutline file with only the selected objects.
+    private func saveSelection() {
+        guard let nsWindow = nsWindow.nsWindow, nsWindow.attachedSheet == nil else { return }
+        let payload: Data
+        do {
+            guard let data = try doc.selectionFile() else { return }
+            payload = data
+        } catch {
+            doc.notice = error.localizedDescription
+            return
+        }
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.cutlineDocument]
+        panel.nameFieldStringValue = String(localized: "\(nsWindow.title) (selection)")
+        panel.beginSheetModal(for: nsWindow) { response in
+            guard response == .OK, let url = panel.url else { return }
+            do {
+                try payload.write(to: url, options: .atomic)
+                doc.notice = String(localized: "Selection saved to “\(url.lastPathComponent)”.")
+            } catch {
+                doc.notice = error.localizedDescription
+            }
         }
     }
 
@@ -341,6 +474,63 @@ struct MainWindow: View {
         }
         // The button is already glass (prominent): no shared toolbar background behind it (glass on glass).
         .sharedBackgroundVisibility(.hidden)
+    }
+}
+
+/// Files dragged from the Finder over the window: the frame around it while they are over it, and the shape a single image
+/// would go into, highlighted on the canvas (the drop itself decides again where it lands: `MainWindow.drop`).
+struct FileDrop: DropDelegate {
+    let doc: Document
+    let viewState: ViewState
+    @Binding var dropping: Bool
+    let perform: ([URL], CGPoint) -> Void
+
+    func validateDrop(info: DropInfo) -> Bool { info.hasItemsConforming(to: [.fileURL]) }
+
+    func dropEntered(info: DropInfo) {
+        dropping = true
+        highlight(info)
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        highlight(info)
+        return DropProposal(operation: .copy)
+    }
+
+    func dropExited(info: DropInfo) {
+        dropping = false
+        doc.imageDropTarget = nil
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        dropping = false
+        doc.imageDropTarget = nil
+        let providers = info.itemProviders(for: [.fileURL])
+        guard !providers.isEmpty else { return false }
+        let point = info.location
+        Task { @MainActor in
+            var urls: [URL] = []
+            for provider in providers {
+                if let url = await Self.url(from: provider) { urls.append(url) }
+            }
+            if !urls.isEmpty { perform(urls, point) }
+        }
+        return true
+    }
+
+    /// One raster image (not a vector file, which is also an "image" to macOS) over a shape that takes it.
+    private func highlight(_ info: DropInfo) {
+        let providers = info.itemProviders(for: [.fileURL])
+        let vectors: [UTType] = [.pdf, .svg, UTType("com.adobe.illustrator.ai-image") ?? .pdf, UTType("com.adobe.encapsulated-postscript") ?? .pdf]
+        let image = providers.count == 1 && info.hasItemsConforming(to: [.image]) && !info.hasItemsConforming(to: vectors)
+        let target = image ? doc.imageTarget(at: viewState.mm(info.location)) : nil
+        if doc.imageDropTarget != target { doc.imageDropTarget = target }
+    }
+
+    private static func url(from provider: NSItemProvider) async -> URL? {
+        await withCheckedContinuation { continuation in
+            _ = provider.loadObject(ofClass: URL.self) { url, _ in continuation.resume(returning: url) }
+        }
     }
 }
 

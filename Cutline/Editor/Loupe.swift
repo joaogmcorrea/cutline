@@ -33,6 +33,60 @@ enum ToolPointer {
     }
 }
 
+/// The rotate pointer (just outside a corner of the selection, the Rotate tool, while turning): a curved arrow with a head
+/// at each end, in the app's style (black with a white halo, like the tools' pointers), bulging toward `degrees` on screen
+/// (counterclockwise from the right; 45 = toward the top-right corner). Made once per 10°.
+enum RotatePointer {
+    private static var made: [Int: PointerStyle] = [:]
+
+    static func style(_ degrees: Double) -> PointerStyle {
+        let step = (Int((degrees / 10).rounded()) * 10 % 360 + 360) % 360
+        if let done = made[step] { return done }
+        let style = PointerStyle.image(Image(nsImage: image(step)), hotSpot: .center)
+        made[step] = style
+        return style
+    }
+
+    /// The pointer's picture, 26 × 26 pt, bulging toward `step` degrees.
+    static func image(_ step: Int) -> NSImage {
+        NSImage(size: NSSize(width: 26, height: 26), flipped: true) { _ in
+            guard let cg = NSGraphicsContext.current?.cgContext else { return false }
+            // Drawn bulging toward the top-right (45°), then turned to `step` around the middle (y down: a negative angle
+            // turns counterclockwise on screen).
+            cg.translateBy(x: 13, y: 13)
+            cg.rotate(by: -Double(step - 45) * .pi / 180)
+            cg.translateBy(x: -13, y: -13)
+            let arrow = CGMutablePath()
+            // A quarter of a circle around the bottom-left, from the right end (pointing down) to the top end (pointing left).
+            let c = CGPoint(x: 6, y: 20), r = 12.5
+            let at = { (a: Double) in CGPoint(x: c.x + r * cos(a * .pi / 180), y: c.y - r * sin(a * .pi / 180)) }
+            arrow.move(to: at(8))
+            for a in stride(from: 8.0, through: 82, by: 2) { arrow.addLine(to: at(a)) }
+            let head = { (tip: CGPoint, dx: Double, dy: Double) in
+                // A head along (dx, dy), 4.5 long, 4 wide on each side.
+                let px = -dy, py = dx
+                arrow.move(to: CGPoint(x: tip.x - dx * 4.5 + px * 4, y: tip.y - dy * 4.5 + py * 4))
+                arrow.addLine(to: tip)
+                arrow.addLine(to: CGPoint(x: tip.x - dx * 4.5 - px * 4, y: tip.y - dy * 4.5 - py * 4))
+            }
+            let end = at(8), top = at(82)
+            head(CGPoint(x: end.x, y: end.y + 1.5), sin(8 * .pi / 180), cos(8 * .pi / 180))
+            head(CGPoint(x: top.x - 1.5, y: top.y), -sin(82 * .pi / 180), -cos(82 * .pi / 180))
+            cg.setLineCap(.round)
+            cg.setLineJoin(.round)
+            cg.addPath(arrow)
+            cg.setStrokeColor(NSColor.white.cgColor)
+            cg.setLineWidth(4)
+            cg.strokePath()
+            cg.addPath(arrow)
+            cg.setStrokeColor(NSColor.black.cgColor)
+            cg.setLineWidth(1.6)
+            cg.strokePath()
+            return true
+        }
+    }
+}
+
 /// What the canvas shows at a point (mm): the frontmost image pixel, stroke or fill; the sheet is white; nil = the mat.
 @MainActor
 struct CanvasSampler {
@@ -63,7 +117,7 @@ struct CanvasSampler {
             if piece.object.image != nil, let pixel = doc.pixelColor(of: piece.object, at: p) { return pixel }
             if let fill = piece.object.fill { return fill }
         }
-        return CGRect(origin: .zero, size: Document.page).contains(p) ? CMYK(c: 0, m: 0, y: 0, k: 0) : nil
+        return doc.artboards.contains { $0.rect.contains(p) } ? CMYK(c: 0, m: 0, y: 0, k: 0) : nil
     }
 }
 
@@ -80,8 +134,11 @@ struct EyedropperLoupe: View {
             // One canvas point per square, as the eye sees it.
             let sampler = CanvasSampler(doc: doc, slack: 0.6 / viewState.scale)
             let half = Self.cells / 2
+            let converter = doc.colors
             let colors = (0..<Self.cells).map { j in
-                (0..<Self.cells).map { i in sampler.color(at: viewState.mm(CGPoint(x: p.x + Double(i - half), y: p.y + Double(j - half)))) }
+                (0..<Self.cells).map { i in
+                    sampler.color(at: viewState.mm(CGPoint(x: p.x + Double(i - half), y: p.y + Double(j - half)))).map(converter.color)
+                }
             }
             Canvas { ctx, size in
                 let inner = CGRect(origin: .zero, size: size).insetBy(dx: Self.ring, dy: Self.ring)
@@ -92,7 +149,7 @@ struct EyedropperLoupe: View {
                 for j in 0..<Self.cells {
                     for i in 0..<Self.cells {
                         let square = CGRect(x: inner.minX + Double(i) * cell, y: inner.minY + Double(j) * cell, width: cell, height: cell)
-                        clipped.fill(Path(square), with: .color(colors[j][i]?.color ?? Self.mat))
+                        clipped.fill(Path(square), with: .color(colors[j][i] ?? Self.mat))
                         grid.addRect(square)
                     }
                 }
@@ -102,7 +159,7 @@ struct EyedropperLoupe: View {
                 ctx.stroke(Path(center.insetBy(dx: 1, dy: 1)), with: .color(.white), lineWidth: 1)
                 // The ring in the color the click picks.
                 let middle = CGRect(origin: .zero, size: size).insetBy(dx: Self.ring / 2, dy: Self.ring / 2)
-                ctx.stroke(Path(ellipseIn: middle), with: .color(colors[half][half]?.color ?? Self.mat), lineWidth: Self.ring)
+                ctx.stroke(Path(ellipseIn: middle), with: .color(colors[half][half] ?? Self.mat), lineWidth: Self.ring)
                 ctx.stroke(Path(ellipseIn: inner), with: .color(.gray), lineWidth: 1.5)
                 ctx.stroke(Path(ellipseIn: CGRect(origin: .zero, size: size).insetBy(dx: 0.5, dy: 0.5)), with: .color(.black.opacity(0.35)), lineWidth: 1)
             }

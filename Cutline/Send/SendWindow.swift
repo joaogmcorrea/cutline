@@ -27,10 +27,11 @@ struct SendWindow: View {
     private var lastSend: Job? { machine.queue.last { $0.origin == ObjectIdentifier(doc) } }
 
     var body: some View {
-        let lines = doc.cutLines
+        let artboard = doc.sendArtboard
+        let lines = doc.cutLines(on: artboard)
         let current = lines.first { $0.color == chosenColor } ?? lines.first
         HStack(spacing: 0) {
-            SheetPreview(doc: doc, lines: lines, highlight: current?.color)
+            SheetPreview(doc: doc, artboard: artboard, lines: lines, highlight: current?.color)
                 .padding(28)
                 .frame(width: 380)
                 .frame(maxHeight: .infinity)
@@ -39,7 +40,11 @@ struct SendWindow: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     StudioNotice()
+                    if doc.artboards.count > 1 { artboardChoice(artboard) }
                     MachineCard(withMat: doc.withMat, base: doc.base(to: machine.hardware))
+                    if doc.sheetFrame(artboard).turned { turnedNotice }
+                    sizeWarning(artboard)
+                    if Feature.trackEnhancing.isOn { trackEnhancingOption }
                     if !machine.queue.isEmpty { QueueList() }
                     table(lines, current: current?.color)
                     if doc.marks { printAndCut }
@@ -61,6 +66,12 @@ struct SendWindow: View {
         .safeAreaInset(edge: .bottom, spacing: 0) { footer(lines, current: current?.color) }
         .frame(width: 1000, height: 680)
         .task {
+            // The active artboard, to start (the menu above the machine picks another).
+            doc.sendArtboardID = doc.activeArtboardID
+            #if DEBUG
+            // CUTLINE_TEST_SEND_ARTBOARD=2: the 2nd artboard instead.
+            if let n = DebugHooks.sendArtboard, doc.artboards.indices.contains(n - 1) { chooseArtboard(doc.artboards[n - 1]) }
+            #endif
             if case .disconnected = machine.state { await machine.connect() }
             if case .failure = machine.state { await machine.connect() }
             #if DEBUG
@@ -73,28 +84,79 @@ struct SendWindow: View {
                 doc.cuts[first.color] = config
             }
             // CUTLINE_TEST_SEND=1 (only with the simulated machine): sends by itself, without pinning the settings in the file.
-            if DebugHooks.sendForTest { machine.enqueue(doc.job(name: "Teste")) }
+            if DebugHooks.sendForTest { machine.enqueue(doc.job(name: "Teste", artboard: doc.sendArtboard)) }
             // CUTLINE_TEST_TEST_SHAPE=x,y[,side]: turns on the test shape at x,y mm (and that size).
+            // (x,y from the artboard's corner.)
+            let corner = doc.sendArtboard.rect.origin
             if let (target, side) = DebugHooks.testShape {
                 doc.testShape = true
                 if let side { doc.resizeTest(to: side) }
-                doc.moveTest(to: target)
+                doc.moveTest(to: CGPoint(x: corner.x + target.x, y: corner.y + target.y))
             }
             // CUTLINE_TEST_TEST_CUT=x,y[,side] (with CUTLINE_SIMULATE): the same, and sends the test cut.
-            if let (target, side) = DebugHooks.testCut, let color = doc.cutLines.first?.color {
+            if let (target, side) = DebugHooks.testCut, let color = doc.cutLines(on: doc.sendArtboard).first?.color {
                 doc.testShape = true
                 if let side { doc.resizeTest(to: side) }
-                doc.moveTest(to: target)
+                doc.moveTest(to: CGPoint(x: corner.x + target.x, y: corner.y + target.y))
                 machine.enqueue(doc.testJob(color))
             }
             // CUTLINE_TEST_ORDER=1: the last color goes to the top, the same way as dragging.
-            if ProcessInfo.processInfo.environment["CUTLINE_TEST_ORDER"] != nil, let last = doc.cutLines.last {
+            if ProcessInfo.processInfo.environment["CUTLINE_TEST_ORDER"] != nil, let last = doc.cutLines(on: doc.sendArtboard).last {
                 doc.moveLine(last.color, to: 0)
             }
             #endif
         }
         .onChange(of: marksNotRead?.id, initial: true) { _, updated in if updated != nil { marksNotice = marksNotRead } }
         .sheet(item: $marksNotice) { MarksWindow(job: $0) }
+    }
+
+    // MARK: Artboard
+
+    /// Which artboard goes to the machine (with more than one): the active one to start.
+    private func artboardChoice(_ artboard: Artboard) -> some View {
+        HStack(spacing: 8) {
+            Text("Artboard").font(.headline)
+            Picker("Artboard", selection: Binding(get: { artboard.id }, set: { id in
+                if let chosen = doc.artboards.first(where: { $0.id == id }) { chooseArtboard(chosen) }
+            })) {
+                ForEach(Array(doc.artboards.enumerated()), id: \.element.id) { i, a in
+                    Text(verbatim: "\(i + 1) – \(a.title(i)) · \(LengthUnit.current.text(a.size))").tag(a.id)
+                }
+            }
+            .labelsHidden()
+            .fixedSize()
+            .help("Only what is on this artboard is cut, with its marks; the preview shows how the sheet goes on the mat")
+        }
+    }
+
+    /// Another artboard: the test cut keeps its place from the corner (within the new one).
+    private func chooseArtboard(_ chosen: Artboard) {
+        let old = doc.sendArtboard.rect.origin, t = doc.testPosition
+        doc.sendArtboardID = chosen.id
+        doc.moveTest(to: CGPoint(x: chosen.rect.minX + t.x - old.x, y: chosen.rect.minY + t.y - old.y))
+    }
+
+    /// A landscape artboard goes on the mat turned, as in Silhouette Studio (the preview shows it so).
+    private var turnedNotice: some View {
+        Label {
+            Text("**Landscape:** the sheet goes on the mat turned a quarter turn clockwise, as in Silhouette Studio: its left edge goes into the machine first and its top edge runs along the right side, as the preview shows.")
+        } icon: {
+            Image(.pageLandscape)
+        }
+        .font(.callout)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    /// The artboard is wider than the machine cuts, or doesn't fit the mat: what is past it isn't cut.
+    @ViewBuilder
+    private func sizeWarning(_ artboard: Artboard) -> some View {
+        if let text = SendSize.warning(size: doc.sheetFrame(artboard).fedSize, hardware: machine.hardware, mat: doc.base(to: machine.hardware),
+                                       machineName: machine.modelName) {
+            Label(text, image: .warning)
+                .foregroundStyle(.orange)
+                .font(.callout)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     // MARK: Table by color
@@ -136,7 +198,7 @@ struct SendWindow: View {
                 .foregroundStyle(.secondary)
                 .frame(width: 14)
             RoundedRectangle(cornerRadius: 4)
-                .fill(line.color.color)
+                .fill(doc.colors.color(line.color))
                 .overlay(RoundedRectangle(cornerRadius: 4).strokeBorder(.primary.opacity(0.15)))
                 .frame(width: 26, height: 18)
             VStack(alignment: .leading, spacing: 1) {
@@ -164,11 +226,24 @@ struct SendWindow: View {
         .onTapGesture { chosenColor = line.color }
     }
 
+    /// Per send, not per material: the machine does it once, before the first color.
+    private var trackEnhancingOption: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Toggle("Track Enhancing", isOn: Binding(get: { doc.trackEnhancing }, set: { doc.setTrackEnhancing($0) }))
+                .toggleStyle(.checkbox)
+            Text("Before cutting, the rollers run the sheet forward and back to mark their tracks, so thick or slippery material doesn’t slip. Done once per send.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.leading, 20)
+        }
+    }
+
     // MARK: Print & Cut
 
     /// Print & Cut reminder and notice of cuts that go past the area between the marks.
     private var printAndCut: some View {
-        let outside = doc.objectsOutsideMarks
+        let outside = doc.objectsOutsideMarks(doc.sendArtboard)
         return VStack(alignment: .leading, spacing: 6) {
             Label {
                 Text("**Print & Cut:** print the page at 100% (⌘P) and place the sheet on the mat in the same position as on screen, with the square in the top-left corner. The machine reads the marks before cutting (up to 40 s).")
@@ -348,7 +423,7 @@ struct SendWindow: View {
     // MARK: Footer
 
     private func footer(_ lines: [CutLine], current: CMYK?) -> some View {
-        let layers = doc.layersToSend
+        let layers = doc.layersToSend(on: doc.sendArtboard)
         let seconds = lines.reduce(0.0) { total, line in
             let config = doc.config(line.color)
             return config.sends ? total + estimate(line, config.settings).1 : total
@@ -373,7 +448,7 @@ struct SendWindow: View {
                 // Goes into the queue: if the machine is busy, it cuts when the previous one is done.
                 doc.pinSendSettings()
                 let nsWindow = NSApp.keyWindow.map { $0.sheetParent ?? $0 }
-                machine.enqueue(doc.job(name: nsWindow?.title ?? String(localized: "Untitled")))
+                machine.enqueue(doc.job(name: nsWindow?.title ?? String(localized: "Untitled"), artboard: doc.sendArtboard))
             } label: {
                 Label("Send", image: .needle)
                     .padding(.horizontal, 6)
@@ -477,14 +552,20 @@ struct SendWindow: View {
     }
 }
 
-/// A4 sheet with the cuts: the chosen color highlighted; the disabled ones disappear. With Print & Cut, with the marks.
-/// With Test Shape on, the test cut shows dashed: dragging it moves it, dragging its corner handle resizes it.
+/// The artboard being sent, with the cuts: the chosen color highlighted; the disabled ones disappear. With Print & Cut,
+/// with the marks. With Test Shape on, the test cut shows dashed: dragging it moves it, dragging its corner handle
+/// resizes it.
 struct SheetPreview: View {
     let doc: Document
+    let artboard: Artboard
     let lines: [CutLine]
     let highlight: CMYK?
     /// What the drag started on: moving the test (from that corner, in mm) or resizing it.
     @State private var testDrag: TestDrag?
+    /// What prints (fills, images, printed strokes) and the print bleed, under the cut lines, like Studio's send preview.
+    @State private var art = SheetArt()
+    @State private var bleedPreview = BleedPreview()
+    @Environment(\.displayScale) private var displayScale
 
     private enum TestDrag {
         case move(CGPoint)
@@ -494,18 +575,21 @@ struct SheetPreview: View {
     /// Size of the corner handle, in points.
     private static let handle = 6.0
 
-    /// Page mm → preview points.
-    private static func transform(_ size: CGSize) -> CGAffineTransform {
-        let page = Document.page
-        let m = 8.0
-        let scale = min(size.width / (page.width + 2 * m), size.height / (page.height + 2 * m))
-        let origin = CGPoint(x: (size.width - page.width * scale) / 2, y: (size.height - page.height * scale) / 2)
-        return CGAffineTransform(a: scale, b: 0, c: 0, d: scale, tx: origin.x, ty: origin.y)
+    /// Canvas mm → preview points: the artboard in the middle, as it goes on the mat (a turned one, turned:
+    /// `Document.sheetFrame`). The scale is the same on both axes.
+    private static func transform(_ size: CGSize, _ frame: SheetFrame) -> CGAffineTransform {
+        let m = 8.0, fed = frame.fedSize
+        let scale = min(size.width / (fed.width + 2 * m), size.height / (fed.height + 2 * m))
+        return frame.toFed.concatenating(CGAffineTransform(a: scale, b: 0, c: 0, d: scale, tx: (size.width - fed.width * scale) / 2,
+                                                           ty: (size.height - fed.height * scale) / 2))
     }
+
+    /// Points per mm of a preview transform (it may be turned).
+    private static func scale(_ t: CGAffineTransform) -> Double { hypot(t.a, t.b) }
 
     var body: some View {
         GeometryReader { geometry in
-            let t = Self.transform(geometry.size)
+            let t = Self.transform(geometry.size, doc.sheetFrame(artboard))
             sheet
                 .overlay(alignment: .topLeading) {
                     // Over the corner handle the pointer shows it resizes.
@@ -533,7 +617,7 @@ struct SheetPreview: View {
                 let box = doc.testBox
                 if testDrag == nil {
                     let p = gesture.startLocation.applying(toMM)
-                    let grab = 1.5 * Self.handle / t.a
+                    let grab = 1.5 * Self.handle / Self.scale(t)
                     if abs(p.x - box.maxX) <= grab && abs(p.y - box.maxY) <= grab {
                         testDrag = .resize
                     } else {
@@ -543,7 +627,9 @@ struct SheetPreview: View {
                 }
                 switch testDrag {
                 case .move(let start):
-                    doc.moveTest(to: CGPoint(x: start.x + gesture.translation.width / t.a, y: start.y + gesture.translation.height / t.d))
+                    // The pointer's way in canvas mm (the preview may be turned).
+                    let a = gesture.startLocation.applying(toMM), b = gesture.location.applying(toMM)
+                    doc.moveTest(to: CGPoint(x: start.x + b.x - a.x, y: start.y + b.y - a.y))
                 case .resize:
                     // Square from the top-left corner to the pointer, in whole mm (like the slider), without
                     // pushing past the area.
@@ -558,24 +644,39 @@ struct SheetPreview: View {
 
     private var sheet: some View {
         Canvas { ctx, size in
-            let page = Document.page
             let m = 8.0
-            let t = Self.transform(size)
-            let scale = t.a
-            let sheet = CGRect(origin: .zero, size: page)
+            let sheet = artboard.rect, frame = doc.sheetFrame(artboard)
+            let t = Self.transform(size, frame)
+            let scale = Self.scale(t)
             ctx.fill(Path(roundedRect: sheet.insetBy(dx: -m, dy: -m).applying(t), cornerRadius: 3 * scale),
                      with: .color(.gray.opacity(0.35)))
             var shadow = ctx
             shadow.addFilter(.shadow(color: .black.opacity(0.18), radius: 10, y: 4))
             shadow.fill(Path(sheet.applying(t)), with: .color(.white))
-            if doc.marks {
-                for rectangle in doc.marksConfig.rectangles { ctx.fill(Path(rectangle.applying(t)), with: .color(.black)) }
+            // The printed art, a little faded so the cut lines stand out, with the print bleed under it.
+            var printed = ctx
+            printed.opacity = 0.7
+            // Only the artboard (the art next to it isn't on this sheet).
+            printed.clip(to: Path(sheet.applying(t)))
+            let bleed = doc.marks && doc.bleed.enabled ? bleedPreview.pieces(for: doc) : []
+            if !bleed.isEmpty {
+                printed.withCGContext { cg in
+                    cg.concatenate(t)
+                    PrintBleed.draw(bleed, in: cg)
+                }
             }
+            if let image = art.image(for: doc, size: size, transform: t, scale: displayScale) {
+                printed.draw(Image(decorative: image, scale: displayScale), in: CGRect(origin: .zero, size: size))
+            }
+            if doc.marks {
+                for rectangle in doc.marksConfig.rectangles(on: frame) { ctx.fill(Path(rectangle.applying(t)), with: .color(.black)) }
+            }
+            let colors = doc.colors
             for line in lines where doc.config(line.color).sends {
                 let strong = line.color == highlight
                 for object in line.objects {
                     let dashed = object.style.line.defaultValue?.map { CGFloat($0 * scale) } ?? []
-                    ctx.stroke(object.shapePath.applying(t), with: .color(line.color.color.opacity(strong ? 1 : 0.35)),
+                    ctx.stroke(object.shapePath.applying(t), with: .color(colors.color(line.color).opacity(strong ? 1 : 0.35)),
                                style: StrokeStyle(lineWidth: strong ? 1.6 : 0.8, dash: dashed))
                 }
             }
@@ -779,3 +880,47 @@ private struct ColorDrop: DropDelegate {
         return true
     }
 }
+
+/// The send preview's printed art as one image, redrawn only when the objects or the preview's size change (dragging
+/// the test cut redraws the preview many times a second).
+@Observable
+final class SheetArt {
+    @ObservationIgnored private var key: Int?
+    @ObservationIgnored private var cached: CGImage?
+
+    /// nil when nothing on the sheet prints (only cut lines).
+    func image(for doc: Document, size: CGSize, transform t: CGAffineTransform, scale: CGFloat) -> CGImage? {
+        var hasher = Hasher()
+        hasher.combine(doc.objects)
+        for layer in doc.layers { hasher.combine(layer.id); hasher.combine(layer.visible) }
+        hasher.combine(doc.images.count)
+        hasher.combine(ObjectIdentifier(doc.colors))
+        hasher.combine(t.tx)
+        hasher.combine(t.ty)
+        hasher.combine(t.a)
+        hasher.combine(t.b)
+        hasher.combine(size.width)
+        hasher.combine(size.height)
+        hasher.combine(scale)
+        let updated = hasher.finalize()
+        if updated == key { return cached }
+        key = updated
+        cached = nil
+        let prints = doc.objects.contains { doc.visible($0) && ($0.fill != nil || $0.image != nil || $0.strokeWidth > 0) }
+        let w = Int((size.width * scale).rounded(.up)), h = Int((size.height * scale).rounded(.up))
+        guard prints, w > 0, h > 0,
+              let cg = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: 0,
+                                 space: ColorConverter.screenSpace,
+                                 bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+        else { return nil }
+        // Preview points with y down, then the page in mm (the print draws in points: undo its scale).
+        cg.translateBy(x: 0, y: CGFloat(h))
+        cg.scaleBy(x: scale, y: -scale)
+        cg.concatenate(t)
+        cg.scaleBy(x: 1 / Printing.pointsPerMM, y: 1 / Printing.pointsPerMM)
+        Printing.render(doc, in: cg, marks: false, screenColors: true)
+        cached = cg.makeImage()
+        return cached
+    }
+}
+

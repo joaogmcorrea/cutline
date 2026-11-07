@@ -1,4 +1,4 @@
-// Rulers in the Settings unit (origin at the page's top-left corner), as in the prototype: glass strips at the
+// Rulers in the Settings unit (origin at the active artboard's top-left corner, as in Illustrator), as in the prototype: glass strips at the
 // top and left of the free area, with the pointer mark. Dragging from them creates guides (in CanvasView, which
 // receives the gesture — the rulers only draw).
 import SwiftUI
@@ -39,6 +39,8 @@ struct Rulers: View {
     let viewState: ViewState
     let pointer: Pointer
     let hasGuides: Bool
+    /// The rulers' 0, in canvas mm: the active artboard's top-left corner.
+    var zero = CGPoint.zero
     @AppStorage(LengthUnit.key) private var unit = LengthUnit.mm
 
     var body: some View {
@@ -63,7 +65,8 @@ struct Rulers: View {
 
     private func span(_ r: CGRect, horizontal: Bool) -> some View {
         Canvas { ctx, size in
-            render(&ctx, size: size, origin: horizontal ? viewState.origin.x - r.minX : viewState.origin.y - r.minY, horizontal: horizontal)
+            let corner = viewState.canvas(zero)
+            render(&ctx, size: size, origin: horizontal ? corner.x - r.minX : corner.y - r.minY, horizontal: horizontal)
         }
         .frame(width: r.width, height: r.height)
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 6))
@@ -116,7 +119,7 @@ struct Rulers: View {
         }
         ctx.stroke(marks, with: .color(.secondary), lineWidth: 0.6)
         if let p = pointer.mm {
-            let pos = (origin + (horizontal ? p.x : p.y) / unit.mmPer * e).rounded() + 0.5
+            let pos = (origin + (horizontal ? p.x - zero.x : p.y - zero.y) / unit.mmPer * e).rounded() + 0.5
             var mark = Path()
             if horizontal {
                 mark.move(to: CGPoint(x: pos, y: 0))

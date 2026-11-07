@@ -281,6 +281,8 @@ struct FontButton: View {
         }
         .buttonStyle(.plain)
         .help(installed ? "Font" as LocalizedStringKey
+              : Feature.googleFonts.isOn && GoogleFonts.missing(style.font) != nil
+              ? "Font not installed on this Mac. It's on Google Fonts: open the list to add it to Cutline."
               : "Font not installed on this Mac: the text shows in another font until it's installed or activated (no need to quit Cutline)")
         #if DEBUG
         .onAppear { if DebugHooks.fontListOpen, !compact { isOpen = true } }
@@ -344,12 +346,85 @@ private struct MenuLabel: View {
     }
 }
 
-/// All installed families (system, user and activated Adobe Fonts), each written in itself.
+/// Where the list's families come from: the Mac's (Installed) or Google Fonts (GoogleFonts/).
+enum FontSource: Hashable {
+    case installed, google
+}
+
+/// The font list: two tabs, Installed (every family on the Mac, Google Fonts added to Cutline included) and Google Fonts
+/// (GoogleFonts/GoogleFontsTab.swift), like Illustrator's Find More. It opens on the tab used last (while the app is open).
 struct FontList: View {
     let current: String
     let choose: (String) -> Void
-    @State private var position: String?
+    @State private var source: FontSource
     @State private var search = ""
+    @State private var googleSearch = ""
+    @State private var category: GoogleCategory = .all
+
+    /// The tab used last, kept while the app is open.
+    private static var lastSource: FontSource = .installed
+
+    init(current: String, start: FontSource? = nil, choose: @escaping (String) -> Void) {
+        self.current = current
+        self.choose = choose
+        _source = State(initialValue: start ?? Self.lastSource)
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Before Google Fonts is released (ReleaseGate.swift), only the installed fonts, as before.
+            if Feature.googleFonts.isOn {
+                Picker("Fonts", selection: $source) {
+                    Text("Installed").tag(FontSource.installed)
+                    Text(verbatim: "Google Fonts").tag(FontSource.google)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .padding(.horizontal, 10)
+                .padding(.top, 10)
+            }
+            switch Feature.googleFonts.isOn ? source : .installed {
+            case .installed: InstalledFontList(current: current, choose: choose, search: $search)
+            case .google: GoogleFontsTab(current: current, choose: choose, search: $googleSearch, category: $category)
+            }
+        }
+        .frame(width: 320, height: 480)
+        .onChange(of: source) { Self.lastSource = source }
+        #if DEBUG
+        .task { await DebugHooks.driveFontList(source: $source, search: $googleSearch, category: $category, choose: choose) }
+        #endif
+    }
+}
+
+/// The search field at the top of each tab; Enter picks the first family found.
+struct FontSearchField: View {
+    let prompt: LocalizedStringKey
+    @Binding var text: String
+    var focus: FocusState<Bool>.Binding
+    let submit: () -> Void
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(.search).resizable().frame(width: 14, height: 14).foregroundStyle(.secondary)
+            TextField(prompt, text: $text)
+                .textFieldStyle(.plain)
+                .focused(focus)
+                .onSubmit(submit)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 8))
+        .padding(10)
+    }
+}
+
+/// All installed families (system, user, activated Adobe Fonts and the Google Fonts added to Cutline), each written in
+/// itself.
+private struct InstalledFontList: View {
+    let current: String
+    let choose: (String) -> Void
+    @Binding var search: String
+    @State private var position: String?
     @FocusState private var searching: Bool
 
     /// From the catalog: a font installed while the list is open already shows in it.
@@ -361,17 +436,13 @@ struct FontList: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 6) {
-                Image(.search).resizable().frame(width: 14, height: 14).foregroundStyle(.secondary)
-                TextField("Search fonts", text: $search)
-                    .textFieldStyle(.plain)
-                    .focused($searching)
-                    .onSubmit { if let firstOne = filtered.first { choose(firstOne) } }
+            FontSearchField(prompt: "Search fonts", text: $search, focus: $searching) {
+                if let firstOne = filtered.first { choose(firstOne) }
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-            .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 8))
-            .padding(10)
+            // The text's font is missing and Google Fonts has it (a document from another Mac): add it right here.
+            if Feature.googleFonts.isOn, let family = GoogleFonts.missing(current) {
+                MissingFontBanner(name: current, family: family)
+            }
             Divider()
             if filtered.isEmpty {
                 Text("No fonts found").foregroundStyle(.secondary).frame(maxHeight: .infinity)
@@ -394,7 +465,6 @@ struct FontList: View {
                 .foregroundStyle(.secondary)
                 .padding(6)
         }
-        .frame(width: 300, height: 440)
         .onAppear {
             position = current
             searching = true
@@ -410,6 +480,8 @@ private struct FontRow: View {
 
     var body: some View {
         let font = Fonts.swatch(family, size: 15)
+        // A Google Fonts family that Cutline added (only Cutline sees it): a cloud, and Remove in the right-click.
+        let google = GoogleFonts.shared.addedFamily(installedAs: family)
         Button(action: choose) {
             HStack(spacing: 8) {
                 Image(.checked).resizable().frame(width: 12, height: 12).foregroundStyle(Color.accentColor).opacity(current ? 1 : 0)
@@ -422,6 +494,10 @@ private struct FontRow: View {
                     Text(family).font(Font(font)).lineLimit(1)
                     Spacer(minLength: 0)
                 }
+                if google != nil {
+                    Image(.cloud).resizable().frame(width: 13, height: 13).foregroundStyle(.secondary)
+                        .help("Added from Google Fonts: only Cutline uses it")
+                }
             }
             .padding(.horizontal, 10)
             .frame(height: 30)
@@ -432,5 +508,10 @@ private struct FontRow: View {
         }
         .buttonStyle(.plain)
         .onHover { over = $0 }
+        .contextMenu {
+            if let google {
+                Button("Remove from Cutline") { GoogleFonts.shared.remove(google) }
+            }
+        }
     }
 }

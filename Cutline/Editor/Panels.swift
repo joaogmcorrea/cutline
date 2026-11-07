@@ -1,4 +1,5 @@
 // Floating glass piece over the canvas: tools (left). The control bar is in ControlBar.swift.
+import AppKit
 import SwiftUI
 
 /// Vertical tool capsule, like Illustrator's (one-letter shortcuts), with the colors at the foot.
@@ -9,14 +10,31 @@ struct ToolsPanel: View {
     @State private var penGroupOpen = false
 
     private static let penGroup: [Tool] = [.pen, .addNode, .deleteNode]
-    private let groups: [[Tool]] = [[.selection, .direct], [.pen, .text], [.rectangle, .ellipse, .star], [.eyedropper], [.hand, .zoom]]
+    /// The Text tool's group (as in Illustrator): Text and Type on a Path.
+    @State private var textSlot = Tool.text
+    @State private var textGroupOpen = false
+    private static let textGroup: [Tool] = [.text, .typeOnPath]
+    /// The transformation group (Rotate) comes after the shapes, as in Illustrator.
+    private let groups: [[Tool]] = [[.selection, .direct], [.pen, .text], [.line, .rectangle, .ellipse, .polygon, .star], [.rotate],
+                                    [.eyedropper], [.artboard, .hand, .zoom]]
 
     var body: some View {
         VStack(spacing: 4) {
             ForEach(groups.indices, id: \.self) { g in
                 if g > 0 { Divider().frame(width: 22).padding(.vertical, 2) }
                 ForEach(groups[g]) { tool in
-                    if tool == .pen { penButton } else { button(tool) }
+                    if tool == .pen {
+                        groupButton(slot: penSlot, group: Self.penGroup, open: $penGroupOpen)
+                    } else if tool == .text {
+                        // Type on a Path joins the Text tool's group when it's released (ReleaseGate.swift).
+                        if Feature.typeOnPath.isOn {
+                            groupButton(slot: textSlot, group: Self.textGroup, open: $textGroupOpen)
+                        } else {
+                            button(.text)
+                        }
+                    } else {
+                        button(tool)
+                    }
                 }
             }
             Divider().frame(width: 22).padding(.vertical, 2)
@@ -24,13 +42,20 @@ struct ToolsPanel: View {
         }
         .padding(6)
         .glassEffect(.regular, in: .capsule)
-        .onChange(of: doc.tool) { _, newOne in if Self.penGroup.contains(newOne) { penSlot = newOne } }
+        .onChange(of: doc.tool) { _, newOne in
+            if Self.penGroup.contains(newOne) { penSlot = newOne }
+            if Self.textGroup.contains(newOne) { textSlot = newOne }
+        }
     }
 
     private func button(_ tool: Tool, group: Bool = false) -> some View {
         let active = doc.tool == tool
         return Button {
             doc.tool = tool
+            // The Rotate tool's window, as in Illustrator: a double click or ⌥-click on the tool (around the selection's center).
+            if tool == .rotate, !doc.selection.isEmpty, NSEvent.modifierFlags.contains(.option) || (NSApp.currentEvent?.type == .leftMouseUp && (NSApp.currentEvent?.clickCount ?? 1) >= 2) {
+                doc.rotateRequest = RotateRequest()
+            }
         } label: {
             Image(tool.icon)
                 .resizable()
@@ -55,29 +80,30 @@ struct ToolsPanel: View {
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .help("\(tool.name) (\(tool.keyEvent.uppercased()))")
+        .help(tool.shortcutLabel.map { "\(tool.name) (\($0))" } ?? tool.name)
     }
 
-    private var penButton: some View {
-        button(penSlot, group: true)
-            .simultaneousGesture(LongPressGesture(minimumDuration: 0.35).onEnded { _ in penGroupOpen = true })
+    /// A group's slot (the Pen's, the Text's): the last one used; holding it (or a right click) shows the group.
+    private func groupButton(slot: Tool, group: [Tool], open: Binding<Bool>) -> some View {
+        button(slot, group: true)
+            .simultaneousGesture(LongPressGesture(minimumDuration: 0.35).onEnded { _ in open.wrappedValue = true })
             .contextMenu {
-                ForEach(Self.penGroup) { tool in
-                    Button("\(tool.name) (\(tool.keyEvent.uppercased()))") { doc.tool = tool }
+                ForEach(group) { tool in
+                    Button(tool.keyEvent.map { "\(tool.name) (\(String($0).uppercased()))" } ?? tool.name) { doc.tool = tool }
                 }
             }
-            .popover(isPresented: $penGroupOpen, arrowEdge: .trailing) {
+            .popover(isPresented: open, arrowEdge: .trailing) {
                 VStack(alignment: .leading, spacing: 2) {
-                    ForEach(Self.penGroup) { tool in
+                    ForEach(group) { tool in
                         Button {
                             doc.tool = tool
-                            penGroupOpen = false
+                            open.wrappedValue = false
                         } label: {
                             HStack(spacing: 8) {
                                 Image(tool.icon).resizable().frame(width: 16, height: 16)
                                 Text(tool.name)
                                 Spacer(minLength: 16)
-                                Text(verbatim: tool.keyEvent.uppercased()).foregroundStyle(.secondary)
+                                Text(verbatim: (tool.keyEvent ?? " ").uppercased()).foregroundStyle(.secondary)
                             }
                             .padding(.horizontal, 8)
                             .padding(.vertical, 5)
@@ -111,25 +137,36 @@ private struct ToolColors: View {
             .foregroundStyle(.secondary)
             .frame(width: 34)
             ColorSquares(doc: doc, side: 22)
-            HStack(spacing: 4) {
+            HStack(spacing: 2) {
                 let target = doc.colorTarget
                 let last = doc.recent.first ?? (target == .strokeColor ? .red : CMYK(c: 0, m: 0, y: 0, k: 100))
                 Button { doc.setColor(target, last) } label: {
-                    RoundedRectangle(cornerRadius: 3).fill(last.color)
+                    RoundedRectangle(cornerRadius: 3).fill(doc.colors.color(last))
                         .overlay(RoundedRectangle(cornerRadius: 3).strokeBorder(.black.opacity(0.22), lineWidth: 0.5))
-                        .frame(width: 15, height: 15)
+                        .frame(width: 11, height: 11)
                 }
                 .help("Color: the last one used")
+                // Gradient, as in Illustrator: the last one used goes to the fill (the cut is still the stroke).
+                if Feature.gradients.isOn {
+                    Button { doc.applyGradient() } label: {
+                        GradientSwatch(gradient: doc.lastGradient, colors: doc.colors, shape: RoundedRectangle(cornerRadius: 3))
+                            .overlay(RoundedRectangle(cornerRadius: 3).strokeBorder(.black.opacity(0.22), lineWidth: 0.5))
+                            .frame(width: 11, height: 11)
+                    }
+                    .help("Gradient: the last one used, on the fill")
+                }
                 Button { doc.setColor(target, nil) } label: {
                     NoneOption()
                         .background(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 3))
                         .overlay(RoundedRectangle(cornerRadius: 3).strokeBorder(.black.opacity(0.22), lineWidth: 0.5))
-                        .frame(width: 15, height: 15)
+                        .frame(width: 11, height: 11)
                 }
                 .help("None (/)")
             }
             .buttonStyle(.plain)
+            // Without a CMYK profile, the print can look different from the screen (Editor/ColorProfileViews.swift).
+            if Feature.colorProfiles.isOn { NoProfileWarning(doc: doc, compact: true) }
         }
         .padding(.bottom, 4)
     }
@@ -145,10 +182,15 @@ extension Tool {
         case .addNode: "toolAddNode"
         case .deleteNode: "toolDeleteNode"
         case .text: "toolText"
+        case .typeOnPath: "toolTypeOnPath"
+        case .line: "toolLine"
         case .rectangle: "toolRectangle"
         case .ellipse: "toolEllipse"
+        case .polygon: "toolPolygon"
         case .star: "toolStar"
+        case .rotate: "toolRotate"
         case .eyedropper: "toolEyedropper"
+        case .artboard: "toolArtboard"
         case .hand: "toolHand"
         case .zoom: "toolZoom"
         }

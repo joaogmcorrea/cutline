@@ -35,9 +35,16 @@ public enum StudioWriter {
         public var source: [Int]?
         /// Copy of the `source` object (it stays in the file): same style and image, new id and code.
         public var copy: Bool
+        /// Page → page: where the `source` object, as it is in the file, went (moved, stretched, turned). With it the local
+        /// system is the source's matrix followed by this (a turn stays in the matrix, as Studio keeps it); without it, the
+        /// source's box is stretched to the new one.
+        public var sourceChange: CGAffineTransform?
+        /// A new object's local system (its outline before a turn → page): the turn goes into the matrix. nil = the page.
+        public var localToPage: CGAffineTransform?
 
         public init(subpaths: [[StudioDocument.Node]], line: StudioDocument.Color, fill: FillChange,
-                    imageToPage: CGAffineTransform? = nil, cuts: Bool, source: [Int]? = nil, copy: Bool = false) {
+                    imageToPage: CGAffineTransform? = nil, cuts: Bool, source: [Int]? = nil, copy: Bool = false,
+                    sourceChange: CGAffineTransform? = nil, localToPage: CGAffineTransform? = nil) {
             self.subpaths = subpaths
             self.line = line
             self.fill = fill
@@ -45,6 +52,8 @@ public enum StudioWriter {
             self.cuts = cuts
             self.source = source
             self.copy = copy
+            self.sourceChange = sourceChange
+            self.localToPage = localToPage
         }
     }
 
@@ -278,13 +287,17 @@ private struct Assembler {
                 oldBox = .null
             }
             local = toPage
-            if !oldBox.isNull, oldBox.width > 1e-6, oldBox.height > 1e-6, newBox.width > 1e-6, newBox.height > 1e-6 {
+            if let change = shapeItem.sourceChange {
+                local = toPage.concatenating(change)
+            } else if !oldBox.isNull, oldBox.width > 1e-6, oldBox.height > 1e-6, newBox.width > 1e-6, newBox.height > 1e-6 {
                 let a = CGAffineTransform(translationX: -oldBox.minX, y: -oldBox.minY)
                     .concatenating(CGAffineTransform(scaleX: newBox.width / oldBox.width, y: newBox.height / oldBox.height))
                     .concatenating(CGAffineTransform(translationX: newBox.minX, y: newBox.minY))
                 local = toPage.concatenating(a)
             }
             if abs(local.a * local.d - local.b * local.c) < 1e-12 { local = .identity }
+        } else if let system = shapeItem.localToPage, abs(system.a * system.d - system.b * system.c) > 1e-12 {
+            local = system
         }
         let toLocalTransform = local.inverted()
         let localNodes: [[LocalNode]] = shapeItem.subpaths.filter { $0.count >= 2 }.map { nodes in

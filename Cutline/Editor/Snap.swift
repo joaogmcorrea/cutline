@@ -1,22 +1,41 @@
-// Snap to point (as in Illustrator): snaps to corners, midpoints and the page center, to the points of
-// other objects and to guides. Targets are computed once per gesture.
+// Snap to point (as in Illustrator): snaps to the active artboard's corners, midpoints and center, to the points of
+// other objects and to guides; Snap to Grid (on its own, as in Illustrator), to the grid's lines (its smallest step,
+// from the active artboard's corner).
+// Targets are computed once per gesture.
 import SwiftUI
 
 struct SnapTargets {
-    private(set) var pointsList: [CGPoint]
+    private(set) var pointsList: [CGPoint] = []
     let guides: Guides
+    /// The grid's smallest step, in mm (nil = Snap to Grid off), and where it starts (the active artboard's corner).
+    let grid: Double?
+    let gridOrigin: CGPoint
 
+    /// `points` = Snap (to points and guides); `grid` = Snap to Grid's step; `artboards` = whose corners and middles
+    /// attract (nil = the active one).
     @MainActor
-    init(doc: Document, exclude: Set<CanvasObject.ID>, guides withGuides: Bool = true) {
-        let page = CGRect(origin: .zero, size: Document.page)
-        pointsList = [CGPoint(x: page.minX, y: page.minY), CGPoint(x: page.midX, y: page.minY), CGPoint(x: page.maxX, y: page.minY),
-                  CGPoint(x: page.minX, y: page.midY), CGPoint(x: page.midX, y: page.midY), CGPoint(x: page.maxX, y: page.midY),
-                  CGPoint(x: page.minX, y: page.maxY), CGPoint(x: page.midX, y: page.maxY), CGPoint(x: page.maxX, y: page.maxY)]
+    init(doc: Document, exclude: Set<CanvasObject.ID>, artboards: [Artboard]? = nil, guides withGuides: Bool = true,
+         points: Bool = true, grid: Double? = nil) {
+        self.grid = grid
+        gridOrigin = doc.activeArtboard.rect.origin
+        // Hidden guides don't attract.
+        guides = withGuides && points ? doc.guides : Guides()
+        guard points else { return }
+        for page in (artboards ?? [doc.activeArtboard]).map(\.rect) {
+            pointsList += [CGPoint(x: page.minX, y: page.minY), CGPoint(x: page.midX, y: page.minY), CGPoint(x: page.maxX, y: page.minY),
+                           CGPoint(x: page.minX, y: page.midY), CGPoint(x: page.midX, y: page.midY), CGPoint(x: page.maxX, y: page.midY),
+                           CGPoint(x: page.minX, y: page.maxY), CGPoint(x: page.midX, y: page.maxY), CGPoint(x: page.maxX, y: page.maxY)]
+        }
         for object in doc.objectsInOrder where doc.visible(object) && !exclude.contains(object.id) {
             pointsList.append(contentsOf: object.anchors)
         }
-        // Hidden guides don't attract.
-        guides = withGuides ? doc.guides : Guides()
+    }
+
+    /// The nearest grid line to `v` on one axis, if it is within the tolerance.
+    private func gridLine(_ v: Double, from origin: Double, tolerance: Double) -> Double? {
+        guard let grid else { return nil }
+        let line = origin + ((v - origin) / grid).rounded() * grid
+        return abs(line - v) < tolerance ? line : nil
     }
 
     /// Snapped point (or the point itself) and where to show the snap mark. Tolerance in mm.
@@ -27,10 +46,22 @@ struct SnapTargets {
             if d < distance { distance = d; best = q }
         }
         if let best { return (best, best) }
-        // Guides: snap per axis.
+        // Guides, then the grid: snap per axis.
         var q = p, didFind = false
-        if let x = guides.verticals.min(by: { abs($0 - p.x) < abs($1 - p.x) }), abs(x - p.x) < tolerance { q.x = x; didFind = true }
-        if let y = guides.horizontals.min(by: { abs($0 - p.y) < abs($1 - p.y) }), abs(y - p.y) < tolerance { q.y = y; didFind = true }
+        if let x = guides.verticals.min(by: { abs($0 - p.x) < abs($1 - p.x) }), abs(x - p.x) < tolerance {
+            q.x = x
+            didFind = true
+        } else if let x = gridLine(p.x, from: gridOrigin.x, tolerance: tolerance) {
+            q.x = x
+            didFind = true
+        }
+        if let y = guides.horizontals.min(by: { abs($0 - p.y) < abs($1 - p.y) }), abs(y - p.y) < tolerance {
+            q.y = y
+            didFind = true
+        } else if let y = gridLine(p.y, from: gridOrigin.y, tolerance: tolerance) {
+            q.y = y
+            didFind = true
+        }
         return (q, didFind ? q : nil)
     }
 
@@ -50,6 +81,14 @@ struct SnapTargets {
             for x in guides.verticals where abs(m.x + dx - x) < mx { mx = abs(m.x + dx - x); bx = x - m.x }
             for y in guides.horizontals where abs(m.y + dy - y) < my { my = abs(m.y + dy - y); by = y - m.y }
         }
+        // The grid only on an axis where no guide snapped (guides first, as with a single point).
+        if grid != nil {
+            let (guideX, guideY) = (bx != nil, by != nil)
+            for m in movable {
+                if !guideX, let x = gridLine(m.x + dx, from: gridOrigin.x, tolerance: mx) { mx = abs(m.x + dx - x); bx = x - m.x }
+                if !guideY, let y = gridLine(m.y + dy, from: gridOrigin.y, tolerance: my) { my = abs(m.y + dy - y); by = y - m.y }
+            }
+        }
         return (bx ?? dx, by ?? dy, nil)
     }
 }
@@ -59,7 +98,7 @@ extension CanvasObject {
     static func movablePoints(_ objects: [CanvasObject]) -> [CGPoint] {
         let all = objects.flatMap(\.anchors)
         guard all.count > 64, let first = objects.first else { return all }
-        let box = objects.dropFirst().reduce(first.frame.standardized) { $0.union($1.frame.standardized) }
+        let box = objects.dropFirst().reduce(first.bounds) { $0.union($1.bounds) }
         return CanvasObject(shape: .ellipse, frame: box).anchors
     }
 }

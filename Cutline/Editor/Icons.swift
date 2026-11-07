@@ -119,6 +119,16 @@ enum Icons {
             case .minusBack:
                 frame(CGRect(x: 3.5, y: 3.5, width: 11, height: 11), width: 1, dashed: true)
                 polygon([(15, 9), (21, 9), (21, 21), (9, 21), (9, 15), (15, 15)])
+            case .subtractAll:
+                // The top one (dashed) takes a bite out of both below it.
+                frame(CGRect(x: 7.5, y: 3.5, width: 10, height: 10), width: 1, dashed: true)
+                polygon([(3, 9), (7, 9), (7, 14), (11, 14), (11, 21), (3, 21)])
+                polygon([(18, 9), (21, 9), (21, 21), (13, 21), (13, 14), (18, 14)])
+            case .crop:
+                // Only what is inside the top one (dashed) stays; the rest of the one below goes away (faint).
+                frame(CGRect(x: 8.5, y: 3.5, width: 12, height: 12), width: 1, dashed: true)
+                polygon([(9, 8), (16, 8), (16, 15), (9, 15)])
+                polygon([(3, 8), (8, 8), (8, 16), (16, 16), (16, 21), (3, 21)], alfa: 0.3)
             }
         }
     }

@@ -10,8 +10,16 @@ final class ViewControl {
     var viewState = ViewState()
     /// Canvas area without the floating pieces, where the page fits.
     var freeArea = CGRect.zero
+    /// The active artboard and all of them (canvas mm): what Fit in Window and Fit All in Window show (the window keeps
+    /// them).
+    var activeArtboard = CGRect(origin: .zero, size: PagePreset.a4.size)
+    var allArtboards = CGRect(origin: .zero, size: PagePreset.a4.size)
 
-    func adjust() { viewState.adjust(in: freeArea) }
+    /// Fit in Window (⌘0): the active artboard.
+    func adjust() { viewState.adjust(in: freeArea, page: activeArtboard) }
+
+    /// Fit All in Window (⌥⌘0): every artboard (doesn't keep refitting when the window changes).
+    func adjustAll() { viewState.adjust(in: freeArea, page: allArtboards, refits: false) }
 
     func zoom(_ factor: Double) { setZoom(viewState.zoom * factor) }
 
@@ -66,12 +74,20 @@ struct ControlBar: View {
         HStack(spacing: 8) {
             historyAndZoom
             separator
-            // Without room, the alignments become a menu (as in Illustrator); in a very narrow window, the
-            // selection part scrolls sideways instead of squeezing the fields.
-            ViewThatFits(in: .horizontal) {
-                selection(alignInMenu: false)
-                selection(alignInMenu: true)
-                ScrollView(.horizontal, showsIndicators: false) { selection(alignInMenu: true) }
+            if doc.tool == .artboard {
+                // The Artboard tool's bar, as in Illustrator: the active artboard's name, size and orientation.
+                ViewThatFits(in: .horizontal) {
+                    ArtboardBar(doc: doc)
+                    ScrollView(.horizontal, showsIndicators: false) { ArtboardBar(doc: doc) }
+                }
+            } else {
+                // Without room, the alignments become a menu (as in Illustrator); in a very narrow window, the
+                // selection part scrolls sideways instead of squeezing the fields.
+                ViewThatFits(in: .horizontal) {
+                    selection(alignInMenu: false)
+                    selection(alignInMenu: true)
+                    ScrollView(.horizontal, showsIndicators: false) { selection(alignInMenu: true) }
+                }
             }
             separator
             helpers
@@ -112,6 +128,8 @@ struct ControlBar: View {
                 }
                 Divider()
                 Button("Fit in Window") { control.adjust() }
+                Button("Fit All in Window") { control.adjustAll() }
+                    .disabled(doc.artboards.count < 2)
             } label: {
                 Text("\(Int((control.viewState.zoom * 100).rounded()))%").monospacedDigit()
             }
@@ -127,7 +145,7 @@ struct ControlBar: View {
 
     private var helpers: some View {
         HStack(spacing: 2) {
-            toggle("Snap: snap to points, the page and guides (⌘;)", .snap, enabled: snapOn) {
+            toggle("Snap: snap to points, the artboard and guides (⌘;)", .snap, enabled: snapOn) {
                 snapOn.toggle()
             }
             toggle("Rulers and guides (⌘R) — drag from a ruler to create a guide", .rulers, enabled: rulersOn) {
@@ -179,19 +197,29 @@ struct ControlBar: View {
             }
             strokeColor
             separator
-            if let box = doc.selectionBox {
+            if let box = doc.selectionFrame {
                 ReferenceGrid(x: $referenceX, y: $referenceY)
                 positionAndSize(box)
                 if let object = selectedObjects.first, selectedObjects.count == 1 {
                     parameters(object)
-                    if object.shape.parametric {
+                    // An image inside the shape: its fitting, scale and opacity (Editor/ImageInsideShape.swift).
+                    if let fitting = object.imageFit, object.image != nil {
+                        separator
+                        ImageFitBar(doc: doc, fitting: fitting, id: object.id)
+                    }
+                    if object.isParametric {
                         Button("→ Path") { doc.convertToPath() }
                             .controlSize(.small)
                             .help("Convert to a path to edit its points (direct selection)")
                     }
                 }
             } else {
-                Text("A4 sheet · \(unit.text(Document.page))").foregroundStyle(.secondary)
+                let artboard = doc.activeArtboard
+                Text(verbatim: [artboard.title(doc.activeIndex), artboard.preset?.name, unit.text(artboard.size)].compactMap(\.self)
+                    .joined(separator: " · "))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .help("The active artboard (click another one to make it active; ⇧O edits them)")
             }
             separator
             // A group aligns to the sheet, like a single object.
@@ -206,6 +234,11 @@ struct ControlBar: View {
         Menu {
             ForEach(AlignMode.allCases) { mode in
                 Button { doc.align(mode) } label: { Label("Align \(mode.name)", image: mode.icon) }
+            }
+            Divider()
+            ForEach(SpacingAxis.allCases) { axis in
+                Button { doc.distribute(axis) } label: { Label(axis.name, image: axis.icon) }
+                    .disabled(howMany < 3)
             }
         } label: {
             Label("Align", image: AlignMode.centerH.icon)
@@ -242,16 +275,30 @@ struct ControlBar: View {
         }
     }
 
-    private func positionAndSize(_ box: CGRect) -> some View {
-        HStack(spacing: 6) {
-            field("X", box.minX + box.width * referenceX, length: true, unit: "") { v in
-                doc.fitSelection(to: box.offsetBy(dx: v - (box.minX + box.width * referenceX), dy: 0))
+    /// X and Y of the reference point, W and H of the selection's box (turned with the objects when they share an angle:
+    /// the size along their own sides) and its angle.
+    private func positionAndSize(_ turnedBox: RotatedBox) -> some View {
+        let box = turnedBox.rect
+        let reference = turnedBox.point(referenceX, referenceY)
+        return HStack(spacing: 6) {
+            // X and Y from the active artboard's top-left corner, like the rulers (as in Illustrator).
+            let zero = doc.activeArtboard.rect.origin
+            field("X", reference.x - zero.x, length: true, unit: "") { v in
+                if turnedBox.angle == 0 {
+                    doc.fitSelection(to: box.offsetBy(dx: v + zero.x - (box.minX + box.width * referenceX), dy: 0))
+                } else {
+                    doc.translateSelection(dx: v + zero.x - reference.x, dy: 0)
+                }
             }
-            field("Y", box.minY + box.height * referenceY, length: true, unit: "") { v in
-                doc.fitSelection(to: box.offsetBy(dx: 0, dy: v - (box.minY + box.height * referenceY)))
+            field("Y", reference.y - zero.y, length: true, unit: "") { v in
+                if turnedBox.angle == 0 {
+                    doc.fitSelection(to: box.offsetBy(dx: 0, dy: v + zero.y - (box.minY + box.height * referenceY)))
+                } else {
+                    doc.translateSelection(dx: 0, dy: v + zero.y - reference.y)
+                }
             }
             field("W", box.width, minimum: 0.1, length: true, unit: "") { v in
-                resize(box, width: v, height: lockAspect ? box.height * v / max(box.width, 0.001) : box.height)
+                resize(turnedBox, width: v, height: lockAspect ? box.height * v / max(box.width, 0.001) : box.height)
             }
             Button {
                 lockAspect.toggle()
@@ -267,9 +314,17 @@ struct ControlBar: View {
             .buttonStyle(.plain)
             .help(lockAspect ? "Proportions locked" as LocalizedStringKey : "Keep proportions")
             field("H", box.height, minimum: 0.1, length: true, unit: "") { v in
-                resize(box, width: lockAspect ? box.width * v / max(box.height, 0.001) : box.width, height: v)
+                resize(turnedBox, width: lockAspect ? box.width * v / max(box.height, 0.001) : box.width, height: v)
             }
             Text(verbatim: unit.symbol).foregroundStyle(.secondary).fixedSize()
+            // The angle, as Illustrator's: typing one turns the selection around the reference point.
+            HStack(spacing: 4) {
+                Image("toolRotate").resizable().frame(width: 15, height: 15).foregroundStyle(.secondary)
+                field(nil, turnedBox.angle, minimum: -360, maximum: 360, unit: "°", width: 40) { v in
+                    doc.rotateSelection(by: CanvasObject.normalizedAngle(v - turnedBox.angle), around: reference)
+                }
+            }
+            .help("Angle: turns the selection around the reference point")
         }
     }
 
@@ -291,18 +346,52 @@ struct ControlBar: View {
                 .help(howMany == 1 ? "Align \(mode.name) to the sheet" as LocalizedStringKey
                       : howMany > 1 ? "Align \(mode.name) to the selection" : "Align \(mode.name)")
             }
+            Divider().frame(height: 16).padding(.horizontal, 4)
+            // Space: equal gaps between 3 or more pieces (Studio's Space Horizontally/Vertically).
+            ForEach(SpacingAxis.allCases) { axis in
+                Button {
+                    doc.distribute(axis)
+                } label: {
+                    Image(axis.icon)
+                        .resizable()
+                        .frame(width: 18, height: 18)
+                        .frame(width: 26, height: 26)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .disabled(howMany < 3)
+                .opacity(howMany < 3 ? 0.35 : 1)
+                .help("\(axis.name): equal gaps between 3 or more objects")
+            }
         }
     }
 
-    /// New size anchored to the reference point.
-    private func resize(_ box: CGRect, width: Double, height: Double) {
+    /// New size anchored to the reference point (along the box's own sides when it is turned).
+    private func resize(_ turnedBox: RotatedBox, width: Double, height: Double) {
+        let box = turnedBox.rect
         let l = max(width, 0.1), a = max(height, 0.1)
-        doc.fitSelection(to: CGRect(x: box.minX + (box.width - l) * referenceX, y: box.minY + (box.height - a) * referenceY,
-                                        width: l, height: a))
+        let newRect = CGRect(x: box.minX + (box.width - l) * referenceX, y: box.minY + (box.height - a) * referenceY, width: l, height: a)
+        if turnedBox.angle == 0, !doc.selectedObjects.contains(where: { $0.rotation != 0 }) {
+            doc.fitSelection(to: newRect)
+        } else {
+            doc.fitSelection(turnedBox, to: newRect)
+        }
     }
 
     @ViewBuilder
     private func parameters(_ object: CanvasObject) -> some View {
+        if let sides = object.polygonSides {
+            field("Sides", Double(sides), minimum: Double(PolygonShape.sideRange.lowerBound),
+                  maximum: Double(PolygonShape.sideRange.upperBound), unit: "") { v in
+                doc.modifySelection { $0.setPolygon(sides: Int(v.rounded())) }
+            }
+        } else {
+            shapeParameters(object)
+        }
+    }
+
+    @ViewBuilder
+    private func shapeParameters(_ object: CanvasObject) -> some View {
         switch object.shape {
         case .rectangle(let radius):
             field("Radius", radius, minimum: 0, length: true) { v in doc.modifySelection { $0.shape = .rectangle(radius: v) } }
@@ -315,6 +404,11 @@ struct ControlBar: View {
             }
         case .text:
             TextFields(doc: doc)
+            if object.textPath != nil {
+                Button("Path Options…") { doc.pathTextOptionsOpen = true }
+                    .controlSize(.small)
+                    .help("Type on a Path Options: effect, alignment to the path, spacing, flip")
+            }
         case .shapePath(let subs):
             let pointsList = subs.reduce(0) { $0 + $1.nodes.count }, opened = subs.contains { !$0.closed }
             Text(opened ? "\(pointsList) points · open" as LocalizedStringKey : "\(pointsList) points · closed").foregroundStyle(.secondary)

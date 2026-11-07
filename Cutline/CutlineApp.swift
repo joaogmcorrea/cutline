@@ -16,12 +16,15 @@ struct CutlineApp: App {
         UserDefaults.standard.set("always", forKey: "AppleWindowTabbingMode")
         // Settings › Appearance: light, dark or as the system.
         AppAppearance.current.apply()
+        // The Google Fonts added to Cutline, for this process only, before any document opens (GoogleFonts/).
+        GoogleFonts.activateAdded()
         // Fonts activated while the app is open (Adobe Fonts) apply to text already drawn.
         Fonts.observeChanges()
         // Sparkle checks for new versions from launch (never in debug builds).
         _ = Updates.controller
         #if DEBUG
         DebugHooks.hideWindows()
+        DebugHooks.writeRotatePointers()
         #endif
     }
 
@@ -49,14 +52,24 @@ struct CutlineApp: App {
         .restorationBehavior(.disabled)
         .defaultLaunchBehavior(StartScreen.enabled ? .presented : .suppressed)
 
+        // File › Open from Canva… (Canva/CanvaWindow.swift): one window, opened from the menu only.
+        Window("Open from Canva", id: CanvaWindow.id) {
+            CanvaWindow()
+        }
+        .defaultSize(width: 980, height: 700)
+        .windowResizability(.contentMinSize)
+        .restorationBehavior(.disabled)
+        .defaultLaunchBehavior(.suppressed)
+        .commandsRemoved()
+
         // Cutline › Settings… (⌘,).
         Settings {
             SettingsView()
         }
 
-        // Help › Report a Bug… / Request a Feature… (one window each; no items in the File menu).
+        // Help › Report a Bug… (one window each; no items in the File menu). Request a Feature… opens the roadmap.
         WindowGroup(for: ReportRequest.self) { $request in
-            ReportWindow(request: request ?? ReportRequest(kind: .bug))
+            ReportWindow(request: request ?? ReportRequest())
                 .environment(machine)
         }
         .defaultSize(width: 600, height: 760)

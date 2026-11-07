@@ -1,7 +1,7 @@
 // A vector file with more paths than Cutline handles well (an Illustrator texture or image trace brings tens of
 // thousands, almost all of them print-only specks): before it goes in, a choice. Flatten turns everything that only
-// prints into one 300 dpi image and keeps the cut lines as paths; Simplify leaves out the print-only pieces smaller
-// than a size the user picks; Import All Paths brings every path, as before.
+// prints (a PDF's images too) into one 300 dpi image and keeps the cut lines as paths; Simplify leaves out the
+// print-only pieces smaller than a size the user picks; Import All Paths brings every path, as before.
 import ImageIO
 import SwiftUI
 import UniformTypeIdentifiers
@@ -14,6 +14,8 @@ struct ManyPaths: Identifiable {
     /// The file's name, for the title and the notice.
     let name: String
     let result: VectorImport
+    /// A page from Open from Canva…: the notice doesn't send the person to Illustrator for the text.
+    var fromCanva = false
 
     var cutting: [CanvasObject] { result.objects.filter(\.cutsLine) }
 
@@ -24,12 +26,21 @@ struct ManyPaths: Identifiable {
     func kept(from limit: Double) -> [CanvasObject] {
         result.objects.filter { $0.cutsLine || Self.size($0) >= limit }
     }
+
+    /// The data of the images these objects show (a PDF's images: only those that go in).
+    func images(of objects: [CanvasObject]) -> [String: Data] {
+        result.imageData.filter { key, _ in objects.contains { $0.image?.key == key } }
+    }
 }
 
 /// Filled outlines ready to draw off the main thread (a CGPath or CGColor doesn't change once made).
 nonisolated struct FillPieces: @unchecked Sendable {
     var paths: [CGPath] = []
     var colors: [CGColor] = []
+    /// A PDF's images, by the index of their outline in `paths`: the image and where its pixels go (pixel → page mm).
+    var pictures: [Int: (image: CGImage, toPage: CGAffineTransform)] = [:]
+    /// How CMYK goes into the RGB image (the document's: as the canvas shows it).
+    var intent = CGColorRenderingIntent.defaultIntent
     /// Each piece's biggest side, in mm (infinite for the cut lines, which Simplify never leaves out).
     var sizes: [Double] = []
     /// Around every piece, in page mm.
@@ -38,13 +49,22 @@ nonisolated struct FillPieces: @unchecked Sendable {
     /// The flattened image's resolution.
     static let dotsPerInch = 300.0
 
-    /// The fills drawn with even-odd, like the canvas and the print. Ignored: images (a vector import has none).
-    @MainActor init(_ objects: [CanvasObject]) {
+    /// The fills drawn with even-odd, like the canvas and the print, in the document's CMYK profile, and the images
+    /// (`images`: their data by key) clipped by their outlines.
+    @MainActor init(_ objects: [CanvasObject], colors converter: ColorConverter, images: [String: Data] = [:]) {
+        intent = converter.intent
         for object in objects {
-            guard let fill = object.fill else { continue }
             let path = object.shapePath.cgPath
+            if let inShape = object.image, let payload = images[inShape.key],
+               let source = CGImageSourceCreateWithData(payload as CFData, nil), let image = CGImageSourceCreateImageAtIndex(source, 0, nil) {
+                pictures[paths.count] = (image, inShape.transform.cg.concatenating(object.frameToPage))
+                colors.append(CGColor(gray: 0, alpha: 0))
+            } else if let fill = object.fill {
+                colors.append(converter.printColor(fill))
+            } else {
+                continue
+            }
             paths.append(path)
-            colors.append(fill.cgCMYK)
             sizes.append(object.cutsLine ? .infinity : ManyPaths.size(object))
             box = box.union(path.boundingBoxOfPath)
         }
@@ -62,8 +82,21 @@ nonisolated struct FillPieces: @unchecked Sendable {
         ctx.translateBy(x: 0, y: Double(height))
         ctx.scaleBy(x: pixelsPerMM, y: -pixelsPerMM)
         ctx.translateBy(x: -box.minX, y: -box.minY)
+        // As the canvas shows the CMYK (Model/ColorConversion.swift).
+        ctx.setRenderingIntent(intent)
         for i in paths.indices where sizes[i] >= limit {
             ctx.addPath(paths[i])
+            if let picture = pictures[i] {
+                // As the print draws an image (Printing.swift): clipped by the outline, pixels with y down.
+                ctx.saveGState()
+                ctx.clip(using: .evenOdd)
+                ctx.concatenate(picture.toPage)
+                ctx.translateBy(x: 0, y: Double(picture.image.height))
+                ctx.scaleBy(x: 1, y: -1)
+                ctx.draw(picture.image, in: CGRect(x: 0, y: 0, width: picture.image.width, height: picture.image.height))
+                ctx.restoreGState()
+                continue
+            }
             ctx.setFillColor(colors[i])
             ctx.fillPath(using: .evenOdd)
         }
@@ -133,7 +166,7 @@ struct ManyPathsWindow: View {
         .frame(width: 480)
         .disabled(flattening)
         .task {
-            let all = FillPieces(origin.result.objects)
+            let all = FillPieces(origin.result.objects, colors: doc.colors, images: origin.result.imageData)
             everything = all
             cutLines = origin.cutting.map { $0.shapePath.cgPath }
             printSizes = origin.result.objects.filter { !$0.cutsLine }.map(ManyPaths.size)
@@ -211,7 +244,7 @@ struct ManyPathsWindow: View {
     private func flatten() {
         guard !flattening else { return }
         flattening = true
-        let printOnly = FillPieces(origin.result.objects.filter { !$0.cutsLine })
+        let printOnly = FillPieces(origin.result.objects.filter { !$0.cutsLine }, colors: doc.colors, images: origin.result.imageData)
         Task {
             let flat = await Task.detached { printOnly.flattened() }.value
             let key = UUID().uuidString
@@ -224,24 +257,24 @@ struct ManyPathsWindow: View {
             doc.insertImported(objects, images: flat.map { [key: $0.png] } ?? [:])
             var lead = flat == nil ? [] : [String(localized: "\(1) images")]
             if !origin.cutting.isEmpty { lead.append(String(localized: "\(origin.cutting.count) paths")) }
-            doc.notice = origin.result.notice(from: origin.name, lead: lead)
+            doc.notice = origin.result.notice(from: origin.name, lead: lead, fromCanva: origin.fromCanva)
             close()
         }
     }
 
     private func simplify() {
         let kept = origin.kept(from: limit)
-        doc.insertImported(kept)
+        doc.insertImported(kept, images: origin.images(of: kept))
         doc.notice = origin.result.notice(from: origin.name, lead: [
             String(localized: "\(kept.count) paths"),
             String(localized: "\(origin.result.objects.count - kept.count) small pieces left out"),
-        ])
+        ], fromCanva: origin.fromCanva)
         close()
     }
 
     private func importAll() {
-        doc.insertImported(origin.result.objects)
-        doc.notice = origin.result.notice(from: origin.name)
+        doc.insertImported(origin.result.objects, images: origin.result.imageData)
+        doc.notice = origin.result.notice(from: origin.name, fromCanva: origin.fromCanva)
         close()
     }
 }

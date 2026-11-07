@@ -8,17 +8,19 @@ nonisolated struct LayeredImage: Identifiable, Sendable {
     let id = UUID()
     let name: String
     let file: PSDFile
-    /// Where it was dropped, in page mm (otherwise the canvas goes in centered on the page).
+    /// Where it was dropped, in canvas mm (otherwise the canvas goes in centered on the artboard).
     var center: CGPoint?
+    /// The active artboard when it came in (canvas mm).
+    var sheet = CGRect(origin: .zero, size: PagePreset.a4.size)
 
-    /// mm per Photoshop pixel: the file's real size, smaller if the canvas doesn't fit the page.
+    /// mm per Photoshop pixel: the file's real size, smaller if the canvas doesn't fit the artboard.
     var scale: Double {
-        min(25.4 / max(file.resolution, 1), Document.page.width / file.size.width, Document.page.height / file.size.height)
+        min(25.4 / max(file.resolution, 1), sheet.width / file.size.width, sheet.height / file.size.height)
     }
 
-    /// The Photoshop canvas on the page (an A4 file at 300 ppi covers the page exactly).
+    /// The Photoshop canvas on the artboard (an A4 file at 300 ppi covers an A4 artboard exactly).
     var canvasFrame: CGRect {
-        let c = center ?? CGPoint(x: Document.page.width / 2, y: Document.page.height / 2)
+        let c = center ?? CGPoint(x: sheet.midX, y: sheet.midY)
         let size = CGSize(width: file.size.width * scale, height: file.size.height * scale)
         return CGRect(x: c.x - size.width / 2, y: c.y - size.height / 2, width: size.width, height: size.height)
     }

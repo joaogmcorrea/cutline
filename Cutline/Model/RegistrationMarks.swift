@@ -43,23 +43,28 @@ nonisolated struct MarksConfig: Hashable, Codable, Sendable {
         strokeWidth = studio.thickness
     }
 
-    /// Area between the marks (page mm): the driver only cuts in here.
-    var area: CGRect {
-        let page = Document.page
-        return CGRect(x: left, y: top, width: page.width - left - right, height: page.height - top - bottom)
+    /// Area between the marks on the sheet as it goes on the mat (its own mm): the driver only cuts in here.
+    private func fedArea(_ size: CGSize) -> CGRect {
+        CGRect(x: left, y: top, width: size.width - left - right, height: size.height - top - bottom)
     }
 
-    /// What the machine looks for before cutting.
-    var logLines: Cutter.Registration {
-        let a = area
+    /// Area between the marks on an artboard (canvas mm).
+    func area(on sheet: SheetFrame) -> CGRect { fedArea(sheet.fedSize).applying(sheet.fromFed) }
+
+    /// What the machine looks for before cutting a sheet (in the mm of the sheet as it goes on the mat).
+    func logLines(for sheet: SheetFrame) -> Cutter.Registration {
+        let a = fedArea(sheet.fedSize)
         return Cutter.Registration(originX: a.minX, originY: a.minY, width: a.width, length: a.height,
                                    markLength: length, markThickness: strokeWidth)
     }
 
-    /// Black rectangles that make up the marks (page mm): the square in the top-left corner and the
-    /// L corner marks at the top-right and bottom-left corners.
-    var rectangles: [CGRect] {
-        let a = area, e = strokeWidth, l = length, q = Self.square
+    /// Black rectangles that make up the marks on an artboard (canvas mm): on the sheet as it goes on the mat, the square
+    /// in the top-left corner and the L corner marks at the top-right and bottom-left corners (on a turned landscape
+    /// artboard that is its bottom-left corner, and its top-left and bottom-right ones).
+    func rectangles(on sheet: SheetFrame) -> [CGRect] { fedRectangles(sheet.fedSize).map { $0.applying(sheet.fromFed) } }
+
+    private func fedRectangles(_ size: CGSize) -> [CGRect] {
+        let a = fedArea(size), e = strokeWidth, l = length, q = Self.square
         return [
             CGRect(x: a.minX, y: a.minY, width: q, height: q),
             CGRect(x: a.maxX - l, y: a.minY, width: l, height: e), CGRect(x: a.maxX - e, y: a.minY, width: e, height: l),   // ┐
@@ -67,11 +72,13 @@ nonisolated struct MarksConfig: Hashable, Codable, Sendable {
         ]
     }
 
-    /// Where not to put art or cuts: outside the area between the marks and around each mark.
+    /// Where not to put art or cuts on an artboard (canvas mm): outside the area between the marks and around each mark.
     /// Paint with the even-odd rule.
-    var forbiddenZone: Path {
-        let a = area, l = length, q = Self.square
-        var zone = Path(CGRect(origin: .zero, size: Document.page))
+    func forbiddenZone(on sheet: SheetFrame) -> Path { fedForbiddenZone(sheet.fedSize).applying(sheet.fromFed) }
+
+    private func fedForbiddenZone(_ size: CGSize) -> Path {
+        let a = fedArea(size), l = length, q = Self.square
+        var zone = Path(CGRect(origin: .zero, size: size))
         zone.addRect(a)
         let boxes = [CGRect(x: a.minX, y: a.minY, width: q, height: q),
                       CGRect(x: a.maxX - l, y: a.minY, width: l, height: l),
@@ -84,6 +91,39 @@ nonisolated struct MarksConfig: Hashable, Codable, Sendable {
     var margin: Double? { Set([left, top, right, bottom]).count == 1 ? left : nil }
 }
 
+/// How an artboard goes on the cutting mat (and into the machine), as Silhouette Studio does it: as it is, its top-left
+/// corner at the mat's; or, a landscape artboard, turned a quarter turn clockwise (its left edge goes in first, its top
+/// edge along the right side), except on the square mats, which take it as it is (seen in Studio with REA, 05/11/2026:
+/// it keeps `TB50,0` and turns the coordinates itself). "Fed" mm: x across the machine, y along the feed, from the corner
+/// that goes in first.
+nonisolated struct SheetFrame: Sendable {
+    /// The artboard (canvas mm).
+    let rect: CGRect
+    let turned: Bool
+
+    /// The sheet's size as it goes on the mat: across × along.
+    var fedSize: CGSize { turned ? CGSize(width: rect.height, height: rect.width) : rect.size }
+
+    /// Canvas mm → the sheet's fed mm. Turned: across = H − y, along = x (from the artboard's corner).
+    var toFed: CGAffineTransform {
+        turned ? CGAffineTransform(a: 0, b: 1, c: -1, d: 0, tx: rect.minY + rect.height, ty: -rect.minX)
+            : CGAffineTransform(translationX: -rect.minX, y: -rect.minY)
+    }
+
+    var fromFed: CGAffineTransform { toFed.inverted() }
+}
+
+nonisolated extension Document {
+    /// The square mats: a landscape artboard fits them as it is (Studio doesn't turn it there).
+    static let squareMats: Set<CuttingMat> = [.cameo12x12, .electrostatic12x12, .cameoPlus15x15, .cameoPro24x24]
+
+    /// How an artboard goes on the mat: a landscape one turned, unless the document's mat is a square one.
+    func sheetFrame(_ artboard: Artboard) -> SheetFrame {
+        let square = withMat && cuttingMatSetting.map(Self.squareMats.contains) == true
+        return SheetFrame(rect: artboard.rect, turned: artboard.isLandscape && !square)
+    }
+}
+
 extension Document {
     /// Turns the marks on or off (stays in the file; one undo step).
     func toggleMarks() {
@@ -91,8 +131,8 @@ extension Document {
         marks.toggle()
     }
 
-    /// What the machine reads before cutting (nil without the marks).
-    var registrationToSend: Cutter.Registration? { marks ? marksConfig.logLines : nil }
+    /// What the machine reads before cutting an artboard (nil without the marks).
+    func registrationToSend(_ artboard: Artboard) -> Cutter.Registration? { marks ? marksConfig.logLines(for: sheetFrame(artboard)) : nil }
 
     /// Changes the marks' position or size (stays in the file; consecutive adjustments are one undo step).
     func setMarks(_ newOne: MarksConfig) {
@@ -101,10 +141,10 @@ extension Document {
         marksConfig = newOne
     }
 
-    /// Objects that go to the machine and go past the area between the marks (what's outside isn't cut).
-    var objectsOutsideMarks: Int {
-        let area = marksConfig.area
-        return cutLines.filter { config($0.color).sends }
+    /// Objects of an artboard that go to the machine and go past the area between the marks (what's outside isn't cut).
+    func objectsOutsideMarks(_ artboard: Artboard) -> Int {
+        let area = marksConfig.area(on: sheetFrame(artboard))
+        return cutLines(on: artboard).filter { config($0.color).sends }
             .flatMap(\.objects)
             .filter { !area.contains($0.shapePath.boundingRect) }
             .count
@@ -151,9 +191,17 @@ extension Document {
         cuttingMatSetting = newOne
     }
 
-    /// What goes to the machine's queue: the enabled colors, the marks (Print & Cut) and the mat.
-    func job(name: String) -> Job {
-        Job(name: name, origin: ObjectIdentifier(self), layers: layersToSend, logLines: registrationToSend,
-                 withMat: withMat, base: cuttingMatSetting)
+    /// What goes to the machine's queue: an artboard's enabled colors (in the mm of the sheet as it goes on the mat), its
+    /// marks (Print & Cut), its size on the mat and the mat.
+    func job(name: String, artboard: Artboard) -> Job {
+        Job(name: name, origin: ObjectIdentifier(self), layers: layersToSend(on: artboard), logLines: registrationToSend(artboard),
+            withMat: withMat, base: cuttingMatSetting, trackEnhancing: trackEnhancing, media: sheetFrame(artboard).fedSize)
+    }
+
+    /// Track enhancing on or off for this document's sends (stays in the file, with undo).
+    func setTrackEnhancing(_ on: Bool) {
+        guard on != trackEnhancing else { return }
+        registrar()
+        trackEnhancing = on
     }
 }

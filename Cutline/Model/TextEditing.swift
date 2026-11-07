@@ -20,6 +20,8 @@ nonisolated struct TextEditing: Equatable, Sendable {
     let click: CGPoint?
     /// Already went into undo.
     var registered = false
+    /// Type on a Path: the path the text took the place of; if the text ends up empty, it comes back.
+    var replaced: CanvasObject?
 }
 
 extension CanvasObject {
@@ -33,6 +35,8 @@ extension CanvasObject {
     var textAnchor: (origin: CGPoint, scale: CGSize)? {
         guard case .text(let t) = shape else { return nil }
         let r = frame.standardized
+        // Type on a Path: the frame is the path's box, and the letters keep their size.
+        if textPath != nil { return (r.origin, CGSize(width: 1, height: 1)) }
         guard let n = t.contour?.boundingBoxOfPath, n.width > 0, n.height > 0 else {
             return (r.origin, CGSize(width: 1, height: 1))
         }
@@ -40,15 +44,28 @@ extension CanvasObject {
         return (CGPoint(x: r.minX - n.minX * scale.width, y: r.minY - n.minY * scale.height), scale)
     }
 
-    /// Replaces the text keeping the text's point in place and the stretch (the frame follows the letters).
-    mutating func replaceText(_ updated: TextBox, origin: CGPoint, scale: CGSize) {
+    /// Replaces the text keeping the text's point in place and the stretch (the frame follows the letters). `origin` is in
+    /// the text's unrotated space (`textAnchor`): a rotated text keeps its point where it is on the page. With `left`, the
+    /// frame's left edge (same space) stays there instead (changing the alignment doesn't move the block); returns how far
+    /// that moved the letters.
+    @discardableResult
+    mutating func replaceText(_ updated: TextBox, origin: CGPoint, scale: CGSize, keepingLeft left: Double? = nil) -> Double {
         shape = .text(updated)
+        // On a path, the frame is the path's: it stays.
+        if textPath != nil { return 0 }
         guard let n = updated.contour?.boundingBoxOfPath else {
-            frame = CGRect(origin: origin, size: .zero)
-            return
+            setLocalFrame(CGRect(origin: origin, size: .zero))
+            return 0
         }
-        frame = CGRect(x: origin.x + n.minX * scale.width, y: origin.y + n.minY * scale.height,
-                        width: n.width * scale.width, height: n.height * scale.height)
+        var r = CGRect(x: origin.x + n.minX * scale.width, y: origin.y + n.minY * scale.height,
+                       width: n.width * scale.width, height: n.height * scale.height)
+        var dx = 0.0
+        if let left {
+            dx = left - r.minX
+            r.origin.x += dx
+        }
+        setLocalFrame(r)
+        return dx
     }
 }
 
@@ -150,6 +167,47 @@ extension Document {
         objects.append(object)
         selection = [object.id]
         textEditing = TextEditing(id: object.id, origin: origin, scale: CGSize(width: 1, height: 1), click: nil)
+    }
+
+    /// Type on a Path tool on a path (any shape's outline): the path becomes a text on it, still without letters, with
+    /// the start where the click was (page mm), in the same place of the layer and the groups, with the next texts' font
+    /// and the next objects' colors (it cuts by its stroke, like any text). If nothing is typed, the path comes back.
+    func newPathText(on id: CanvasObject.ID, at click: CGPoint) {
+        finishText()
+        guard let i = objects.firstIndex(where: { $0.id == id }), !untouchable(objects[i]), objects[i].image == nil,
+              let free = CanvasObject.freePath(objects[i].shapePath.cgPath) else { return }
+        let source = objects[i]
+        var text = defaultText
+        text.content = ""
+        text.textRuns = []
+        var object = newObject(.text(text), frame: free.frame)
+        object.layer = source.layer
+        object.groups = source.groups
+        var onPath = TextOnPath(subpaths: free.subpaths)
+        let walker = PathWalker(onPath.path(in: free.frame), reversed: false)
+        if walker.length > 0 { onPath.start = min(max(walker.nearest(click).distance / walker.length, 0), 0.98) }
+        object.textPath = onPath
+        saveState()
+        objects[i] = object
+        selection = [object.id]
+        activeLayer = layer(of: object).id
+        textEditing = TextEditing(id: object.id, origin: free.frame.origin, scale: CGSize(width: 1, height: 1), click: nil,
+                                  replaced: source)
+    }
+
+    /// Type on a Path Options (and the handles): changes the selected texts on a path, in one undo step.
+    func changePathText(_ change: (inout TextOnPath) -> Void) {
+        let changes = selectedObjects.contains { o in
+            guard var p = o.textPath, case .text = o.shape else { return false }
+            let before = p
+            change(&p)
+            return p != before
+        }
+        guard changes else { return }
+        modifySelection { o in
+            guard o.textPath != nil, case .text = o.shape else { return }
+            change(&o.textPath!)
+        }
     }
 
     /// Opens editing of an existing text; `click` (page mm) puts the cursor there.
@@ -258,10 +316,10 @@ extension Document {
         guard changes else { return }
         modifySelection { o in
             guard case .text(var text) = o.shape, let anchor = o.textAnchor else { return }
-            let alignmentBefore = text.alignment, frameBefore = o.frame
+            let alignmentBefore = text.alignment, frameBefore = o.frame.standardized
             change(&text)
-            o.replaceText(text, origin: anchor.origin, scale: anchor.scale)
-            if text.alignment != alignmentBefore { o.frame.origin.x += frameBefore.minX - o.frame.minX }
+            o.replaceText(text, origin: anchor.origin, scale: anchor.scale,
+                          keepingLeft: text.alignment != alignmentBefore ? frameBefore.minX : nil)
         }
     }
 
@@ -301,10 +359,16 @@ extension Document {
         textSelection = NSRange(location: 0, length: 0)
         typingStyle = nil
         discardSavedState()
-        // Ended without letters: the text disappears (if it was already in undo, deleting is part of the same step).
-        if let object = objects.first(where: { $0.id == edit.id }), object.emptyText {
-            objects.removeAll { $0.id == edit.id }
-            selection.remove(edit.id)
+        // Ended without letters: the text disappears (if it was already in undo, deleting is part of the same step); a
+        // text on a path gives its place back to the path it took.
+        if let i = objects.firstIndex(where: { $0.id == edit.id }), objects[i].emptyText {
+            if let path = edit.replaced {
+                objects[i] = path
+                selection = [path.id]
+            } else {
+                objects.remove(at: i)
+                selection.remove(edit.id)
+            }
         }
     }
 
@@ -313,17 +377,13 @@ extension Document {
     private func modifyEditing(_ change: (inout TextBox) -> Void) {
         guard let i = objects.firstIndex(where: { $0.id == textEditing?.id }), case .text(var text) = objects[i].shape,
               let anchor = editAnchor else { return }
-        let before = text, wasEmpty = objects[i].emptyText, frameBefore = objects[i].frame
+        let before = text, wasEmpty = objects[i].emptyText, frameBefore = objects[i].frame.standardized
         change(&text)
         guard text != before else { return }
         registerEdit()
-        objects[i].replaceText(text, origin: anchor.origin, scale: anchor.scale)
         var origin = anchor.origin
-        if text.alignment != before.alignment, !wasEmpty, !objects[i].emptyText {
-            let dx = frameBefore.minX - objects[i].frame.minX
-            objects[i].frame.origin.x += dx
-            origin.x += dx
-        }
+        let keepLeft = text.alignment != before.alignment && !wasEmpty && !text.content.allSatisfy(\.isWhitespace)
+        origin.x += objects[i].replaceText(text, origin: anchor.origin, scale: anchor.scale, keepingLeft: keepLeft ? frameBefore.minX : nil)
         textEditing?.origin = origin
         textEditing?.scale = anchor.scale
     }

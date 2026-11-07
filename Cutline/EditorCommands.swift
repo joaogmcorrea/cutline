@@ -10,10 +10,13 @@ import SwiftUI
 struct EditorCommands: Commands {
     @FocusedValue(\.document) private var doc
     @FocusedValue(\.viewControl) private var control
+    @Environment(\.openWindow) private var openWindow
     @AppStorage("reguas") private var rulers = true
     @AppStorage("snap") private var snap = true
     @AppStorage(Preferences.guidesVisible) private var guidesVisible = true
     @AppStorage(Preferences.guidesLocked) private var guidesLocked = false
+    @AppStorage(Preferences.gridVisible) private var gridVisible = false
+    @AppStorage(Preferences.gridSnap) private var gridSnap = false
     @AppStorage("ferramentasVisiveis") private var toolsVisible = true
     @AppStorage("barraControleVisivel") private var controlBarVisible = true
     @AppStorage("paineisOcultos") private var hiddenText = ""
@@ -42,10 +45,25 @@ struct EditorCommands: Commands {
 
     @CommandsBuilder
     private var file: some Commands {
+        // After Open Recent; only once the Info.plist has the backend's address (Canva/CanvaService.swift).
+        CommandGroup(before: .saveItem) {
+            if CanvaConfig.isEnabled {
+                Button("Open from Canva…") { openWindow(id: CanvaWindow.id) }
+                Divider()
+            }
+        }
+        CommandGroup(after: .saveItem) {
+            // Only the selected objects, to a new Cutline file (as in Silhouette Studio); the document doesn't change.
+            Button("Save Selection…") { act { $0.saveSelectionRequest += 1 } }
+                .disabled(noSelection || isTyping)
+        }
         CommandGroup(after: .importExport) {
             Button("Import…") { act { $0.importRequest += 1 } }
                 .keyboardShortcut("i", modifiers: [.command, .shift])
                 .disabled(doc == nil)
+            // A Cutline or Silhouette Studio document into this one (as Studio's Merge), with its layers and colors.
+            Button("Merge…") { act { $0.mergeRequest += 1 } }
+                .disabled(doc == nil || isTyping)
         }
         CommandGroup(replacing: .printItem) {
             // A4 at actual size; with Print & Cut, with the registration marks.
@@ -61,6 +79,10 @@ struct EditorCommands: Commands {
     @CommandsBuilder
     private var editAction: some Commands {
         CommandGroup(after: .pasteboard) {
+            // The copied image inside the selected shapes (InDesign's Paste Into; Editor/ImageInsideShape.swift).
+            Button("Paste Inside") { act { doc in if let notice = doc.pasteInside() { doc.notice = notice } } }
+                .keyboardShortcut("v", modifiers: [.command, .option])
+                .disabled(!(doc?.canPasteInside ?? false) || isTyping)
             // Delete alone deletes when the canvas has focus; ⌘⌫ works from anywhere.
             Button("Delete") { act { $0.deleteSelection() } }
                 .keyboardShortcut(.delete, modifiers: .command)
@@ -68,6 +90,13 @@ struct EditorCommands: Commands {
             Button("Duplicate") { act { $0.duplicateSelection() } }
                 .keyboardShortcut("d", modifiers: .command)
                 .disabled(noSelection || isTyping)
+            if Feature.colorProfiles.isOn {
+                Divider()
+                // As in Illustrator's Edit menu (Editor/ColorProfileViews.swift).
+                SettingsLink { Text("Color Settings…") }
+                Button("Assign Profile…") { act { $0.assignProfileRequest += 1 } }
+                    .disabled(doc == nil || isTyping)
+            }
         }
     }
 
@@ -76,9 +105,25 @@ struct EditorCommands: Commands {
     @ViewBuilder
     private var object: some View {
         let selectedObjects = doc?.selectedObjects ?? []
+        // As Illustrator's Object › Transform: Rotate… and the quick turns (around the selection's center), Reset Bounding Box.
+        Menu("Transform") {
+            Button("Rotate…") { act { $0.rotateRequest = RotateRequest() } }
+            Button("Rotate 90° Clockwise") { act { $0.rotateSelection(by: -90) } }
+            Button("Rotate 90° Counterclockwise") { act { $0.rotateSelection(by: 90) } }
+            Button("Rotate 180°") { act { $0.rotateSelection(by: 180) } }
+            Divider()
+            Button("Reset Bounding Box") { act { $0.resetBoundingBox() } }
+                .disabled(!(doc?.canResetBoundingBox ?? false))
+        }
+        .disabled(selectedObjects.isEmpty || isTyping)
         Menu("Align") {
             ForEach(AlignMode.allCases) { mode in
                 Button("Align \(mode.name)") { act { $0.align(mode) } }
+            }
+            Divider()
+            ForEach(SpacingAxis.allCases) { axis in
+                Button(axis.name) { act { $0.distribute(axis) } }
+                    .disabled(!(doc?.canDistribute ?? false))
             }
         }
         .disabled(selectedObjects.isEmpty)
@@ -105,9 +150,32 @@ struct EditorCommands: Commands {
             }
         }
         .disabled(selectedObjects.isEmpty || isTyping)
+        // As in Illustrator (⌘8 and ⌥⇧⌘8; on the canvas, read by its keyboard).
+        Menu("Compound Path") {
+            Button("Make") { act { $0.makeCompoundPath() } }
+                .keyboardShortcut("8", modifiers: .command)
+                .disabled(!(doc?.canMakeCompoundPath ?? false))
+            Button("Release") { act { $0.releaseCompoundPath() } }
+                .keyboardShortcut("8", modifiers: [.command, .option, .shift])
+                .disabled(!(doc?.canReleaseCompoundPath ?? false))
+        }
+        .disabled(selectedObjects.isEmpty || isTyping)
+        // As in Illustrator (⌘7 and ⌥⌘7; on the canvas, read by its keyboard): an image inside a shape.
+        Menu("Clipping Mask") {
+            Button("Make") { act { doc in if let notice = doc.makeClippingMask() { doc.notice = notice } } }
+                .keyboardShortcut("7", modifiers: .command)
+                .disabled(!(doc?.canMakeClippingMask ?? false))
+            Button("Release") { act { $0.releaseClippingMask() } }
+                .keyboardShortcut("7", modifiers: [.command, .option])
+                .disabled(!(doc?.canReleaseClippingMask ?? false))
+            Divider()
+            Button("Edit Contents") { act { doc in if let id = doc.selectedObjects.first(where: \.hasImageInside)?.id { doc.editContent(id) } } }
+                .disabled(!(doc?.canReleaseClippingMask ?? false))
+        }
+        .disabled(selectedObjects.isEmpty || isTyping)
         Divider()
         Button("Convert to Path") { act { $0.convertToPath() } }
-            .disabled(!selectedObjects.contains { $0.shape.parametric })
+            .disabled(!selectedObjects.contains(where: \.isParametric))
         // ⇧⌘O is Illustrator's Create Outlines; while typing, it converts the text being edited.
         Button("Convert Text to Outlines") { act { $0.convertTextToOutlines() } }
             .keyboardShortcut("o", modifiers: [.command, .shift])
@@ -128,6 +196,12 @@ struct EditorCommands: Commands {
             .keyboardShortcut("a", modifiers: [.command, .shift])
             .disabled(noSelection || isTyping)
         Divider()
+        // As in Illustrator; the stroke color is the cut, so Stroke Color picks all the lines of a cut.
+        Menu("Same") {
+            Button("Fill Color") { act { $0.selectSame(.fill) } }
+            Button("Stroke Color") { act { $0.selectSame(.strokeColor) } }
+        }
+        .disabled(noSelection || isTyping)
         Button("All in Active Layer") {
             act { doc in if let active = doc.layers.first(where: { $0.id == doc.activeLayer }) { doc.selectLayer(active) } }
         }
@@ -148,6 +222,9 @@ struct EditorCommands: Commands {
             Button("Fit in Window") { control?.adjust() }
                 .keyboardShortcut("0", modifiers: .command)
                 .disabled(control == nil)
+            Button("Fit All in Window") { control?.adjustAll() }
+                .keyboardShortcut("0", modifiers: [.command, .option])
+                .disabled(control == nil)
             Button("Actual Size") { control?.setZoom(1) }
                 .keyboardShortcut("1", modifiers: .command)
                 .disabled(control == nil)
@@ -164,6 +241,13 @@ struct EditorCommands: Commands {
                 .keyboardShortcut(";", modifiers: [.command, .option])
             Button("Clear Guides") { act { $0.clearGuides() } }
                 .disabled(doc?.guides.emptyOnes ?? true)
+            if Feature.grid.isOn {
+                // As in Illustrator (⌘' and ⇧⌘'); spacing, subdivisions and color in Settings.
+                Toggle("Show Grid", isOn: $gridVisible)
+                    .keyboardShortcut("'", modifiers: .command)
+                Toggle("Snap to Grid", isOn: $gridSnap)
+                    .keyboardShortcut("'", modifiers: [.command, .shift])
+            }
             Toggle("Registration Marks (Print & Cut)", isOn: Binding(get: { doc?.marks ?? false }, set: { updated in
                 act { if $0.marks != updated { $0.toggleMarks() } }
             }))
@@ -178,7 +262,7 @@ struct EditorCommands: Commands {
             Toggle("Tools", isOn: $toolsVisible)
             Toggle("Control Bar", isOn: $controlBarVisible)
             Divider()
-            ForEach(Panel.allCases) { panel in
+            ForEach(Panel.available) { panel in
                 Toggle(panel.title, isOn: Binding(get: { !Panel.parsedSet(hiddenText).contains(panel) }, set: { visible in
                     var hiddenOnes = Panel.parsedSet(hiddenText)
                     if visible { hiddenOnes.remove(panel) } else { hiddenOnes.insert(panel) }

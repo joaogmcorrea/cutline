@@ -12,12 +12,14 @@ nonisolated struct Clipping: Codable {
 
     enum CodingKeys: String, CodingKey {
 
-        case objects = "objetos", images = "imagens"
+        case objects = "objetos", images = "imagens", links = "vinculos"
 
     }
 
     var objects: [CanvasObject]
     var images: [String: Data]
+    /// Linked images go linked (a missing one only with its preview).
+    var links: [String: ImageLink]?
 }
 
 extension NSPasteboard.PasteboardType {
@@ -31,7 +33,7 @@ nonisolated enum Direction: Sendable {
 
 extension Document {
     /// The general macOS one (in hidden tests, one of Cutline's own, so the owner's isn't touched).
-    private var area: NSPasteboard {
+    var pasteboardArea: NSPasteboard {
         #if DEBUG
         if let test = DebugHooks.testArea { return test }
         #endif
@@ -42,10 +44,11 @@ extension Document {
         let copied = objectsInOrder.filter { selection.contains($0.id) }
         let keys = Set(copied.compactMap(\.image?.key))
         guard !copied.isEmpty,
-              let payload = try? PropertyListEncoder().encode(Clipping(objects: copied, images: images.filter { keys.contains($0.key) }))
+              let payload = try? PropertyListEncoder().encode(Clipping(objects: copied, images: images.filter { keys.contains($0.key) },
+                                                                       links: links.filter { keys.contains($0.key) }))
         else { return }
-        area.clearContents()
-        area.setData(payload, forType: .cutlineObjects)
+        pasteboardArea.clearContents()
+        pasteboardArea.setData(payload, forType: .cutlineObjects)
     }
 
     func cutSelection() {
@@ -53,10 +56,10 @@ extension Document {
         deleteSelection()
     }
 
-    var canPaste: Bool { area.availableType(from: [.cutlineObjects, .pdf, .svgImage]) != nil || copiedSVGText != nil }
+    var canPaste: Bool { pasteboardArea.availableType(from: [.cutlineObjects, .pdf, .svgImage]) != nil || copiedSVGText != nil }
 
     func paste() {
-        guard let payload = area.data(forType: .cutlineObjects),
+        guard let payload = pasteboardArea.data(forType: .cutlineObjects),
               let clipping = try? PropertyListDecoder().decode(Clipping.self, from: payload), !clipping.objects.isEmpty
         else { return pasteVectors() }
         let equal = { (a: CGRect, b: CGRect) in
@@ -67,17 +70,18 @@ extension Document {
             objects.contains { equal($0.frame, pasted.frame.offsetBy(dx: offset, dy: offset)) }
         }) { offset += 5 }
         insertImported(CanvasObject.copies(clipping.objects, offset: CGSize(width: offset, height: offset)),
-                          images: clipping.images)
+                          images: clipping.images, links: clipping.links ?? [:])
     }
 
     /// Vectors from another app: Illustrator copies a PDF (and, with "Include SVG Code" in its Clipboard Handling
     /// settings, the SVG as text). Same rules as File › Import… (the stroke sets the cut; fill only is printed, with no
-    /// cut; texts and images stay out, with a notice), centered on what the window shows.
+    /// cut; a PDF's text comes in as paths and its images as images; what can't be read stays out, with a notice),
+    /// centered on what the window shows.
     private func pasteVectors() {
-        guard let payload = area.data(forType: .pdf) ?? area.data(forType: .svgImage) ?? copiedSVGText.map({ Data($0.utf8) })
+        guard let payload = pasteboardArea.data(forType: .pdf) ?? pasteboardArea.data(forType: .svgImage) ?? copiedSVGText.map({ Data($0.utf8) })
         else { return }
         let result: VectorImport
-        do { result = try VectorImporter.read(payload) } catch {
+        do { result = try VectorImporter.read(payload, colors: colors) } catch {
             notice = error.localizedDescription
             return
         }
@@ -90,16 +94,20 @@ extension Document {
             return
         }
         let box = result.objects.dropFirst().reduce(first.frame) { $0.union($1.frame) }
-        let center = visibleCenter ?? CGPoint(x: Document.page.width / 2, y: Document.page.height / 2)
-        insertImported(CanvasObject.copies(result.objects, offset: CGSize(width: center.x - box.midX, height: center.y - box.midY)))
+        let center = visibleCenter ?? CGPoint(x: activeArtboard.rect.midX, y: activeArtboard.rect.midY)
+        insertImported(CanvasObject.copies(result.objects, offset: CGSize(width: center.x - box.midX, height: center.y - box.midY)),
+                       images: result.imageData)
         if !parts.isEmpty {
-            notice = String(localized: "Pasted: \(([String(localized: "\(result.objects.count) paths")] + parts).joined(separator: " · ")).")
+            let pictures = result.objects.count { $0.image != nil }
+            var counts = pictures < result.objects.count ? [String(localized: "\(result.objects.count - pictures) paths")] : []
+            if pictures > 0 { counts.append(String(localized: "\(pictures) images")) }
+            notice = String(localized: "Pasted: \((counts + parts).joined(separator: " · ")).")
         }
     }
 
     /// An SVG copied as text.
     private var copiedSVGText: String? {
-        guard let text = area.string(forType: .string), VectorImporter.format(Data(text.prefix(8192).utf8)) == .svg else { return nil }
+        guard let text = pasteboardArea.string(forType: .string), VectorImporter.format(Data(text.prefix(8192).utf8)) == .svg else { return nil }
         return text
     }
 

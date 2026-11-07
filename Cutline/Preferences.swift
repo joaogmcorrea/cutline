@@ -1,5 +1,5 @@
-// App settings (Cutline › Settings…, ⌘,): appearance, start screen, length unit, guide color, how far the arrows move, the Trace
-// defaults, the preferred connection and the updates. Stored in UserDefaults; the document keeps everything in mm.
+// App settings (Cutline › Settings…, ⌘,): appearance, start screen, length unit, guide color, how far the arrows move, the
+// color profiles (Editor/ColorProfileViews.swift), the Trace defaults, the preferred connection and the updates. Stored in UserDefaults; the document keeps everything in mm.
 import Sparkle
 import SwiftUI
 
@@ -110,8 +110,21 @@ nonisolated enum Preferences {
     static let traceMargin = "traceMargin", traceNodes = "traceNodes", traceSmoothing = "traceSmoothing"
     /// View › Show Guides (⌘;) and Lock Guides (⌥⌘;), also in the right-click menu.
     static let guidesVisible = "guidesVisible", guidesLocked = "guidesLocked"
+    /// View › Show Grid (⌘') and Snap to Grid (⇧⌘'), as in Illustrator; the spacing (mm), the subdivisions and the color
+    /// are in Settings.
+    static let gridVisible = "gridVisible", gridSnap = "gridSnap", gridSpacing = "gridSpacing", gridSubdivisions = "gridSubdivisions"
+    static let gridColor = "gridColor"
+    /// The Artboard tool moves the artwork on an artboard with it (the control bar's option; Illustrator's default is on).
+    static let moveArtworkWithArtboard = "moveArtworkWithArtboard"
 
     static let defaultGuideColor = "00B8FF"
+    static let defaultGridColor = "B4BCC8"
+    static let defaultGridSpacing = 10.0, defaultGridSubdivisions = 5
+
+    /// The grid: lines every `spacing` mm, each square split in `subdivisions` (the snap uses the smaller step).
+    static var grid: (spacing: Double, subdivisions: Int) {
+        (max(number(gridSpacing) ?? defaultGridSpacing, 0.5), min(max(Int(number(gridSubdivisions) ?? Double(defaultGridSubdivisions)), 1), 50))
+    }
 
     /// How far the arrows move the selection, in mm: normal, with ⇧ and with ⌥.
     static var arrowSteps: (normal: Double, shift: Double, option: Double) {
@@ -152,6 +165,9 @@ struct SettingsView: View {
     @AppStorage(AppAppearance.key) private var appearance = AppAppearance.automatic
     @AppStorage(StartScreen.key) private var startScreen = true
     @AppStorage(Preferences.guideColor) private var guideColor = Preferences.defaultGuideColor
+    @AppStorage(Preferences.gridColor) private var gridColor = Preferences.defaultGridColor
+    @AppStorage(Preferences.gridSpacing) private var gridSpacing = Preferences.defaultGridSpacing
+    @AppStorage(Preferences.gridSubdivisions) private var gridSubdivisions = Preferences.defaultGridSubdivisions
     @AppStorage(Preferences.arrowStep) private var arrowStep = 1.0
     @AppStorage(Preferences.arrowStepShift) private var arrowStepShift = 10.0
     @AppStorage(Preferences.arrowStepOption) private var arrowStepOption = 0.1
@@ -182,10 +198,28 @@ struct SettingsView: View {
             Section("Canvas") {
                 ColorPicker("Guide color", selection: Binding(get: { Color(hex: guideColor) }, set: { guideColor = $0.hex }),
                             supportsOpacity: false)
+                if Feature.grid.isOn {
+                    ColorPicker("Grid color", selection: Binding(get: { Color(hex: gridColor) }, set: { gridColor = $0.hex }),
+                                supportsOpacity: false)
+                    length("Gridline every", Binding(get: { gridSpacing }, set: { gridSpacing = max($0, 0.5) }))
+                    LabeledContent("Subdivisions") {
+                        HStack(spacing: 4) {
+                            TextField("Subdivisions", value: Binding(get: { gridSubdivisions }, set: { gridSubdivisions = min(max($0, 1), 50) }),
+                                      format: .number)
+                                .labelsHidden()
+                                .multilineTextAlignment(.trailing)
+                                .frame(width: 70)
+                            Stepper("Subdivisions", value: Binding(get: { gridSubdivisions }, set: { gridSubdivisions = min(max($0, 1), 50) }),
+                                    in: 1...50)
+                                .labelsHidden()
+                        }
+                    }
+                }
                 length("Arrow keys move", $arrowStep)
                 length("With ⇧", $arrowStepShift)
                 length("With ⌥", $arrowStepOption)
             }
+            if Feature.colorProfiles.isOn { ColorSettingsSection() }
             Section("Trace Image") {
                 length("Margin", $traceMargin)
                 percent("Node count", $traceNodes)

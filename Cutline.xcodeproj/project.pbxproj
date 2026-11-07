@@ -57,6 +57,7 @@
 		1A5E00000000000000000018 /* Exceptions for "Cutline" folder in "CutlinePreview" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Model/Artboards.swift,
 				Model/Cutting.swift,
 				Model/ColorConversion.swift,
 				Model/Document.swift,
@@ -64,6 +65,7 @@
 				Model/Geometry.swift,
 				Model/GlobalSettings.swift,
 				Model/Groups.swift,
+				Model/ImageFitting.swift,
 				Model/Layers.swift,
 				Model/Pathfinder.swift,
 				Model/PrintBleed.swift,
@@ -77,6 +79,7 @@
 		1A5E00000000000000000028 /* Exceptions for "Cutline" folder in "CutlineThumbnail" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Model/Artboards.swift,
 				Model/Cutting.swift,
 				Model/ColorConversion.swift,
 				Model/Document.swift,
@@ -84,6 +87,7 @@
 				Model/Geometry.swift,
 				Model/GlobalSettings.swift,
 				Model/Groups.swift,
+				Model/ImageFitting.swift,
 				Model/Layers.swift,
 				Model/Pathfinder.swift,
 				Model/PrintBleed.swift,
@@ -374,7 +378,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.4.0;
+				MARKETING_VERSION = 1.5.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
@@ -397,7 +401,7 @@
 				GCC_NO_COMMON_BLOCKS = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.4.0;
+				MARKETING_VERSION = 1.5.0;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};

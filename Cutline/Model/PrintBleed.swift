@@ -57,29 +57,29 @@ nonisolated struct PrintBleed: Hashable, Codable, Sendable {
         }
     }
 
-    /// The print's colors are CMYK with the generic profile (as the fills print); the canvas's are the colors the canvas
-    /// draws with (the simple CMYK → RGB of `CMYK.color`), so the band matches the art on screen too.
+    /// The print's colors are CMYK with the document's profile (as the fills print); the canvas's are the colors the
+    /// canvas draws with (`ColorConverter.screen`), so the band matches the art on screen too.
     enum Colors: Sendable {
         case print, screen
     }
 
-    /// The bands of the document now, at once (the print).
-    @MainActor static func pieces(for doc: Document, pixelsPerMM: Double, colors: Colors = .print) -> [Piece] {
-        source(for: doc, pixelsPerMM: pixelsPerMM, colors: colors)?.pieces() ?? []
+    /// The bands of one artboard now, at once (the print).
+    @MainActor static func pieces(for doc: Document, on artboard: Artboard, pixelsPerMM: Double, colors: Colors = .print) -> [Piece] {
+        source(for: doc, on: artboard, pixelsPerMM: pixelsPerMM, colors: colors)?.pieces() ?? []
     }
 
     // MARK: Step 1 (main thread): the art and the masks
 
     /// What the bands are made from: the art drawn without the marks, in CMYK and as coverage, over the region the bands
     /// need, and each band's masks. nil when there is nothing to do (bleed or marks off, no closed line that cuts).
-    @MainActor static func source(for doc: Document, pixelsPerMM ppm: Double, colors: Colors = .print) -> Source? {
+    @MainActor static func source(for doc: Document, on artboard: Artboard, pixelsPerMM ppm: Double, colors: Colors = .print) -> Source? {
         guard doc.marks, doc.bleed.enabled else { return nil }
         let reach = min(max(doc.bleed.width, widths.lowerBound), widths.upperBound)
-        let marks = doc.marksConfig
-        // Only between the marks (the machine doesn't cut outside) and away from them (they confuse the sensor).
-        let allowed = CGPath(rect: marks.area, transform: nil).subtracting(marks.forbiddenZone.cgPath, using: .evenOdd)
+        let marks = doc.marksConfig, sheet = artboard.rect, frame = doc.sheetFrame(artboard)
+        // Only between the artboard's marks (the machine doesn't cut outside) and away from them (they confuse the sensor).
+        let allowed = CGPath(rect: marks.area(on: frame), transform: nil).subtracting(marks.forbiddenZone(on: frame).cgPath, using: .evenOdd)
         var contours: [(closed: CGPath, band: CGPath)] = []
-        for line in doc.cutLines where doc.config(line.color).sends {
+        for line in doc.cutLines(on: artboard) where doc.config(line.color).sends {
             for object in line.objects {
                 // An open line has no side that stays: no bleed.
                 let closed = closedSubpaths(object.shapePath.cgPath)
@@ -92,9 +92,8 @@ nonisolated struct PrintBleed: Hashable, Codable, Sendable {
             }
         }
         guard !contours.isEmpty else { return nil }
-        let page = CGRect(origin: .zero, size: Document.page)
         let wanted = contours.reduce(CGRect.null) { $0.union($1.band.boundingBoxOfPath.insetBy(dx: -reach, dy: -reach)) }
-            .intersection(page)
+            .intersection(sheet)
         guard !wanted.isNull else { return nil }
         let x0 = Int((wanted.minX * ppm).rounded(.down)), y0 = Int((wanted.minY * ppm).rounded(.down))
         let x1 = Int((wanted.maxX * ppm).rounded(.up)), y1 = Int((wanted.maxY * ppm).rounded(.up))
@@ -103,15 +102,30 @@ nonisolated struct PrintBleed: Hashable, Codable, Sendable {
         let region = CGRect(x: Double(x0) / ppm, y: Double(y0) / ppm, width: Double(width) / ppm, height: Double(height) / ppm)
 
         // The art without the marks: as it prints (CMYK) or as the canvas shows it (RGBA), and how much ink each pixel has.
+        // A transparent image inside a shape inks its pixels all the same (lighter): the coverage leaves its opacity out.
         let art = { (cg: CGContext) in
             cg.scaleBy(x: 1 / Printing.pointsPerMM, y: 1 / Printing.pointsPerMM)
             Printing.render(doc, in: cg, marks: false, screenColors: colors == .screen)
         }
+        let opaqueArt = { (cg: CGContext) in
+            cg.scaleBy(x: 1 / Printing.pointsPerMM, y: 1 / Printing.pointsPerMM)
+            Printing.render(doc, in: cg, marks: false, screenColors: colors == .screen, opaqueImages: true)
+        }
+        let transparentImages = doc.objects.contains { ($0.imageFit?.opacity ?? 1) < 1 && doc.visible($0) }
         let color: [UInt8], coverage: [UInt8]
+        let cmykSpace = doc.colors.cmykSpace
         switch colors {
         case .print:
-            color = pixels(width, height, .cmyk, rect: region, ppm: ppm, draw: art)
-            coverage = pixels(width, height, .coverage, rect: region, ppm: ppm, draw: art)
+            color = pixels(width, height, .cmyk(cmykSpace), rect: region, ppm: ppm, draw: art)
+            coverage = pixels(width, height, .coverage, rect: region, ppm: ppm, draw: transparentImages ? opaqueArt : art)
+        case .screen where transparentImages:
+            // On white paper, as it prints (the transparent image lighter, not darker); the coverage apart.
+            color = pixels(width, height, .rgba, rect: region, ppm: ppm) { cg in
+                cg.setFillColor(CGColor(gray: 1, alpha: 1))
+                cg.fill(region)
+                art(cg)
+            }
+            coverage = pixels(width, height, .coverage, rect: region, ppm: ppm, draw: opaqueArt)
         case .screen:
             color = pixels(width, height, .rgba, rect: region, ppm: ppm, draw: art)
             coverage = stride(from: 3, to: color.count, by: 4).map { color[$0] }
@@ -138,13 +152,13 @@ nonisolated struct PrintBleed: Hashable, Codable, Sendable {
             bands.append(Source.Band(rect: rect, x0: bx0 - x0, y0: by0 - y0, width: w, height: h, inside: inside, band: mask,
                                      guide: guide))
         }
-        return Source(colors: colors, ppm: ppm, reach: reach, width: width, height: height, color: color, coverage: coverage,
-                      bands: bands)
+        return Source(colors: colors, cmykSpace: cmykSpace, ppm: ppm, reach: reach, width: width, height: height, color: color,
+                      coverage: coverage, bands: bands)
     }
 
     private enum Bitmap {
-        /// 4 bytes per pixel, zero = white paper.
-        case cmyk
+        /// 4 bytes per pixel, zero = white paper, in the document's CMYK profile.
+        case cmyk(CGColorSpace)
         /// How much ink each pixel has (the alpha of a transparent RGBA bitmap), 1 byte per pixel.
         case coverage
         /// The art as the canvas shows it, on transparent: 4 bytes per pixel (premultiplied RGBA).
@@ -156,15 +170,16 @@ nonisolated struct PrintBleed: Hashable, Codable, Sendable {
     /// Draws into a bitmap over `rect` (page mm, y down) and returns its bytes (row 0 = the top).
     @MainActor private static func pixels(_ w: Int, _ h: Int, _ kind: Bitmap, rect: CGRect, ppm: Double,
                                           draw: (CGContext) -> Void) -> [UInt8] {
-        var data = [UInt8](repeating: 0, count: w * h * (kind == .gray ? 1 : 4))
+        let gray = if case .gray = kind { true } else { false }
+        var data = [UInt8](repeating: 0, count: w * h * (gray ? 1 : 4))
         data.withUnsafeMutableBytes { raw in
             let context: CGContext? = switch kind {
-            case .cmyk:
+            case .cmyk(let space):
                 CGContext(data: raw.baseAddress, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
-                          space: CGColorSpace(name: CGColorSpace.genericCMYK)!, bitmapInfo: CGImageAlphaInfo.none.rawValue)
+                          space: space, bitmapInfo: CGImageAlphaInfo.none.rawValue)
             case .coverage, .rgba:
                 CGContext(data: raw.baseAddress, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
-                          space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+                          space: ColorConverter.screenSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
             case .gray:
                 CGContext(data: raw.baseAddress, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w,
                           space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGImageAlphaInfo.none.rawValue)
@@ -173,10 +188,10 @@ nonisolated struct PrintBleed: Hashable, Codable, Sendable {
             context.translateBy(x: 0, y: CGFloat(h))
             context.scaleBy(x: ppm, y: -ppm)
             context.translateBy(x: -rect.minX, y: -rect.minY)
-            if kind == .gray { context.setFillColor(gray: 1, alpha: 1) }
+            if gray { context.setFillColor(gray: 1, alpha: 1) }
             draw(context)
         }
-        if kind == .coverage { return stride(from: 3, to: data.count, by: 4).map { data[$0] } }
+        if case .coverage = kind { return stride(from: 3, to: data.count, by: 4).map { data[$0] } }
         return data
     }
 
@@ -224,6 +239,7 @@ nonisolated struct PrintBleed: Hashable, Codable, Sendable {
         }
 
         let colors: Colors
+        let cmykSpace: CGColorSpace
         let ppm: Double
         let reach: Double
         let width, height: Int
@@ -312,7 +328,7 @@ nonisolated struct PrintBleed: Hashable, Codable, Sendable {
                 any = true
             }
             // Print: CMYK. Screen: RGB (the sources are fully inked, so premultiplied or not is the same).
-            let space = colors == .print ? CGColorSpace(name: CGColorSpace.genericCMYK)! : CGColorSpace(name: CGColorSpace.sRGB)!
+            let space = colors == .print ? cmykSpace : ColorConverter.screenSpace
             let info = colors == .print ? CGImageAlphaInfo.none : CGImageAlphaInfo.noneSkipLast
             guard any,
                   let image = CGImage(width: w, height: h, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: w * 4,
@@ -353,8 +369,11 @@ final class BleedPreview {
         for layer in doc.layers { hasher.combine(layer.id); hasher.combine(layer.visible) }
         hasher.combine(doc.marks)
         hasher.combine(doc.marksConfig)
+        hasher.combine(doc.artboards.map(\.rect))
         hasher.combine(doc.bleed)
         hasher.combine(doc.images.count)
+        // The colors: the document's CMYK profile and the app's RGB working space.
+        hasher.combine(ObjectIdentifier(doc.colors))
         let updated = hasher.finalize()
         guard updated != key else { return pieces }
         key = updated
@@ -362,11 +381,13 @@ final class BleedPreview {
         work = Task { [weak self, weak doc] in
             try? await Task.sleep(for: .milliseconds(200))
             guard !Task.isCancelled, let doc else { return }
-            guard let source = PrintBleed.source(for: doc, pixelsPerMM: PrintBleed.previewPixelsPerMM, colors: .screen) else {
+            // Each artboard with its own marks.
+            let sources = doc.artboards.compactMap { PrintBleed.source(for: doc, on: $0, pixelsPerMM: PrintBleed.previewPixelsPerMM, colors: .screen) }
+            guard !sources.isEmpty else {
                 self?.pieces = []
                 return
             }
-            let made = await Task.detached(priority: .userInitiated) { source.pieces() }.value
+            let made = await Task.detached(priority: .userInitiated) { sources.flatMap { $0.pieces() } }.value
             guard !Task.isCancelled else { return }
             self?.pieces = made
         }
@@ -379,10 +400,10 @@ extension PrintBleed {
     /// the bands take. The person sees it before sending.
     @MainActor static func reportContext(_ doc: Document) -> String {
         let marks = doc.marksConfig
-        let cutting = doc.cutLines.filter { doc.config($0.color).sends }.flatMap(\.objects)
+        let cutting = doc.cutLines(on: doc.sendArtboard).filter { doc.config($0.color).sends }.flatMap(\.objects)
         let closed = cutting.filter { !closedSubpaths($0.shapePath.cgPath).isEmpty }.count
         let start = Date()
-        let pieces = pieces(for: doc, pixelsPerMM: previewPixelsPerMM)
+        let pieces = pieces(for: doc, on: doc.sendArtboard, pixelsPerMM: previewPixelsPerMM)
         let milliseconds = Int(Date().timeIntervalSince(start) * 1000)
         let visible = doc.objects.filter { doc.visible($0) }
         let fills = visible.filter { $0.fill != nil }.count
@@ -393,6 +414,7 @@ extension PrintBleed {
             "### " + String(localized: "Experimental: print bleed"),
             "- Bleed: \(doc.bleed.enabled ? "on" : "off"), \(number(doc.bleed.width)) mm · Print & Cut marks: \(doc.marks ? "on" : "off")",
             "- Marks: left \(number(marks.left)), top \(number(marks.top)), right \(number(marks.right)), bottom \(number(marks.bottom)) mm · corner marks \(number(marks.length)) mm",
+            "- Artboard: \(number(doc.sendArtboard.size.width)) × \(number(doc.sendArtboard.size.height)) mm (\(doc.artboards.count) in the document)",
             "- Lines that cut: \(cutting.count) object(s), \(closed) closed · bands drawn: \(pieces.count)",
             "- Art: \(fills) filled, \(images) image(s), \(strokes) printed stroke(s), \(visible.count) visible object(s)",
             "- Bands computed in \(milliseconds) ms at \(Int(previewPixelsPerMM)) px/mm (the print uses 300 dpi)",

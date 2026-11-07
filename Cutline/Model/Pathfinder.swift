@@ -4,7 +4,7 @@ import CoreGraphics
 import SwiftUI
 
 nonisolated enum PathfinderOperation: String, CaseIterable, Identifiable, Sendable {
-    case unite, minusFront, intersect, exclude, divide, minusBack
+    case unite, minusFront, intersect, exclude, divide, minusBack, subtractAll, crop
 
     var id: Self { self }
 
@@ -16,6 +16,8 @@ nonisolated enum PathfinderOperation: String, CaseIterable, Identifiable, Sendab
         case .exclude: String(localized: "Exclude Overlap")
         case .divide: String(localized: "Divide")
         case .minusBack: String(localized: "Minus Back")
+        case .subtractAll: String(localized: "Subtract All")
+        case .crop: String(localized: "Crop")
         }
     }
 
@@ -23,15 +25,16 @@ nonisolated enum PathfinderOperation: String, CaseIterable, Identifiable, Sendab
     var result: String {
         switch self {
         case .unite: String(localized: "Union")
-        case .minusFront, .minusBack: String(localized: "Subtraction")
+        case .minusFront, .minusBack, .subtractAll: String(localized: "Subtraction")
+        case .crop: String(localized: "Cropped")
         case .intersect: String(localized: "Intersect", comment: "Name of the object that comes out of the Pathfinder")
         case .exclude: String(localized: "Exclusion")
         case .divide: String(localized: "Piece")
         }
     }
 
-    /// The first four are "shape modes"; the last two, "pathfinders".
-    var isShapeMode: Bool { self != .divide && self != .minusBack }
+    /// The first four are "shape modes"; the others, "pathfinders".
+    var isShapeMode: Bool { [.unite, .minusFront, .intersect, .exclude].contains(self) }
 }
 
 extension CanvasObject {
@@ -120,6 +123,8 @@ extension Document {
                 parts = newOnes
             }
             pieces = parts.flatMap { shapePath, of in shapePath.componentsSeparated(using: rule).map { ($0, of) } }
+        case .subtractAll, .crop:
+            return cutByFront(operation, objs)
         }
         let newItems: [CanvasObject] = pieces.compactMap { shapePath, of in
             let box = shapePath.boundingBoxOfPath
@@ -127,7 +132,9 @@ extension Document {
             var object = of
             object.id = UUID()
             object.shape = .shapePath(free.subpaths)
+            object.polygon = nil
             object.frame = free.frame
+            object.rotation = 0   // the result is on the page already
             object.label = operation.result
             return object
         }
@@ -137,6 +144,55 @@ extension Document {
         objects.insert(contentsOf: newItems, at: min(position, objects.count))
         objects.removeAll { selection.contains($0.id) }
         selection = Set(newItems.map(\.id))
+        return nil
+    }
+
+    /// Subtract All (Silhouette Studio) and Crop (Studio and Illustrator): the frontmost selected object cuts each of the
+    /// others, and goes away. Subtract All takes its shape out of the ones it touches (the others stay as they are); Crop
+    /// keeps only what is inside it (the ones outside go away). Each object keeps its place in the stack, its colors and
+    /// its groups; an open path (a cut line) is cut as a line, so only the part outside (or inside) remains.
+    private func cutByFront(_ operation: PathfinderOperation, _ objs: [CanvasObject]) -> String? {
+        let front = objs[objs.count - 1], cutter = front.shapePath.cgPath
+        let rule = CGPathFillRule.evenOdd
+        var results: [CanvasObject.ID: CanvasObject?] = [:]   // nil = goes away
+        for object in objs.dropLast() {
+            let path = object.shapePath.cgPath
+            let open = object.absoluteNodes.allSatisfy { !$0.closed }
+            let touches = open ? !path.lineIntersection(cutter, using: rule).isEmpty : path.intersects(cutter, using: rule)
+            guard touches else {
+                if operation == .crop { results[object.id] = .some(nil) }
+                continue
+            }
+            let result = switch (operation, open) {
+            case (.crop, true): path.lineIntersection(cutter, using: rule)
+            case (.crop, false): path.intersection(cutter, using: rule)
+            case (_, true): path.lineSubtracting(cutter, using: rule)
+            case (_, false): path.subtracting(cutter, using: rule)
+            }
+            let box = result.boundingBoxOfPath
+            guard !result.isEmpty, open || box.width * box.height > 0.0001, let free = CanvasObject.freePath(result) else {
+                results[object.id] = .some(nil)
+                continue
+            }
+            var updated = object
+            updated.shape = .shapePath(free.subpaths)
+            updated.polygon = nil
+            updated.frame = free.frame
+            updated.rotation = 0   // the result is on the page already
+            updated.label = operation.result
+            results[object.id] = updated
+        }
+        guard results.values.contains(where: { $0 != nil }) else {
+            return operation == .crop ? String(localized: "The result is empty — do the shapes overlap?")
+                : String(localized: "The top object doesn’t overlap the others.")
+        }
+        registrar()
+        objects = objects.compactMap { o in
+            if o.id == front.id { return nil }
+            guard let result = results[o.id] else { return o }
+            return result
+        }
+        selection = Set(results.values.compactMap { $0?.id })
         return nil
     }
 }

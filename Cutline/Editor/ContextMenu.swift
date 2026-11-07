@@ -1,5 +1,5 @@
 // Right-click menu on the canvas (or ⌃-click): cut, copy, paste, duplicate and delete; group and
-// ungroup; arrange in the stack; duplicate beside; show/hide and lock the guides. Clicking an object outside the selection selects it first (the
+// ungroup; transform (rotate); arrange in the stack; duplicate beside; show/hide and lock the guides. Clicking an object outside the selection selects it first (the
 // whole group, with the Selection tool), as in Illustrator. Also `EditResponder`, which makes the Edit menu's
 // Cut, Copy and Paste work on the objects.
 import AppKit
@@ -12,6 +12,9 @@ enum ContextMenu {
         menu.addItem(item(String(localized: "Cut"), keyEvent: "x", isActive: algo) { doc.cutSelection() })
         menu.addItem(item(String(localized: "Copy"), keyEvent: "c", isActive: algo) { doc.copySelection() })
         menu.addItem(item(String(localized: "Paste"), keyEvent: "v", isActive: doc.canPaste) { doc.paste() })
+        menu.addItem(item(String(localized: "Paste Inside"), keyEvent: "v", modifiers: [.command, .option], isActive: doc.canPasteInside) {
+            if let notice = doc.pasteInside() { doc.notice = notice }
+        })
         menu.addItem(item(String(localized: "Duplicate"), keyEvent: "d", isActive: algo) { doc.duplicateSelection() })
         menu.addItem(item(String(localized: "Delete"), keyEvent: "\u{8}", modifiers: [], isActive: algo) { doc.deleteSelection() })
         menu.addItem(.separator())
@@ -19,7 +22,30 @@ enum ContextMenu {
         menu.addItem(item(String(localized: "Ungroup"), keyEvent: "g", modifiers: [.command, .shift], isActive: doc.canUngroup) {
             doc.ungroupSelected()
         })
+        menu.addItem(item(String(localized: "Make Compound Path"), keyEvent: "8", isActive: doc.canMakeCompoundPath) {
+            doc.makeCompoundPath()
+        })
+        menu.addItem(item(String(localized: "Release Compound Path"), keyEvent: "8", modifiers: [.command, .option, .shift],
+                          isActive: doc.canReleaseCompoundPath) { doc.releaseCompoundPath() })
+        // An image inside a shape (Editor/ImageInsideShape.swift), as Illustrator's clipping mask.
+        menu.addItem(item(String(localized: "Make Clipping Mask"), keyEvent: "7", isActive: doc.canMakeClippingMask) {
+            if let notice = doc.makeClippingMask() { doc.notice = notice }
+        })
+        menu.addItem(item(String(localized: "Release Clipping Mask"), keyEvent: "7", modifiers: [.command, .option],
+                          isActive: doc.canReleaseClippingMask) { doc.releaseClippingMask() })
+        if let inside = doc.selectedObjects.first(where: \.hasImageInside), doc.selection.count == 1 {
+            menu.addItem(item(String(localized: "Edit Contents")) { doc.editContent(inside.id) })
+        }
         menu.addItem(.separator())
+        // Transform, as in Illustrator's right click: Rotate… (the window) and the quick turns, around the selection's center.
+        menu.addItem(submenu(String(localized: "Transform"), isActive: algo, [
+            item(String(localized: "Rotate…")) { doc.rotateRequest = RotateRequest() },
+            item(String(localized: "Rotate 90° Clockwise")) { doc.rotateSelection(by: -90) },
+            item(String(localized: "Rotate 90° Counterclockwise")) { doc.rotateSelection(by: 90) },
+            item(String(localized: "Rotate 180°")) { doc.rotateSelection(by: 180) },
+            .separator(),
+            item(String(localized: "Reset Bounding Box"), isActive: doc.canResetBoundingBox) { doc.resetBoundingBox() },
+        ]))
         menu.addItem(submenu(String(localized: "Arrange"), isActive: algo, Arrangement.allCases.map { mode in
             item(mode.name, keyEvent: mode == .front || mode == .forward ? "]" : "[",
                      modifiers: mode == .front || mode == .back ? [.command, .shift] : .command) { doc.arrange(mode) }
@@ -80,7 +106,8 @@ nonisolated(unsafe) private var responderKey: UInt8 = 0
 /// fields respond first, in the responder chain); and Save for a document that came from Silhouette Studio
 /// (Model/StudioSave.swift). It sits right after the window, before the document. Its `nextResponder` is a
 /// weak reference: the window holds it (associated object), and on each window update it checks it is still
-/// in the chain.
+/// in the chain. (Import from iPhone or iPad can't be here: the window never asks its next responder who takes
+/// the data. See Editor/DeviceImport.swift.)
 final class EditResponder: NSResponder, NSMenuItemValidation {
     private weak var doc: Document?
     private weak var nsWindow: NSWindow?
@@ -130,12 +157,28 @@ final class EditResponder: NSResponder, NSMenuItemValidation {
     /// ⌘S: the document that came from Studio (and has no Cutline file yet) asks where to save.
     @objc func saveDocument(_ sender: Any?) {
         guard let nsWindow, let document = nsWindow.windowController?.document as? NSDocument else { return }
+        // Still attached to the .studio3 (the window didn't detach it in time): macOS can't write a .studio3 and
+        // would go straight to the save panel for a Cutline file. Detach it now and ask.
+        if let doc, StudioSave.stillAttached(document) {
+            #if DEBUG
+            NSLog("CUTLINE_TEST save: the .studio3 was still attached, detaching it now")
+            #endif
+            StudioSave.detach(doc, from: document, nsWindow: nsWindow)
+        }
         guard let doc, doc.studio?.url != nil, document.fileURL == nil else { return document.save(sender) }
         StudioSave.save(doc, document, nsWindow: nsWindow)
     }
 
+    /// Save As…: a document that came from Studio can go to .cutline or .studio3 (Model/StudioSave.swift).
+    @objc func saveDocumentAs(_ sender: Any?) {
+        guard let nsWindow, let document = nsWindow.windowController?.document as? NSDocument else { return }
+        guard let doc, doc.studio != nil else { return document.saveAs(sender) }
+        if StudioSave.stillAttached(document) { StudioSave.detach(doc, from: document, nsWindow: nsWindow) }
+        StudioSave.saveAs(doc, document, nsWindow: nsWindow)
+    }
+
     func validateMenuItem(_ item: NSMenuItem) -> Bool {
-        if item.action == #selector(saveDocument(_:)) {
+        if item.action == #selector(saveDocument(_:)) || item.action == #selector(saveDocumentAs(_:)) {
             return (nsWindow?.windowController?.document as? NSDocument)?.validateUserInterfaceItem(item) ?? true
         }
         guard let doc, doc.textEditing == nil else { return false }

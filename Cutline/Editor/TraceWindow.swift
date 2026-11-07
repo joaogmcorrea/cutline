@@ -13,18 +13,32 @@ struct ImageToTrace: Identifiable {
     let image: CGImage
     /// Imported or dragged: asks first what to do (the Trace tool goes straight to the settings).
     var ask = false
-    /// Where it was dropped, in page mm: the image goes in centered there (otherwise, 20 mm from the corner).
+    /// Where it was dropped, in canvas mm: the image goes in centered there (otherwise, 20 mm from the artboard's corner).
     var center: CGPoint?
+    /// The active artboard when it came in (canvas mm).
+    var sheet = CGRect(origin: .zero, size: PagePreset.a4.size)
+    /// Import with Link: the file stays where it is and the document keeps the link (Model/ImageLinks.swift).
+    var linkURL: URL?
+
+    /// The image's data for the document, and its link when linked.
+    func stored(_ key: String, documentURL: URL?) -> (images: [String: Data], links: [String: ImageLink]) {
+        ([key: payload], linkURL.map { [key: ImageLink.make($0, image: image, documentURL: documentURL)] } ?? [:])
+    }
 
     var aspectRatio: Double { Double(image.height) / Double(max(image.width, 1)) }
 
-    /// 60 mm wide, less if the height doesn't fit the page (the size is adjusted later, on the canvas).
-    var initialWidth: Double { min(TraceParameters().width, (Document.page.height - 40) / aspectRatio) }
+    /// Space left around an imported image on the artboard, in mm (also a page from an iPhone: Editor/DeviceImport.swift).
+    static let margin = 20.0
+
+    /// 60 mm wide, less if it doesn't fit the artboard with the margin (the size is adjusted later, on the canvas).
+    var initialWidth: Double {
+        max(min(TraceParameters().width, sheet.width - 2 * Self.margin, (sheet.height - 2 * Self.margin) / aspectRatio), 5)
+    }
 
     /// Where the image sits on the page at that width.
     func frame(width: Double) -> CGRect {
         let size = CGSize(width: width, height: width * aspectRatio)
-        let join = center.map { CGPoint(x: $0.x - size.width / 2, y: $0.y - size.height / 2) } ?? CGPoint(x: 20, y: 20)
+        let join = center.map { CGPoint(x: $0.x - size.width / 2, y: $0.y - size.height / 2) } ?? CGPoint(x: sheet.minX + 20, y: sheet.minY + 20)
         return CGRect(origin: join, size: size)
     }
 }
@@ -234,7 +248,8 @@ struct TraceWindow: View {
         let group = UUID()
         image.groups = [group]
         contour.groups = [group]
-        doc.insertImported([image, contour], images: [key: origin.payload])
+        let stored = origin.stored(key, documentURL: doc.documentURL)
+        doc.insertImported([image, contour], images: stored.images, links: stored.links)
         doc.tool = .selection
         close()
     }
@@ -242,7 +257,8 @@ struct TraceWindow: View {
     /// Just the image, with no cut line.
     private func insertImageOnly() {
         let key = UUID().uuidString
-        doc.insertImported([imageObject(origin.frame(width: parameters.width), key: key)], images: [key: origin.payload])
+        let stored = origin.stored(key, documentURL: doc.documentURL)
+        doc.insertImported([imageObject(origin.frame(width: parameters.width), key: key)], images: stored.images, links: stored.links)
         doc.tool = .selection
         close()
     }
@@ -340,11 +356,10 @@ struct ImageOption<Preview: View>: View {
 }
 
 extension ImageToTrace {
-    /// PNG, JPEG, HEIC, TIFF… (whatever ImageIO opens). A flattened Photoshop file goes into the document as a PNG.
+    /// PNG, JPEG, HEIC, TIFF… (whatever ImageIO opens). A flattened Photoshop file goes into the document as a PNG, and a
+    /// photo the camera wrote sideways goes in upright (Model/ImageLinks.swift, `LinkedFile.picture`).
     init?(url: URL) {
-        guard let payload = try? Data(contentsOf: url), let font = CGImageSourceCreateWithData(payload as CFData, nil),
-              let image = CGImageSourceCreateImageAtIndex(font, 0, nil) else { return nil }
-        let stored = PSDImport.isPhotoshop(payload) ? PSDImport.png(image) ?? payload : payload
-        self.init(name: url.deletingPathExtension().lastPathComponent, payload: stored, image: image)
+        guard let file = LinkedFile.read(url) else { return nil }
+        self.init(name: url.deletingPathExtension().lastPathComponent, payload: file.payload, image: file.image)
     }
 }

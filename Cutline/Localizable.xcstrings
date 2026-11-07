@@ -75,6 +75,54 @@
         }
       }
     },
+    "%@ (missing)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (no encontrado)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (ausente)"
+          }
+        }
+      }
+    },
+    "%@ (selection)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (selección)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (seleção)"
+          }
+        }
+      }
+    },
+    "%@ free families · open licenses" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ familias gratuitas · licencias abiertas"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ famílias gratuitas · licenças abertas"
+          }
+        }
+      }
+    },
     "%@ from the edge" : {
       "localizations" : {
         "es" : {
@@ -103,6 +151,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Contorno %@"
+          }
+        }
+      }
+    },
+    "%@ with Image" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ con imagen"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ com imagem"
+          }
+        }
+      }
+    },
+    "%@ · %lld %% opacity" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · opacidad del %lld %%"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · opacidade de %lld %%"
           }
         }
       }
@@ -167,6 +247,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ · fila parada"
+          }
+        }
+      }
+    },
+    "%@. Double-click the shape to move, scale and turn the image in it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@. Haz doble clic en la forma para mover, escalar y girar la imagen dentro de ella."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@. Clique duas vezes na forma para mover, mudar o tamanho e girar a imagem dentro dela."
+          }
+        }
+      }
+    },
+    "%@: equal gaps between 3 or more objects" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: espacios iguales entre 3 o más objetos"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: espaços iguais entre 3 ou mais objetos"
           }
         }
       }
@@ -319,6 +431,122 @@
         }
       }
     },
+    "%lld designs" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld design"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld designs"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld diseño"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld diseños"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld design"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld designs"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld designs so far" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld design so far"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld designs so far"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld diseño hasta ahora"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld diseños hasta ahora"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld design até agora"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld designs até agora"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld font families installed" : {
       "localizations" : {
         "en" : {
@@ -377,6 +605,64 @@
         }
       }
     },
+    "%lld gradient fills went in as a solid color (their first one): Cutline can’t write Silhouette Studio’s gradients yet." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld gradient fill went in as a solid color (its first one): Cutline can’t write Silhouette Studio’s gradients yet."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld gradient fills went in as a solid color (their first one): Cutline can’t write Silhouette Studio’s gradients yet."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld relleno degradado se guardó como color sólido (su primer color): Cutline aún no sabe guardar los degradados de Silhouette Studio."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld rellenos degradados se guardaron como color sólido (el primer color de cada uno): Cutline aún no sabe guardar los degradados de Silhouette Studio."
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld preenchimento em degradê entrou como cor sólida (a primeira dele): o Cutline ainda não sabe gravar o degradê do Silhouette Studio."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld preenchimentos em degradê entraram como cor sólida (a primeira de cada um): o Cutline ainda não sabe gravar o degradê do Silhouette Studio."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld images" : {
       "localizations" : {
         "en" : {
@@ -428,6 +714,64 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld imagens"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld images inside shapes went in as one opaque image: Cutline can’t write Silhouette Studio’s tiled or transparent patterns yet." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld image inside a shape went in as one opaque image: Cutline can’t write Silhouette Studio’s tiled or transparent patterns yet."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld images inside shapes went in as one opaque image: Cutline can’t write Silhouette Studio’s tiled or transparent patterns yet."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld imagen dentro de una forma entró como una sola imagen opaca: Cutline aún no puede escribir los patrones en mosaico o transparentes de Silhouette Studio."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld imágenes dentro de formas entraron como una sola imagen opaca: Cutline aún no puede escribir los patrones en mosaico o transparentes de Silhouette Studio."
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld imagem dentro de forma entrou como uma imagem opaca: o Cutline ainda não grava os padrões repetidos ou transparentes do Silhouette Studio."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld imagens dentro de formas entraram como uma imagem opaca: o Cutline ainda não grava os padrões repetidos ou transparentes do Silhouette Studio."
                 }
               }
             }
@@ -547,6 +891,38 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld linked images are missing: a small preview shows in their place. Relink them in the Links panel." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faltan %lld imágenes vinculadas: en su lugar se ve una vista previa pequeña. Vuelve a vincularlas en el panel Vínculos."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld imagens vinculadas estão faltando: uma prévia pequena aparece no lugar delas. Revincule-as no painel Vínculos."
+          }
+        }
+      }
+    },
+    "%lld linked images changed on disk." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld imágenes vinculadas cambiaron en el disco."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld imagens vinculadas mudaram no disco."
           }
         }
       }
@@ -948,6 +1324,64 @@
         }
       }
     },
+    "%lld pages" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld page"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pages"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld página"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld páginas"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld página"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld páginas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld passes" : {
       "localizations" : {
         "en" : {
@@ -1238,6 +1672,64 @@
         }
       }
     },
+    "%lld styles" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld style"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld styles"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld estilo"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld estilos"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld estilo"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld estilos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld × %lld" : {
       "localizations" : {
         "es" : {
@@ -1250,6 +1742,22 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld × %2$lld"
+          }
+        }
+      }
+    },
+    "%lld × %lld pixels" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld × %lld píxeles"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld × %lld pixels"
           }
         }
       }
@@ -1286,6 +1794,22 @@
         }
       }
     },
+    "(page %lld)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(página %lld)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(página %lld)"
+          }
+        }
+      }
+    },
     "**%@ cm** of cutting" : {
       "localizations" : {
         "es" : {
@@ -1298,6 +1822,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "**%@ cm** de corte"
+          }
+        }
+      }
+    },
+    "**Landscape:** the sheet goes on the mat turned a quarter turn clockwise, as in Silhouette Studio: its left edge goes into the machine first and its top edge runs along the right side, as the preview shows." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Horizontal:** la hoja va en la base girada un cuarto de vuelta en el sentido de las agujas del reloj, como en Silhouette Studio: el borde izquierdo entra primero en la máquina y el borde superior queda a la derecha, como muestra la vista previa."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Paisagem:** a folha vai na base girada um quarto de volta no sentido horário, como no Silhouette Studio: a borda esquerda entra primeiro na máquina e a borda de cima fica do lado direito, como mostra a prévia."
           }
         }
       }
@@ -1478,6 +2018,22 @@
         }
       }
     },
+    "A Photoshop file’s layers go into the document: only a whole image can be linked." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las capas de un archivo de Photoshop entran en el documento: solo se puede vincular una imagen entera."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As camadas de um arquivo do Photoshop entram no documento: só uma imagem inteira pode ser vinculada."
+          }
+        }
+      }
+    },
     "A photo of the printed and cut sheet helps a lot: attach it to the issue or the email, with the document." : {
       "localizations" : {
         "es" : {
@@ -1586,6 +2142,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Adicionar nó"
+          }
+        }
+      }
+    },
+    "Add from Google Fonts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir desde Google Fonts"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar do Google Fonts"
+          }
+        }
+      }
+    },
+    "Add to Cutline" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir a Cutline"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar ao Cutline"
+          }
+        }
+      }
+    },
+    "Added from Google Fonts: only Cutline uses it" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadida desde Google Fonts: solo Cutline la usa"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionada do Google Fonts: só o Cutline a usa"
+          }
+        }
+      }
+    },
+    "Added to Cutline" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadida a Cutline"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionada ao Cutline"
+          }
+        }
+      }
+    },
+    "Adding to Cutline…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadiendo a Cutline…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionando ao Cutline…"
           }
         }
       }
@@ -1750,6 +2386,22 @@
         }
       }
     },
+    "Align to Path" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alinear con trazado"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alinhar ao caminho"
+          }
+        }
+      }
+    },
     "Align to the selection" : {
       "localizations" : {
         "es" : {
@@ -1830,6 +2482,22 @@
         }
       }
     },
+    "Already installed on this Mac" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya está instalada en este Mac"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Já instalada neste Mac"
+          }
+        }
+      }
+    },
     "Also cuts the openings in the artwork, like the inside of an O. The margin narrows them; small ones disappear." : {
       "localizations" : {
         "es" : {
@@ -1842,6 +2510,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Corta também os vazados da arte, como o miolo de um O. A margem os estreita; os pequenos somem."
+          }
+        }
+      }
+    },
+    "Angle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ángulo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ângulo"
+          }
+        }
+      }
+    },
+    "Angle:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ángulo:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ângulo:"
+          }
+        }
+      }
+    },
+    "Angle: turns the selection around the reference point" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ángulo: rota la selección alrededor del punto de referencia"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ângulo: gira a seleção em volta do ponto de referência"
           }
         }
       }
@@ -1943,6 +2659,22 @@
         }
       }
     },
+    "Apply the gradient to the selection’s fill" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicar el degradado al relleno de la selección"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicar o degradê ao preenchimento da seleção"
+          }
+        }
+      }
+    },
     "Arrange" : {
       "localizations" : {
         "es" : {
@@ -1975,6 +2707,102 @@
         }
       }
     },
+    "Artboard" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesa de trabajo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prancheta"
+          }
+        }
+      }
+    },
+    "Artboard %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesa de trabajo %lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prancheta %lld"
+          }
+        }
+      }
+    },
+    "Artboard %lld of %lld: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesa de trabajo %lld de %lld: %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prancheta %lld de %lld: %@"
+          }
+        }
+      }
+    },
+    "Artboards" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesas de trabajo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pranchetas"
+          }
+        }
+      }
+    },
+    "As in Settings: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Como en Ajustes: %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Como nos Ajustes: %@"
+          }
+        }
+      }
+    },
+    "Ascender" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ascendente"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ascendente"
+          }
+        }
+      }
+    },
     "Asks Studio to quit; if anything is unsaved, Studio asks first" : {
       "localizations" : {
         "es" : {
@@ -1987,6 +2815,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pede para o Studio sair; se houver algo sem salvar, ele pergunta antes"
+          }
+        }
+      }
+    },
+    "Assign Profile" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asignar perfil"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atribuir perfil"
+          }
+        }
+      }
+    },
+    "Assign Profile…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asignar perfil…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atribuir perfil…"
           }
         }
       }
@@ -2087,6 +2947,22 @@
         }
       }
     },
+    "Back to a solid fill, with the gradient’s first color" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volver al relleno sólido, con el primer color del degradado"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voltar ao preenchimento sólido, com a primeira cor do degradê"
+          }
+        }
+      }
+    },
     "Back to the material’s value (%lld)" : {
       "localizations" : {
         "es" : {
@@ -2119,6 +2995,22 @@
         }
       }
     },
+    "Baseline" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Línea de base"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linha de base"
+          }
+        }
+      }
+    },
     "Baseline shift (positive moves up)" : {
       "localizations" : {
         "es" : {
@@ -2131,6 +3023,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Deslocamento da linha de base (positivo sobe)"
+          }
+        }
+      }
+    },
+    "Before cutting, the rollers run the sheet forward and back to mark their tracks, so thick or slippery material doesn’t slip. Done once per send." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antes de cortar, los rodillos llevan la hoja hacia adelante y hacia atrás para marcar su recorrido, así el material grueso o resbaladizo no se desliza. Una vez por envío."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antes de cortar, os roletes levam a folha para a frente e para trás para marcar o caminho deles, e o material grosso ou liso não escorrega. Uma vez por envio."
           }
         }
       }
@@ -2228,6 +3136,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sangria"
+          }
+        }
+      }
+    },
+    "Blending Mode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modo de fusión"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modo de mesclagem"
+          }
+        }
+      }
+    },
+    "Blending mode of the active layer (“%@”)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modo de fusión de la capa activa (“%@”)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modo de mesclagem da camada ativa (“%@”)"
           }
         }
       }
@@ -2345,6 +3285,38 @@
         }
       }
     },
+    "CMYK profile" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perfil CMYK"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perfil CMYK"
+          }
+        }
+      }
+    },
+    "Can't reach Google Fonts. The fonts you've added keep working." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede conectar con Google Fonts. Las fuentes que añadiste siguen funcionando."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem conexão com o Google Fonts. As fontes que você adicionou continuam funcionando."
+          }
+        }
+      }
+    },
     "Cancel" : {
       "localizations" : {
         "es" : {
@@ -2357,6 +3329,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancelar"
+          }
+        }
+      }
+    },
+    "Canva couldn’t export this design. Try again in a moment." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canva no pudo exportar este diseño. Vuelve a intentarlo en un momento."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Canva não conseguiu exportar este design. Tente de novo daqui a pouco."
+          }
+        }
+      }
+    },
+    "Canva didn’t give Cutline access to your designs." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canva no le dio a Cutline acceso a tus diseños."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Canva não deu ao Cutline acesso aos seus designs."
+          }
+        }
+      }
+    },
+    "Canva is exporting page %lld as a PDF…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canva está exportando la página %lld como PDF…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Canva está exportando a página %lld em PDF…"
+          }
+        }
+      }
+    },
+    "Canva is exporting the design as a PDF…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canva está exportando el diseño como PDF…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Canva está exportando o design em PDF…"
+          }
+        }
+      }
+    },
+    "Canva is limiting requests for now. Wait a few minutes and try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canva está limitando las solicitudes por ahora. Espera unos minutos y vuelve a intentarlo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Canva está limitando os pedidos agora. Espere alguns minutos e tente de novo."
           }
         }
       }
@@ -2416,6 +3468,22 @@
         }
       }
     },
+    "Center" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Centro"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Centro"
+          }
+        }
+      }
+    },
     "Centimeters" : {
       "localizations" : {
         "es" : {
@@ -2428,6 +3496,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Centímetros"
+          }
+        }
+      }
+    },
+    "Changed on disk: Update reads it again" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambió en el disco: Actualizar la vuelve a leer"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mudou no disco: Atualizar lê de novo"
           }
         }
       }
@@ -2560,6 +3644,102 @@
         }
       }
     },
+    "Choose a CMYK color profile (.icc or .icm)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige un perfil de color CMYK (.icc o .icm)."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha um perfil de cor CMYK (.icc ou .icm)."
+          }
+        }
+      }
+    },
+    "Choose a CMYK or RGB color profile (.icc or .icm)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige un perfil de color CMYK o RGB (.icc o .icm)."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha um perfil de cor CMYK ou RGB (.icc ou .icm)."
+          }
+        }
+      }
+    },
+    "Choose a Cutline or Silhouette Studio document to bring into this one." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige un documento de Cutline o de Silhouette Studio para traerlo a este."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha um documento do Cutline ou do Silhouette Studio para trazer para este."
+          }
+        }
+      }
+    },
+    "Choose an ICC profile for printing (CMYK) or an RGB working space." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige un perfil ICC de impresión (CMYK) o un espacio de trabajo RGB."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha um perfil ICC de impressão (CMYK) ou um espaço de trabalho RGB."
+          }
+        }
+      }
+    },
+    "Choose an RGB color profile (.icc or .icm)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige un perfil de color RGB (.icc o .icm)."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha um perfil de cor RGB (.icc ou .icm)."
+          }
+        }
+      }
+    },
+    "Choose the image file for “%@”." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige el archivo de imagen para “%@”."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha o arquivo da imagem para “%@”."
+          }
+        }
+      }
+    },
     "Choose the machine" : {
       "localizations" : {
         "es" : {
@@ -2604,6 +3784,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apagar guias"
+          }
+        }
+      }
+    },
+    "Click the bar to add a stop, drag a stop off it to delete it, double-click a stop for the Color Picker. The gradient only prints: the stroke is still the cut." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haz clic en la barra para añadir una parada, arrastra una parada fuera de ella para eliminarla y haz doble clic en una parada para abrir el selector de color. El degradado solo se imprime: el trazo sigue siendo el corte."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clique na barra para pôr uma parada, arraste uma parada para fora dela para apagá-la e dê clique duplo numa parada para abrir o seletor de cores. O degradê só imprime: o traço continua sendo o corte."
+          }
+        }
+      }
+    },
+    "Click to add a stop" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haz clic para añadir una parada"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clique para pôr uma parada"
+          }
+        }
+      }
+    },
+    "Click to make it the active artboard; double-click the name to rename it" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haz clic para que sea la mesa de trabajo activa; haz doble clic en el nombre para cambiarlo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clique para torná-la a prancheta ativa; clique duas vezes no nome para renomear"
+          }
+        }
+      }
+    },
+    "Clipping Mask" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Máscara de recorte"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Máscara de corte"
           }
         }
       }
@@ -2704,6 +3948,22 @@
         }
       }
     },
+    "Close the open window, then import from the iPhone or iPad again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cierra la ventana abierta y vuelve a importar desde el iPhone o iPad."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feche a janela aberta e importe do iPhone ou iPad de novo."
+          }
+        }
+      }
+    },
     "Collapse All to Icons" : {
       "localizations" : {
         "es" : {
@@ -2768,6 +4028,102 @@
         }
       }
     },
+    "Color Burn" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subexposición de color"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Superexposição de cores"
+          }
+        }
+      }
+    },
+    "Color Dodge" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sobreexposición de color"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subexposição de cores"
+          }
+        }
+      }
+    },
+    "Color Models" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modelos de color"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modelos de cor"
+          }
+        }
+      }
+    },
+    "Color Picker" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selector de color"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seletor de cores"
+          }
+        }
+      }
+    },
+    "Color Settings…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes de color…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes de cor…"
+          }
+        }
+      }
+    },
+    "Color Swatches" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestras de color"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amostras de cores"
+          }
+        }
+      }
+    },
     "Color: the last one used" : {
       "localizations" : {
         "es" : {
@@ -2796,6 +4152,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cores sempre em CMYK (RGB, HSL e hex convertem na hora). O preenchimento é impresso."
+          }
+        }
+      }
+    },
+    "Colors are always CMYK (RGB, HSL and hex convert on the fly, with the color profiles). The fill is printed." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los colores siempre son CMYK (RGB, HSL y hex se convierten al momento, con los perfiles de color). El relleno se imprime."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cores sempre em CMYK (RGB, HSL e hex convertem na hora, com os perfis de cor). O preenchimento é impresso."
           }
         }
       }
@@ -2833,6 +4205,22 @@
         }
       }
     },
+    "Compound Path" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trazado compuesto"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caminho composto"
+          }
+        }
+      }
+    },
     "Connect" : {
       "localizations" : {
         "es" : {
@@ -2845,6 +4233,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Conectar"
+          }
+        }
+      }
+    },
+    "Connect to Canva" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectar con Canva"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectar ao Canva"
+          }
+        }
+      }
+    },
+    "Connect to Canva to see your designs here. Choose one, and the page you pick opens as a new Cutline document. Cutline only reads your designs: it never changes them." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conéctate con Canva para ver tus diseños aquí. Elige uno, y la página que escojas se abre como un documento nuevo de Cutline. Cutline solo lee tus diseños: nunca los cambia."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conecte-se ao Canva para ver seus designs aqui. Escolha um, e a página que você escolher abre como um documento novo do Cutline. O Cutline só lê seus designs: nunca os altera."
+          }
+        }
+      }
+    },
+    "Connecting to Canva didn’t finish. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La conexión con Canva no terminó. Vuelve a intentarlo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A conexão com o Canva não terminou. Tente de novo."
           }
         }
       }
@@ -2945,6 +4381,22 @@
         }
       }
     },
+    "Copy it by hand to Illustrator’s Scripts folder (Adobe Illustrator › Presets › your language › Scripts), or open it in Illustrator with File › Scripts › Other Script…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cópialo a mano en la carpeta Scripts de Illustrator (Adobe Illustrator › Presets › tu idioma › Scripts) o ábrelo en Illustrator con Archivo › Secuencias de comandos › Otra secuencia de comandos…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copie à mão para a pasta Scripts do Illustrator (Adobe Illustrator › Presets › seu idioma › Scripts) ou abra no Illustrator por Arquivo › Scripts › Outro script…"
+          }
+        }
+      }
+    },
     "Corner" : {
       "localizations" : {
         "es" : {
@@ -2989,6 +4441,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cantos"
+          }
+        }
+      }
+    },
+    "Couldn't add it. Try again" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo añadir. Intentar de nuevo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível adicionar. Tentar de novo"
+          }
+        }
+      }
+    },
+    "Couldn't add this font. Click to try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo añadir esta fuente. Haz clic para intentarlo de nuevo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível adicionar esta fonte. Clique para tentar de novo."
           }
         }
       }
@@ -3077,6 +4561,22 @@
         }
       }
     },
+    "Covers the shape, keeping the proportions (some of the image is cut off)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cubre la forma manteniendo las proporciones (parte de la imagen queda fuera)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cobre a forma, mantendo as proporções (parte da imagem fica de fora)"
+          }
+        }
+      }
+    },
     "Create Outlines" : {
       "localizations" : {
         "es" : {
@@ -3089,6 +4589,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Converter em curvas"
+          }
+        }
+      }
+    },
+    "Crop" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recortar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recortar"
+          }
+        }
+      }
+    },
+    "Cropped" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recortado"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recortado"
+          }
+        }
+      }
+    },
+    "Current color (click to go back to it)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color actual (haz clic para volver a él)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cor atual (clique para voltar a ela)"
+          }
+        }
+      }
+    },
+    "Custom" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalizado"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalizado"
           }
         }
       }
@@ -3173,6 +4737,22 @@
         }
       }
     },
+    "Cutline Document (.cutline)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documento de Cutline (.cutline)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documento do Cutline (.cutline)"
+          }
+        }
+      }
+    },
     "Cutline and Silhouette Studio can't use the cutter at the same time. While Studio is open, Cutline won't connect or send; once it closes, the connection comes back on its own." : {
       "localizations" : {
         "es" : {
@@ -3189,6 +4769,22 @@
         }
       }
     },
+    "Cutline can’t reach Canva right now. Check your internet connection and try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cutline no puede comunicarse con Canva ahora. Revisa tu conexión a internet y vuelve a intentarlo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Cutline não está conseguindo falar com o Canva agora. Confira sua conexão com a internet e tente de novo."
+          }
+        }
+      }
+    },
     "Cutline on GitHub" : {
       "localizations" : {
         "es" : {
@@ -3201,6 +4797,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cutline no GitHub"
+          }
+        }
+      }
+    },
+    "Cutline wants to put the Send to Cutline script in Illustrator’s Scripts folder." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cutline quiere poner el script Send to Cutline en la carpeta Scripts de Illustrator."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Cutline quer pôr o script Send to Cutline na pasta Scripts do Illustrator."
+          }
+        }
+      }
+    },
+    "Cutline works with Canva, but it isn’t made or endorsed by Canva." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cutline funciona con Canva, pero no está hecho ni respaldado por Canva."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Cutline funciona com o Canva, mas não é feito nem endossado pelo Canva."
           }
         }
       }
@@ -3301,6 +4929,102 @@
         }
       }
     },
+    "Cutting mat 12 × 12 in" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base de corte de 12 × 12 pulg."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base de corte 12 × 12 pol."
+          }
+        }
+      }
+    },
+    "Cutting mat 12 × 24 in" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base de corte de 12 × 24 pulg."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base de corte 12 × 24 pol."
+          }
+        }
+      }
+    },
+    "Cutting mat 15 × 15 in" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base de corte de 15 × 15 pulg."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base de corte 15 × 15 pol."
+          }
+        }
+      }
+    },
+    "Cutting mat 24 × 24 in" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base de corte de 24 × 24 pulg."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base de corte 24 × 24 pol."
+          }
+        }
+      }
+    },
+    "Cutting mat 8 × 12 in" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base de corte de 8 × 12 pulg."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base de corte 8 × 12 pol."
+          }
+        }
+      }
+    },
+    "Cutting mat 8.5 × 12 in" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base de corte de 8.5 × 12 pulg."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base de corte 8,5 × 12 pol."
+          }
+        }
+      }
+    },
     "Dark" : {
       "localizations" : {
         "es" : {
@@ -3313,6 +5037,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Escura"
+          }
+        }
+      }
+    },
+    "Darken" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oscurecer"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escurecer"
           }
         }
       }
@@ -3461,6 +5201,38 @@
         }
       }
     },
+    "Delete Artboard (its artwork stays on the canvas)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar mesa de trabajo (su diseño se queda en el lienzo)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apagar prancheta (a arte dela fica na tela)"
+          }
+        }
+      }
+    },
+    "Delete Stop" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar parada"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apagar parada"
+          }
+        }
+      }
+    },
     "Delete “%@” and its %lld objects?" : {
       "localizations" : {
         "es" : {
@@ -3525,6 +5297,38 @@
         }
       }
     },
+    "Deletes the active artboard (⌫); its artwork stays on the canvas" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina la mesa de trabajo activa (⌫); su diseño se queda en el lienzo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apaga a prancheta ativa (⌫); a arte dela fica na tela"
+          }
+        }
+      }
+    },
+    "Descender" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descendente"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descendente"
+          }
+        }
+      }
+    },
     "Describe the feature" : {
       "localizations" : {
         "es" : {
@@ -3537,6 +5341,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Descreva o recurso"
+          }
+        }
+      }
+    },
+    "Difference" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diferencia"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diferença"
           }
         }
       }
@@ -3557,6 +5377,22 @@
         }
       }
     },
+    "Disconnect Cutline from your Canva account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desconectar Cutline de tu cuenta de Canva"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desconectar o Cutline da sua conta do Canva"
+          }
+        }
+      }
+    },
     "Disconnected" : {
       "localizations" : {
         "es" : {
@@ -3569,6 +5405,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Desconectada"
+          }
+        }
+      }
+    },
+    "Display" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Decorativas"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Decorativas"
           }
         }
       }
@@ -3605,6 +5457,22 @@
         }
       }
     },
+    "Done" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Concluído"
+          }
+        }
+      }
+    },
     "Double-click to clear the guides" : {
       "localizations" : {
         "es" : {
@@ -3637,6 +5505,22 @@
         }
       }
     },
+    "Downloading the PDF…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descargando el PDF…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baixando o PDF…"
+          }
+        }
+      }
+    },
     "Drag the test cut (the dashed square) to where you want to test on the sheet, or its corner to resize it" : {
       "localizations" : {
         "es" : {
@@ -3665,6 +5549,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Arraste para mudar a ordem do corte"
+          }
+        }
+      }
+    },
+    "Drag to set the angle (⇧: steps of 45°)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastra para fijar el ángulo (⇧: de 45° en 45°)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste para definir o ângulo (⇧: de 45° em 45°)"
           }
         }
       }
@@ -3765,6 +5665,38 @@
         }
       }
     },
+    "Edit Contents" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar contenido"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar conteúdo"
+          }
+        }
+      }
+    },
+    "Effect" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efecto"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efeito"
+          }
+        }
+      }
+    },
     "Electrostatic 12 × 12 in mat" : {
       "localizations" : {
         "es" : {
@@ -3809,6 +5741,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Elipse"
+          }
+        }
+      }
+    },
+    "Embed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incrustar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incorporar"
+          }
+        }
+      }
+    },
+    "Embedded" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incrustada"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incorporada"
+          }
+        }
+      }
+    },
+    "Embedded in the document" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incrustada en el documento"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incorporada no documento"
           }
         }
       }
@@ -4005,6 +5985,22 @@
         }
       }
     },
+    "Fill" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rellenar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preencher"
+          }
+        }
+      }
+    },
     "Fill (X toggles)" : {
       "localizations" : {
         "es" : {
@@ -4017,6 +6013,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Preenchimento (X alterna)"
+          }
+        }
+      }
+    },
+    "Fill (X toggles; double-click for the Color Picker)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relleno (X alterna; doble clic abre el selector de color)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preenchimento (X alterna; clique duplo abre o seletor de cores)"
+          }
+        }
+      }
+    },
+    "Fill Color" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color de relleno"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cor do preenchimento"
           }
         }
       }
@@ -4049,6 +6077,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recuo da primeira linha de cada parágrafo"
+          }
+        }
+      }
+    },
+    "Fit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encaixar"
+          }
+        }
+      }
+    },
+    "Fit All in Window" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustar todo a la ventana"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustar tudo à janela"
           }
         }
       }
@@ -4117,6 +6177,22 @@
         }
       }
     },
+    "Flip" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voltear"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Virar"
+          }
+        }
+      }
+    },
     "Foil" : {
       "localizations" : {
         "es" : {
@@ -4145,6 +6221,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fonte"
+          }
+        }
+      }
+    },
+    "Font not installed on this Mac. It's on Google Fonts: open the list to add it to Cutline." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fuente no instalada en este Mac. Está en Google Fonts: abre la lista para añadirla a Cutline."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fonte não instalada neste Mac. Ela está no Google Fonts: abra a lista para adicioná-la ao Cutline."
           }
         }
       }
@@ -4197,6 +6289,22 @@
         }
       }
     },
+    "Fonts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fuentes"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fontes"
+          }
+        }
+      }
+    },
     "Force" : {
       "localizations" : {
         "es" : {
@@ -4242,6 +6350,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Força deve ficar entre 1 e 33."
+          }
+        }
+      }
+    },
+    "Format:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formato:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formato:"
           }
         }
       }
@@ -4310,6 +6434,22 @@
         }
       }
     },
+    "Go to Link" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ir al vínculo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ir para o vínculo"
+          }
+        }
+      }
+    },
     "Goes into the queue: the machine cuts it when it finishes the previous job" : {
       "localizations" : {
         "es" : {
@@ -4322,6 +6462,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entra na fila: a máquina corta quando terminar o trabalho anterior"
+          }
+        }
+      }
+    },
+    "Gradient" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Degradado"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Degradê"
+          }
+        }
+      }
+    },
+    "Gradient: the last one used, on the fill" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Degradado: el último usado, en el relleno"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Degradê: o último usado, no preenchimento"
+          }
+        }
+      }
+    },
+    "Grid color" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color de la cuadrícula"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cor da grade"
+          }
+        }
+      }
+    },
+    "Gridline every" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Línea de cuadrícula cada"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linha da grade a cada"
           }
         }
       }
@@ -4386,6 +6590,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mão"
+          }
+        }
+      }
+    },
+    "Handwriting" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manuscritas"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manuscritas"
+          }
+        }
+      }
+    },
+    "Hard Light" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luz fuerte"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luz direta"
           }
         }
       }
@@ -4566,6 +6802,22 @@
         }
       }
     },
+    "Hue" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tono"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Matiz"
+          }
+        }
+      }
+    },
     "If the problem happens with a file, attach the document (.cutline, .studio3, PDF…). Cut logs are in ~/Library/Logs/Cutline; the latest one is attached to the email." : {
       "localizations" : {
         "es" : {
@@ -4578,6 +6830,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Se o problema acontece com um arquivo, anexe o documento (.cutline, .studio3, PDF…). Os registros de corte ficam em ~/Library/Logs/Cutline; no e-mail, o último vai anexado."
+          }
+        }
+      }
+    },
+    "Illustrator is open: quit it and open it again to see the script." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Illustrator está abierto: ciérralo y vuelve a abrirlo para ver el script."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Illustrator está aberto: feche e abra de novo para ver o script."
+          }
+        }
+      }
+    },
+    "Illustrator wasn’t found on this Mac." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se encontró Illustrator en este Mac."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Illustrator não foi encontrado neste Mac."
           }
         }
       }
@@ -4662,6 +6946,22 @@
         }
       }
     },
+    "Import from iPhone or iPad" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar desde el iPhone o iPad"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar do iPhone ou iPad"
+          }
+        }
+      }
+    },
     "Imported from Silhouette Studio: %@. ⌘S saves over the .studio3 or as a Cutline document." : {
       "localizations" : {
         "es" : {
@@ -4706,6 +7006,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Importar…"
+          }
+        }
+      }
+    },
+    "In Illustrator, choose File › Scripts › Send to Cutline. With something selected, it sends the selection; with nothing selected, the artboard. Cutline opens it as a new document." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En Illustrator, elige Archivo › Secuencias de comandos › Send to Cutline. Con algo seleccionado, envía la selección; sin nada seleccionado, la mesa de trabajo. Cutline lo abre como un documento nuevo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Illustrator, escolha Arquivo › Scripts › Send to Cutline. Com algo selecionado, ele envia a seleção; sem nada selecionado, a prancheta. O Cutline abre como um documento novo."
           }
         }
       }
@@ -4944,6 +7260,54 @@
         }
       }
     },
+    "Install Adobe Illustrator, or copy the script by hand to Illustrator’s Scripts folder (Adobe Illustrator › Presets › your language › Scripts)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instala Adobe Illustrator o copia el script a mano en la carpeta Scripts de Illustrator (Adobe Illustrator › Presets › tu idioma › Scripts)."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instale o Adobe Illustrator ou copie o script à mão para a pasta Scripts do Illustrator (Adobe Illustrator › Presets › seu idioma › Scripts)."
+          }
+        }
+      }
+    },
+    "Install Illustrator Script…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalar script de Illustrator…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalar Script do Illustrator…"
+          }
+        }
+      }
+    },
+    "Installed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instaladas"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instaladas"
+          }
+        }
+      }
+    },
     "Intersect" : {
       "comment" : "Name of the object that comes out of the Pathfinder",
       "localizations" : {
@@ -4993,6 +7357,22 @@
         }
       }
     },
+    "Keep the image inside the document (it no longer depends on the file)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar la imagen dentro del documento (deja de depender del archivo)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar a imagem dentro do documento (ela deixa de depender do arquivo)"
+          }
+        }
+      }
+    },
     "Kerning: empty = the font's own (Auto); 0 = no kerning" : {
       "localizations" : {
         "es" : {
@@ -5021,6 +7401,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lâmina Kraft"
+          }
+        }
+      }
+    },
+    "Landscape" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Horizontal"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paisagem"
+          }
+        }
+      }
+    },
+    "Landscape: to cut, the sheet goes on the mat turned a quarter turn clockwise, as in Silhouette Studio (on the 12 × 12, 15 × 15 and 24 × 24 in mats it goes as it is)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Horizontal: para cortar, la hoja va en la base girada un cuarto de vuelta en el sentido de las agujas del reloj, como en Silhouette Studio (en las bases de 12 × 12, 15 × 15 y 24 × 24 pulg. va tal cual)."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paisagem: para cortar, a folha vai na base girada um quarto de volta no sentido horário, como no Silhouette Studio (nas bases de 12 × 12, 15 × 15 e 24 × 24 pol. ela vai como está)."
+          }
+        }
+      }
+    },
+    "Landscape: to cut, the sheet goes on the mat turned a quarter turn clockwise, as in Silhouette Studio. The marks go where the machine looks for them on the turned sheet: the square at the artboard’s bottom-left corner." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Horizontal: para cortar, la hoja va en la base girada un cuarto de vuelta en el sentido de las agujas del reloj, como en Silhouette Studio. Las marcas van donde la máquina las busca en la hoja girada: el cuadrado en la esquina inferior izquierda de la mesa de trabajo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paisagem: para cortar, a folha vai na base girada um quarto de volta no sentido horário, como no Silhouette Studio. As marcas ficam onde a máquina as procura na folha girada: o quadrado no canto inferior esquerdo da prancheta."
+          }
+        }
+      }
+    },
+    "Last Edited" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editados recientemente"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editados recentemente"
           }
         }
       }
@@ -5121,6 +7565,22 @@
         }
       }
     },
+    "Legal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oficio (Legal)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ofício (Legal)"
+          }
+        }
+      }
+    },
     "Length" : {
       "localizations" : {
         "es" : {
@@ -5133,6 +7593,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Medidas"
+          }
+        }
+      }
+    },
+    "Letter" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carta"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carta"
           }
         }
       }
@@ -5165,6 +7641,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Luz e área livre"
+          }
+        }
+      }
+    },
+    "Lighten" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aclarar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clarear"
           }
         }
       }
@@ -5217,6 +7709,150 @@
         }
       }
     },
+    "Line" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Línea"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linha"
+          }
+        }
+      }
+    },
+    "Linear" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lineal"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linear"
+          }
+        }
+      }
+    },
+    "Link (the image isn’t copied into the document)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vincular (la imagen no se copia dentro del documento)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vincular (a imagem não é copiada para dentro do documento)"
+          }
+        }
+      }
+    },
+    "Link this image to another file (an embedded one becomes linked)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vincular esta imagen a otro archivo (una incrustada pasa a estar vinculada)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vincular esta imagem a outro arquivo (uma incorporada passa a ser vinculada)"
+          }
+        }
+      }
+    },
+    "Linked" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vinculada"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vinculada"
+          }
+        }
+      }
+    },
+    "Links" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vínculos"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vínculos"
+          }
+        }
+      }
+    },
+    "Load More" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cargar más"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carregar mais"
+          }
+        }
+      }
+    },
+    "Load Profile…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cargar perfil…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carregar perfil…"
+          }
+        }
+      }
+    },
+    "Load the list again" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volver a cargar la lista"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carregar a lista de novo"
+          }
+        }
+      }
+    },
     "Load the mat into the machine and try again." : {
       "localizations" : {
         "es" : {
@@ -5261,6 +7897,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Carregue a folha na máquina e tente de novo."
+          }
+        }
+      }
+    },
+    "Loading your designs…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cargando tus diseños…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carregando seus designs…"
+          }
+        }
+      }
+    },
+    "Location" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posición"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posição"
           }
         }
       }
@@ -5325,6 +7993,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Procurando a máquina…"
+          }
+        }
+      }
+    },
+    "Luminosity" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luminosidad"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luminosidade"
           }
         }
       }
@@ -5405,6 +8089,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Máquina: %@"
+          }
+        }
+      }
+    },
+    "Make" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Criar"
+          }
+        }
+      }
+    },
+    "Make Clipping Mask" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear máscara de recorte"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Criar máscara de corte"
+          }
+        }
+      }
+    },
+    "Make Compound Path" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear trazado compuesto"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Criar caminho composto"
           }
         }
       }
@@ -5521,6 +8253,54 @@
         }
       }
     },
+    "Merge" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Combinar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesclar"
+          }
+        }
+      }
+    },
+    "Merged “%@”: %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” combinado: %@."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” mesclado: %@."
+          }
+        }
+      }
+    },
+    "Merge…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Combinar…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesclar…"
+          }
+        }
+      }
+    },
     "Millimeters" : {
       "localizations" : {
         "es" : {
@@ -5565,6 +8345,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Subtrair frente"
+          }
+        }
+      }
+    },
+    "Missing: the file isn’t where it was (a small preview shows)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falta: el archivo no está donde estaba (se ve una vista previa pequeña)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faltando: o arquivo não está onde estava (aparece uma prévia pequena)"
           }
         }
       }
@@ -5617,6 +8413,22 @@
         }
       }
     },
+    "Monospace" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monoespaciadas"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monoespaçadas"
+          }
+        }
+      }
+    },
     "More than one cutter found: %@." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5630,6 +8442,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mais de uma cortadora encontrada: %@."
+          }
+        }
+      }
+    },
+    "Move Artwork" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover el diseño"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover a arte"
+          }
+        }
+      }
+    },
+    "Move Down" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bajar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover para baixo"
+          }
+        }
+      }
+    },
+    "Move Up" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subir"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover para cima"
           }
         }
       }
@@ -5682,6 +8542,38 @@
         }
       }
     },
+    "Moving an artboard moves the artwork on it too" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al mover una mesa de trabajo, también se mueve el diseño que está en ella"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover uma prancheta move também a arte que está nela"
+          }
+        }
+      }
+    },
+    "Multiply" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Multiplicar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Multiplicação"
+          }
+        }
+      }
+    },
     "My Materials" : {
       "localizations" : {
         "es" : {
@@ -5730,6 +8622,38 @@
         }
       }
     },
+    "New Artboard" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nueva mesa de trabajo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nova prancheta"
+          }
+        }
+      }
+    },
+    "New Artboard, the size of this one, to the right of the others" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nueva mesa de trabajo, del tamaño de esta, a la derecha de las demás"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nova prancheta, do tamanho desta, à direita das outras"
+          }
+        }
+      }
+    },
     "New Document" : {
       "localizations" : {
         "es" : {
@@ -5742,6 +8666,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Novo documento"
+          }
+        }
+      }
+    },
+    "New color" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color nuevo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cor nova"
           }
         }
       }
@@ -5795,6 +8735,70 @@
         }
       }
     },
+    "No Color Profile" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin perfil de color"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem perfil de cor"
+          }
+        }
+      }
+    },
+    "No color profile (simple conversion)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin perfil de color (conversión simple)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem perfil de cor (conversão simples)"
+          }
+        }
+      }
+    },
+    "No color profile: the print can look different from the screen." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin perfil de color: la impresión puede verse distinta de la pantalla."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem perfil de cor: a impressão pode sair diferente da tela."
+          }
+        }
+      }
+    },
+    "No color profile: the screen uses a simple conversion and the print can look different. Click to assign one." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin perfil de color: la pantalla usa una conversión simple y la impresión puede verse distinta. Haz clic para asignar uno."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem perfil de cor: a tela usa uma conversão simples e a impressão pode sair diferente. Clique para atribuir um."
+          }
+        }
+      }
+    },
     "No cutting mat (sheet fed directly) · change it in the Page panel" : {
       "localizations" : {
         "es" : {
@@ -5807,6 +8811,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sem base de corte (folha direto) · muda no painel Página"
+          }
+        }
+      }
+    },
+    "No designs in your Canva account yet." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todavía no hay diseños en tu cuenta de Canva."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ainda não há designs na sua conta do Canva."
+          }
+        }
+      }
+    },
+    "No designs match “%@”." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ningún diseño coincide con “%@”."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum design corresponde a “%@”."
           }
         }
       }
@@ -5839,6 +8875,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nenhuma fonte encontrada"
+          }
+        }
+      }
+    },
+    "No images in the document. File › Import… with Link places an image without copying it into the document." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay imágenes en el documento. Archivo › Importar… con Vincular coloca una imagen sin copiarla dentro del documento."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma imagem no documento. Arquivo › Importar… com Vincular põe uma imagem sem copiá-la para dentro do documento."
           }
         }
       }
@@ -6084,6 +9136,38 @@
         }
       }
     },
+    "Normal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal"
+          }
+        }
+      }
+    },
+    "Not Now" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahora no"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agora não"
+          }
+        }
+      }
+    },
     "Not tried on a machine yet: if something goes wrong, use “Report a Problem…”" : {
       "localizations" : {
         "es" : {
@@ -6261,6 +9345,22 @@
         }
       }
     },
+    "Oldest Edited" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editados hace más tiempo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editados há mais tempo"
+          }
+        }
+      }
+    },
     "On" : {
       "localizations" : {
         "es" : {
@@ -6273,6 +9373,134 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ligado"
+          }
+        }
+      }
+    },
+    "On the mat, this artboard (%@) is larger than the %@ (%@): what is past the mat isn’t cut." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En la base, esta mesa de trabajo (%@) es más grande que la %@ (%@): lo que pase de la base no se corta."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Na base, esta prancheta (%@) é maior que a %@ (%@): o que passar da base não é cortado."
+          }
+        }
+      }
+    },
+    "On the mat, this artboard is %@ wide, and the %@ cuts up to %@: what is past that isn’t cut." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En la base, esta mesa de trabajo mide %@ de ancho, y la %@ corta hasta %@: lo que pase de eso no se corta."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Na base, esta prancheta tem %@ de largura, e a %@ corta até %@: o que passar disso não é cortado."
+          }
+        }
+      }
+    },
+    "Only Web Colors" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo colores web"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Somente cores da Web"
+          }
+        }
+      }
+    },
+    "Only the first of the %lld pages came in: scan one page at a time." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo entró la primera de las %lld páginas: escanea una página a la vez."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Só a primeira das %lld páginas entrou: digitalize uma página por vez."
+          }
+        }
+      }
+    },
+    "Only what is on this artboard is cut, with its marks; the preview shows how the sheet goes on the mat" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo se corta lo que está en esta mesa de trabajo, con sus marcas; la vista previa muestra cómo va la hoja en la base"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Só o que está nesta prancheta é cortado, com as marcas dela; a prévia mostra como a folha vai na base"
+          }
+        }
+      }
+    },
+    "Opacity" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opacidad"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opacidade"
+          }
+        }
+      }
+    },
+    "Opacity of the active layer (“%@”)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opacidad de la capa activa (“%@”)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opacidade da camada ativa (“%@”)"
+          }
+        }
+      }
+    },
+    "Opacity of the image (it prints lighter; the cut doesn’t change)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opacidad de la imagen (se imprime más clara; el corte no cambia)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opacidade da imagem (imprime mais clara; o corte não muda)"
           }
         }
       }
@@ -6293,6 +9521,22 @@
         }
       }
     },
+    "Open Page %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir la página %lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir a página %lld"
+          }
+        }
+      }
+    },
     "Open a Cutline or Silhouette Studio document (⌘O)" : {
       "localizations" : {
         "es" : {
@@ -6309,6 +9553,38 @@
         }
       }
     },
+    "Open from Canva" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir desde Canva"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir do Canva"
+          }
+        }
+      }
+    },
+    "Open from Canva…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir desde Canva…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir do Canva…"
+          }
+        }
+      }
+    },
     "Open in GitHub" : {
       "localizations" : {
         "es" : {
@@ -6321,6 +9597,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abrir no GitHub"
+          }
+        }
+      }
+    },
+    "Open your Canva designs in Cutline" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre tus diseños de Canva en Cutline"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abra seus designs do Canva no Cutline"
           }
         }
       }
@@ -6353,6 +9645,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abri a página do GitHub (é preciso uma conta gratuita)."
+          }
+        }
+      }
+    },
+    "Opening…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abriendo…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrindo…"
           }
         }
       }
@@ -6469,6 +9777,22 @@
         }
       }
     },
+    "Overlay" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Superponer"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sobrepor"
+          }
+        }
+      }
+    },
     "PNG, JPEG or PSD → cut line" : {
       "localizations" : {
         "es" : {
@@ -6485,6 +9809,22 @@
         }
       }
     },
+    "POWERED BY CANVA" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "POWERED BY CANVA"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "POWERED BY CANVA"
+          }
+        }
+      }
+    },
     "Page" : {
       "localizations" : {
         "es" : {
@@ -6497,6 +9837,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Página"
+          }
+        }
+      }
+    },
+    "Page size" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamaño de página"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamanho da página"
           }
         }
       }
@@ -6658,6 +10014,22 @@
         }
       }
     },
+    "Paste Inside" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pegar dentro"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colar dentro"
+          }
+        }
+      }
+    },
     "Pasted: %@." : {
       "localizations" : {
         "es" : {
@@ -6686,6 +10058,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Caminho"
+          }
+        }
+      }
+    },
+    "Path Options…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opciones del trazado…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opções do caminho…"
           }
         }
       }
@@ -6766,6 +10154,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Caneta, foil, relevo e Heat Pen costumam vir antes da lâmina (arraste esta cor para cima), para a peça não se soltar antes."
+          }
+        }
+      }
+    },
+    "Pick a color from anywhere on the screen" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tomar un color de cualquier parte de la pantalla"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pegar uma cor de qualquer lugar da tela"
           }
         }
       }
@@ -6914,6 +10318,38 @@
         }
       }
     },
+    "Polygon" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Polígono"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Polígono"
+          }
+        }
+      }
+    },
+    "Portrait" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vertical"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retrato"
+          }
+        }
+      }
+    },
     "Presets" : {
       "localizations" : {
         "es" : {
@@ -6926,6 +10362,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Como"
+          }
+        }
+      }
+    },
+    "Preview" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previsualizar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pré-visualizar"
           }
         }
       }
@@ -7074,6 +10526,54 @@
         }
       }
     },
+    "Profile" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perfil"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perfil"
+          }
+        }
+      }
+    },
+    "Profile:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perfil:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perfil:"
+          }
+        }
+      }
+    },
+    "Profile: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perfil: %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perfil: %@"
+          }
+        }
+      }
+    },
     "Projecting cap" : {
       "localizations" : {
         "es" : {
@@ -7186,6 +10686,38 @@
         }
       }
     },
+    "RGB working space" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espacio de trabajo RGB"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espaço de trabalho RGB"
+          }
+        }
+      }
+    },
+    "Radial" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radial"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radial"
+          }
+        }
+      }
+    },
     "Radius" : {
       "localizations" : {
         "es" : {
@@ -7202,6 +10734,22 @@
         }
       }
     },
+    "Rainbow" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arco iris"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arco-íris"
+          }
+        }
+      }
+    },
     "Ratchet Blade" : {
       "localizations" : {
         "es" : {
@@ -7214,6 +10762,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lâmina Ratchet"
+          }
+        }
+      }
+    },
+    "Read the changed file again" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volver a leer el archivo que cambió"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ler de novo o arquivo que mudou"
           }
         }
       }
@@ -7298,6 +10862,22 @@
         }
       }
     },
+    "Refresh" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualizar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualizar"
+          }
+        }
+      }
+    },
     "Registration Marks (Print & Cut)" : {
       "localizations" : {
         "es" : {
@@ -7346,6 +10926,118 @@
         }
       }
     },
+    "Release" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liberar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liberar"
+          }
+        }
+      }
+    },
+    "Release Clipping Mask" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liberar máscara de recorte"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liberar máscara de corte"
+          }
+        }
+      }
+    },
+    "Release Compound Path" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liberar trazado compuesto"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liberar caminho composto"
+          }
+        }
+      }
+    },
+    "Relevance" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relevancia"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relevância"
+          }
+        }
+      }
+    },
+    "Relink" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volver a vincular"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revincular"
+          }
+        }
+      }
+    },
+    "Relink…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volver a vincular…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revincular…"
+          }
+        }
+      }
+    },
+    "Remove from Cutline" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar de Cutline"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover do Cutline"
+          }
+        }
+      }
+    },
     "Remove from List" : {
       "localizations" : {
         "es" : {
@@ -7374,6 +11066,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tirar da fila"
+          }
+        }
+      }
+    },
+    "Repeated as a pattern; the scale sets the size of the tiles" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repetida como patrón; la escala define el tamaño de los mosaicos"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repetida como padrão; a escala define o tamanho de cada repetição"
           }
         }
       }
@@ -7474,6 +11182,54 @@
         }
       }
     },
+    "Reset Bounding Box" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer cuadro delimitador"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redefinir caixa delimitadora"
+          }
+        }
+      }
+    },
+    "Reset Content" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer contenido"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redefinir conteúdo"
+          }
+        }
+      }
+    },
+    "Reverse Gradient" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invertir degradado"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inverter degradê"
+          }
+        }
+      }
+    },
     "Revert" : {
       "localizations" : {
         "es" : {
@@ -7534,6 +11290,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lâmina rotativa"
+          }
+        }
+      }
+    },
+    "Rotate" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rotar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Girar"
+          }
+        }
+      }
+    },
+    "Rotate 180°" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rotar 180°"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Girar 180°"
+          }
+        }
+      }
+    },
+    "Rotate 90° Clockwise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rotar 90° en sentido horario"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Girar 90° no sentido horário"
+          }
+        }
+      }
+    },
+    "Rotate 90° Counterclockwise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rotar 90° en sentido antihorario"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Girar 90° no sentido anti-horário"
+          }
+        }
+      }
+    },
+    "Rotate…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rotar…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Girar…"
           }
         }
       }
@@ -7698,6 +11534,54 @@
         }
       }
     },
+    "Same" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Igual"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesma"
+          }
+        }
+      }
+    },
+    "Sans serif" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin serifa"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem serifa"
+          }
+        }
+      }
+    },
+    "Saturation" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saturación"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saturação"
+          }
+        }
+      }
+    },
     "Save" : {
       "localizations" : {
         "es" : {
@@ -7726,6 +11610,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Salvar (⌘S)"
+          }
+        }
+      }
+    },
+    "Save Selection…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar selección…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvar seleção…"
           }
         }
       }
@@ -7900,6 +11800,54 @@
         }
       }
     },
+    "Scanned document" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documento escaneado"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documento digitalizado"
+          }
+        }
+      }
+    },
+    "Screen" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trama"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tela"
+          }
+        }
+      }
+    },
+    "Search Google Fonts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar en Google Fonts"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar no Google Fonts"
+          }
+        }
+      }
+    },
     "Search fonts" : {
       "localizations" : {
         "es" : {
@@ -7912,6 +11860,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Buscar fonte"
+          }
+        }
+      }
+    },
+    "Search your designs" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar en tus diseños"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar nos seus designs"
           }
         }
       }
@@ -7948,6 +11912,38 @@
         }
       }
     },
+    "Select Color:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleccionar color:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecionar cor:"
+          }
+        }
+      }
+    },
+    "Select a closed shape to paste the image inside it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecciona una forma cerrada para pegar la imagen dentro de ella."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecione uma forma fechada para colar a imagem dentro dela."
+          }
+        }
+      }
+    },
     "Select at least two objects for Pathfinder." : {
       "localizations" : {
         "es" : {
@@ -7980,6 +11976,38 @@
         }
       }
     },
+    "Select one image and one closed shape: the shape becomes the mask and the image goes inside it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecciona una imagen y una forma cerrada: la forma se convierte en la máscara y la imagen entra en ella."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecione uma imagem e uma forma fechada: a forma vira a máscara e a imagem vai para dentro dela."
+          }
+        }
+      }
+    },
+    "Select the objects with this image" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleccionar los objetos con esta imagen"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecionar os objetos com esta imagem"
+          }
+        }
+      }
+    },
     "Select the shapes to offset (images are left out: offset their contour)." : {
       "localizations" : {
         "es" : {
@@ -8008,6 +12036,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seleção"
+          }
+        }
+      }
+    },
+    "Selection saved to “%@”." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selección guardada en “%@”."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleção salva em “%@”."
           }
         }
       }
@@ -8076,6 +12120,22 @@
         }
       }
     },
+    "Send to Cutline is installed in %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send to Cutline está instalado en %@."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Send to Cutline está instalado no %@."
+          }
+        }
+      }
+    },
     "Send to Machine…" : {
       "localizations" : {
         "es" : {
@@ -8140,6 +12200,22 @@
         }
       }
     },
+    "Serif" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con serifa"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Com serifa"
+          }
+        }
+      }
+    },
     "Settings" : {
       "localizations" : {
         "es" : {
@@ -8184,6 +12260,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Modos de forma:"
+          }
+        }
+      }
+    },
+    "Shapes and text come in as paths and photos as images, as with any PDF you import." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las formas y los textos entran como trazados y las fotos como imágenes, como en cualquier PDF que importes."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formas e textos entram como caminhos e as fotos como imagens, como em qualquer PDF importado."
           }
         }
       }
@@ -8236,6 +12328,22 @@
         }
       }
     },
+    "Show Grid" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar cuadrícula"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar grade"
+          }
+        }
+      }
+    },
     "Show Guides" : {
       "localizations" : {
         "es" : {
@@ -8248,6 +12356,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostrar guias"
+          }
+        }
+      }
+    },
+    "Show Script in Finder" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar el script en el Finder"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar o Script no Finder"
           }
         }
       }
@@ -8348,6 +12472,38 @@
         }
       }
     },
+    "Sides" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lados"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lados"
+          }
+        }
+      }
+    },
+    "Sign Out" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar sesión"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sair"
+          }
+        }
+      }
+    },
     "Silhouette Studio" : {
       "localizations" : {
         "es" : {
@@ -8364,6 +12520,22 @@
         }
       }
     },
+    "Silhouette Studio (.studio3)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silhouette Studio (.studio3)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silhouette Studio (.studio3)"
+          }
+        }
+      }
+    },
     "Silhouette Studio file" : {
       "localizations" : {
         "es" : {
@@ -8376,6 +12548,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Arquivo do Silhouette Studio"
+          }
+        }
+      }
+    },
+    "Silhouette Studio has one page, the 1st artboard: %lld objects on the other artboards went in off the page." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Silhouette Studio has one page, the 1st artboard: %lld object on another artboard went in off the page."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Silhouette Studio has one page, the 1st artboard: %lld objects on the other artboards went in off the page."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Silhouette Studio tiene una sola página, la 1.ª mesa de trabajo: %lld objeto de otra mesa de trabajo quedó fuera de la página."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Silhouette Studio tiene una sola página, la 1.ª mesa de trabajo: %lld objetos de las otras mesas de trabajo quedaron fuera de la página."
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "O Silhouette Studio tem uma página só, a 1ª prancheta: %lld objeto de outra prancheta foi para fora da página."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "O Silhouette Studio tem uma página só, a 1ª prancheta: %lld objetos das outras pranchetas foram para fora da página."
+                }
+              }
+            }
           }
         }
       }
@@ -8444,6 +12674,22 @@
         }
       }
     },
+    "Size of the image in the shape" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamaño de la imagen en la forma"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamanho da imagem na forma"
+          }
+        }
+      }
+    },
     "Size of the test cut" : {
       "localizations" : {
         "es" : {
@@ -8456,6 +12702,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tamanho do teste de corte"
+          }
+        }
+      }
+    },
+    "Size of the tiles" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamaño de los mosaicos"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamanho das repetições"
+          }
+        }
+      }
+    },
+    "Skew" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sesgar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inclinar"
           }
         }
       }
@@ -8540,6 +12818,38 @@
         }
       }
     },
+    "Snap to Grid" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snap a la cuadrícula"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snap na grade"
+          }
+        }
+      }
+    },
+    "Snap: snap to points, the artboard and guides (⌘;)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snap: ajustar a los puntos, la mesa de trabajo y las guías (⌘;)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snap: encaixar nos pontos, na prancheta e nas guias (⌘;)"
+          }
+        }
+      }
+    },
     "Snap: snap to points, the page and guides (⌘;)" : {
       "localizations" : {
         "es" : {
@@ -8552,6 +12862,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Snap: encaixar nos pontos, na página e nas guias (⌘;)"
+          }
+        }
+      }
+    },
+    "Soft Light" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luz suave"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luz suave"
           }
         }
       }
@@ -8572,6 +12898,22 @@
         }
       }
     },
+    "Solid Fill" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relleno sólido"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preenchimento sólido"
+          }
+        }
+      }
+    },
     "Solid stroke" : {
       "localizations" : {
         "es" : {
@@ -8588,6 +12930,22 @@
         }
       }
     },
+    "Something went wrong while talking to Canva. Try again in a moment." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Algo salió mal al comunicarse con Canva. Vuelve a intentarlo en un momento."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Algo deu errado na conversa com o Canva. Tente de novo daqui a pouco."
+          }
+        }
+      }
+    },
     "Sonic Blade" : {
       "localizations" : {
         "es" : {
@@ -8600,6 +12958,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lâmina Sonic"
+          }
+        }
+      }
+    },
+    "Sort" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordenar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordenar"
+          }
+        }
+      }
+    },
+    "Sort By" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordenar por"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordenar por"
+          }
+        }
+      }
+    },
+    "Sort the designs" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordenar los diseños"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordenar os designs"
+          }
+        }
+      }
+    },
+    "Space Horizontally" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espaciar en horizontal"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espaçar na horizontal"
+          }
+        }
+      }
+    },
+    "Space Vertically" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espaciar en vertical"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espaçar na vertical"
           }
         }
       }
@@ -8632,6 +13070,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Espaço antes do parágrafo"
+          }
+        }
+      }
+    },
+    "Spacing" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espaciado"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espaçamento"
           }
         }
       }
@@ -8669,6 +13123,22 @@
         }
       }
     },
+    "Stair Step" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escalera"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escada"
+          }
+        }
+      }
+    },
     "Star" : {
       "localizations" : {
         "es" : {
@@ -8685,6 +13155,22 @@
         }
       }
     },
+    "Start and end" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inicio y fin"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Início e fim"
+          }
+        }
+      }
+    },
     "Steps to reproduce" : {
       "localizations" : {
         "es" : {
@@ -8697,6 +13183,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Como reproduzir"
+          }
+        }
+      }
+    },
+    "Stop editing the image inside the shape (Esc)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dejar de editar la imagen dentro de la forma (Esc)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parar de editar a imagem dentro da forma (Esc)"
+          }
+        }
+      }
+    },
+    "Stretch" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estirar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esticar"
+          }
+        }
+      }
+    },
+    "Stretched to the shape’s size" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estirada al tamaño de la forma"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esticada ao tamanho da forma"
           }
         }
       }
@@ -8733,6 +13267,22 @@
         }
       }
     },
+    "Stroke Color" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color de trazo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cor do traço"
+          }
+        }
+      }
+    },
     "Stroke — cut color (X toggles)" : {
       "localizations" : {
         "es" : {
@@ -8745,6 +13295,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Traço — cor de corte (X alterna)"
+          }
+        }
+      }
+    },
+    "Stroke — cut color (X toggles; double-click for the Color Picker)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trazo: color de corte (X alterna; doble clic abre el selector de color)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Traço — cor de corte (X alterna; clique duplo abre o seletor de cores)"
           }
         }
       }
@@ -8781,6 +13347,22 @@
         }
       }
     },
+    "Subdivisions" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subdivisiones"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subdivisões"
+          }
+        }
+      }
+    },
     "Subscript" : {
       "localizations" : {
         "es" : {
@@ -8793,6 +13375,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Subscrito"
+          }
+        }
+      }
+    },
+    "Subtract All" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restar todo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subtrair tudo"
           }
         }
       }
@@ -8873,6 +13471,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Trocar de máquina"
+          }
+        }
+      }
+    },
+    "Tabloid" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tabloide"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tabloide"
           }
         }
       }
@@ -9063,6 +13677,22 @@
         }
       }
     },
+    "The CMYK numbers stay the same; the profile says what ink they mean, so the screen and the print change." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los números CMYK no cambian; el perfil dice qué tinta representan, así que la pantalla y la impresión cambian."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os números CMYK não mudam; o perfil diz que tinta eles representam, e por isso a tela e a impressão mudam."
+          }
+        }
+      }
+    },
     "The EPS couldn’t be read." : {
       "localizations" : {
         "es" : {
@@ -9146,6 +13776,22 @@
         }
       }
     },
+    "The PDF from Canva couldn’t be read." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo leer el PDF de Canva."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não deu para ler o PDF do Canva."
+          }
+        }
+      }
+    },
     "The SVG couldn’t be read: the file seems incomplete or damaged." : {
       "localizations" : {
         "es" : {
@@ -9191,6 +13837,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "O arquivo do Silhouette Studio não é alterado. Use Arquivo › Salvar como… para guardar como documento do Cutline."
+          }
+        }
+      }
+    },
+    "The active artboard (click another one to make it active; ⇧O edits them)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La mesa de trabajo activa (haz clic en otra para activarla; ⇧O las edita)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A prancheta ativa (clique em outra para torná-la ativa; ⇧O edita as pranchetas)"
+          }
+        }
+      }
+    },
+    "The color profile is missing on this Mac." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El perfil de color no está en tu Mac."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O perfil de cor não está neste Mac."
+          }
+        }
+      }
+    },
+    "The color profile “%@” isn’t on this Mac: the colors show and print with Generic CMYK until it’s installed or another one is assigned (Edit › Assign Profile…)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El perfil de color “%@” no está en tu Mac: los colores se ven e imprimen con Generic CMYK hasta que lo instales o asignes otro (Edición › Asignar perfil…)."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O perfil de cor “%@” não está neste Mac: as cores aparecem e imprimem com o Generic CMYK até ele ser instalado ou outro ser atribuído (Editar › Atribuir perfil…)."
           }
         }
       }
@@ -9258,6 +13952,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "O documento tem imagens novas, que o Cutline ainda não sabe pôr num .studio3. Salve como documento do Cutline."
+          }
+        }
+      }
+    },
+    "The file changed outside Cutline. Update the document with it? (The Links panel can do it later.)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El archivo cambió fuera de Cutline. ¿Actualizar el documento con él? (El panel Vínculos también puede hacerlo después.)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O arquivo mudou fora do Cutline. Atualizar o documento com ele? (O painel Vínculos também faz isso depois.)"
           }
         }
       }
@@ -9359,6 +14069,22 @@
         }
       }
     },
+    "The layers’ opacity and blending modes don’t go into a .studio3: Silhouette Studio’s layers have neither." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La opacidad y el modo de fusión de las capas no se guardan en el .studio3: las capas de Silhouette Studio no tienen ninguno de los dos."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A opacidade e o modo de mesclagem das camadas não vão para o .studio3: as camadas do Silhouette Studio não têm nenhum dos dois."
+          }
+        }
+      }
+    },
     "The letters become paths with editable points and no longer depend on the font (⇧⌘O). Only ⌘Z turns them back into text." : {
       "localizations" : {
         "es" : {
@@ -9371,6 +14097,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "As letras viram caminhos com pontos editáveis e não dependem mais da fonte (⇧⌘O). Só volta a ser texto com ⌘Z."
+          }
+        }
+      }
+    },
+    "The linked image “%@” is missing: a small preview shows in its place. Relink it in the Links panel." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falta la imagen vinculada “%@”: en su lugar se ve una vista previa pequeña. Vuelve a vincularla en el panel Vínculos."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A imagem vinculada “%@” está faltando: uma prévia pequena aparece no lugar dela. Revincule-a no painel Vínculos."
           }
         }
       }
@@ -9487,6 +14229,38 @@
         }
       }
     },
+    "The order is the order of the pages when printing; the 1st one is the one the Finder shows. ⇧O moves and resizes them on the canvas." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El orden es el de las páginas al imprimir; la 1.ª es la que muestra el Finder. ⇧O las mueve y cambia de tamaño en el lienzo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A ordem é a das páginas na impressão; a 1ª é a que o Finder mostra. ⇧O move e redimensiona as pranchetas na tela."
+          }
+        }
+      }
+    },
+    "The page size stays the .studio3’s: Cutline can’t change it there yet." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El tamaño de página sigue siendo el del .studio3: Cutline todavía no puede cambiarlo ahí."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O tamanho da página continua o do .studio3: o Cutline ainda não sabe mudá-lo lá."
+          }
+        }
+      }
+    },
     "The queue stopped at “%@”: try again or remove it from the queue to continue." : {
       "localizations" : {
         "es" : {
@@ -9531,6 +14305,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "O resultado ficou vazio — as formas não se sobrepõem?"
+          }
+        }
+      }
+    },
+    "The screen shows the colors as this profile prints them; RGB, HSL, hex and imported RGB colors convert through it. Documents can have their own (Edit › Assign Profile…)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La pantalla muestra los colores como este perfil los imprime; RGB, HSL, hex y los colores RGB importados se convierten con él. Cada documento puede tener el suyo (Edición › Asignar perfil…)."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A tela mostra as cores como este perfil as imprime; RGB, HSL, hex e as cores RGB importadas convertem por ele. Cada documento pode ter o seu (Editar › Atribuir perfil…)."
+          }
+        }
+      }
+    },
+    "The script couldn’t be installed." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo instalar el script."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível instalar o script."
+          }
+        }
+      }
+    },
+    "The selection has no gradient: click the swatch to fill it with this one." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La selección no tiene degradado: haz clic en la muestra para rellenarla con este."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A seleção não tem degradê: clique na amostra para preenchê-la com este."
           }
         }
       }
@@ -9584,6 +14406,22 @@
         }
       }
     },
+    "The stop’s color: click for the Color Picker" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El color de la parada: haz clic para abrir el selector de color"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A cor da parada: clique para abrir o seletor de cores"
+          }
+        }
+      }
+    },
     "The text was too long for the link: the full report was copied, paste it into the issue." : {
       "localizations" : {
         "es" : {
@@ -9596,6 +14434,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "O texto era longo demais para o endereço: o completo foi copiado, cole na issue."
+          }
+        }
+      }
+    },
+    "The top object doesn’t overlap the others." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El objeto de arriba no toca a los demás."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O objeto de cima não encosta nos outros."
+          }
+        }
+      }
+    },
+    "The whole image inside the shape, keeping the proportions" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La imagen entera dentro de la forma, manteniendo las proporciones"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A imagem inteira dentro da forma, mantendo as proporções"
+          }
+        }
+      }
+    },
+    "There’s no image to paste: copy an image first." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay ninguna imagen para pegar: primero copia una imagen."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não há imagem para colar: copie uma imagem antes."
           }
         }
       }
@@ -9666,6 +14552,54 @@
         }
       }
     },
+    "This design has premium elements that your Canva account can’t export. Remove them or get a license for them in Canva, then try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este diseño tiene elementos premium que tu cuenta de Canva no puede exportar. Quítalos u obtén su licencia en Canva y vuelve a intentarlo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este design tem elementos premium que a sua conta do Canva não pode exportar. Tire esses elementos ou obtenha a licença deles no Canva e tente de novo."
+          }
+        }
+      }
+    },
+    "This design isn’t available anymore. Refresh the list and try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este diseño ya no está disponible. Actualiza la lista y vuelve a intentarlo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este design não está mais disponível. Atualize a lista e tente de novo."
+          }
+        }
+      }
+    },
+    "This design needs a reviewer’s approval in Canva before it can be exported." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este diseño necesita la aprobación de un revisor en Canva antes de exportarse."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este design precisa da aprovação de um revisor no Canva antes de ser exportado."
+          }
+        }
+      }
+    },
     "This document came from Silhouette Studio. You can save over the .studio3 file, which still opens in Studio, or keep it as a Cutline document. Before saving over it, a copy of the original goes to the Trash." : {
       "localizations" : {
         "es" : {
@@ -9694,6 +14628,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Este documento foi salvo por uma versão mais nova do Cutline."
+          }
+        }
+      }
+    },
+    "This file isn’t a CMYK color profile." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo no es un perfil de color CMYK."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este arquivo não é um perfil de cor CMYK."
+          }
+        }
+      }
+    },
+    "This file isn’t a CMYK or RGB color profile." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo no es un perfil de color CMYK ni RGB."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este arquivo não é um perfil de cor CMYK nem RGB."
+          }
+        }
+      }
+    },
+    "This file isn’t an RGB color profile." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo no es un perfil de color RGB."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este arquivo não é um perfil de cor RGB."
           }
         }
       }
@@ -9744,6 +14726,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Este traço também será impresso."
+          }
+        }
+      }
+    },
+    "Tile" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mosaico"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repetir"
+          }
+        }
+      }
+    },
+    "Title (A–Z)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Título (A–Z)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Título (A–Z)"
+          }
+        }
+      }
+    },
+    "Title (Z–A)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Título (Z–A)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Título (Z–A)"
           }
         }
       }
@@ -9893,6 +14923,22 @@
         }
       }
     },
+    "Track Enhancing" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mejorar la tracción"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Melhorar a tração"
+          }
+        }
+      }
+    },
     "Tracking: space between all letters (thousandths of an em)" : {
       "localizations" : {
         "es" : {
@@ -9905,6 +14951,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tracking: espaço entre todas as letras (milésimos de em)"
+          }
+        }
+      }
+    },
+    "Transform" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transformar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transformar"
           }
         }
       }
@@ -9985,6 +15047,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tipo"
+          }
+        }
+      }
+    },
+    "Type on a Path" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texto en trazado"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texto no caminho"
+          }
+        }
+      }
+    },
+    "Type on a Path Options" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opciones de texto en trazado"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opções de texto no caminho"
+          }
+        }
+      }
+    },
+    "Type on a Path Options: effect, alignment to the path, spacing, flip" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opciones de texto en trazado: efecto, alineación con el trazado, espaciado, voltear"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opções de texto no caminho: efeito, alinhamento ao caminho, espaçamento, virar"
+          }
+        }
+      }
+    },
+    "Type on a Path: click on a path (a line, a shape’s outline) to write along it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texto en trazado: haz clic en un trazado (una línea, el contorno de una forma) para escribir a lo largo de él."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texto no caminho: clique num caminho (uma linha, o contorno de uma forma) para escrever ao longo dele."
           }
         }
       }
@@ -10135,6 +15261,22 @@
         }
       }
     },
+    "Unknown error." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error desconocido."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erro desconhecido."
+          }
+        }
+      }
+    },
     "Unlock" : {
       "localizations" : {
         "es" : {
@@ -10199,6 +15341,38 @@
         }
       }
     },
+    "Untitled design" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diseño sin título"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Design sem título"
+          }
+        }
+      }
+    },
+    "Update" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualizar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualizar"
+          }
+        }
+      }
+    },
     "Update “%@” with These Settings" : {
       "localizations" : {
         "es" : {
@@ -10227,6 +15401,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Atualizações"
+          }
+        }
+      }
+    },
+    "Use this axis for the strip" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar este eje en la franja"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar este eixo na faixa"
           }
         }
       }
@@ -10282,6 +15472,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "L"
+          }
+        }
+      }
+    },
+    "Waiting for Canva…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esperando a Canva…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esperando o Canva…"
           }
         }
       }
@@ -10378,6 +15584,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "O que o Cutline deveria fazer"
+          }
+        }
+      }
+    },
+    "What arrived from the iPhone or iPad couldn’t be read." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo leer lo que llegó del iPhone o iPad."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível ler o que chegou do iPhone ou iPad."
           }
         }
       }
@@ -10606,6 +15828,22 @@
         }
       }
     },
+    "Which page do you want to open?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué página quieres abrir?"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qual página você quer abrir?"
+          }
+        }
+      }
+    },
     "White" : {
       "localizations" : {
         "es" : {
@@ -10702,6 +15940,22 @@
         }
       }
     },
+    "Without a profile, the screen uses a simple conversion and the print can look different. With one (as in Illustrator’s Color Settings), the screen shows the colors as they print, and RGB, HSL, hex and imported RGB colors convert through it. Documents can have their own (Edit › Assign Profile…)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin perfil, la pantalla usa una conversión simple y la impresión puede verse distinta. Con uno (como en los Ajustes de color de Illustrator), la pantalla muestra los colores como se imprimen, y RGB, HSL, hex y los colores RGB importados se convierten con él. Cada documento puede tener el suyo (Edición › Asignar perfil…)."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem perfil, a tela usa uma conversão simples e a impressão pode sair diferente. Com um (como nas Configurações de cores do Illustrator), a tela mostra as cores como elas imprimem, e RGB, HSL, hex e as cores RGB importadas convertem por ele. Cada documento pode ter o seu (Editar › Atribuir perfil…)."
+          }
+        }
+      }
+    },
     "X" : {
       "localizations" : {
         "es" : {
@@ -10730,6 +15984,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Y"
+          }
+        }
+      }
+    },
+    "Your Canva session has ended. Connect to Canva again to see your designs." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu sesión de Canva terminó. Vuelve a conectarte con Canva para ver tus diseños."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sua sessão do Canva terminou. Conecte-se ao Canva de novo para ver seus designs."
           }
         }
       }
@@ -11431,6 +16701,22 @@
         }
       }
     },
+    "text not imported" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "textos no importados"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "textos não importados"
+          }
+        }
+      }
+    },
     "text not imported (convert it to outlines in Illustrator)" : {
       "localizations" : {
         "es" : {
@@ -11611,6 +16897,38 @@
         }
       }
     },
+    "“%@” changed on disk." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” cambió en el disco."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” mudou no disco."
+          }
+        }
+      }
+    },
+    "“%@” couldn’t be merged: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo combinar “%@”: %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não deu para mesclar “%@”: %@"
+          }
+        }
+      }
+    },
     "“%@” couldn’t be opened." : {
       "localizations" : {
         "es" : {
@@ -11639,6 +16957,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "“%1$@” tem %2$lld caminhos"
+          }
+        }
+      }
+    },
+    "“%@” has no objects to merge." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” no tiene objetos para combinar."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” não tem objetos para mesclar."
+          }
+        }
+      }
+    },
+    "“%@” isn't on this Mac." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” no está en este Mac."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” não está neste Mac."
+          }
+        }
+      }
+    },
+    "“%@” isn’t on this Mac: Generic CMYK is used in its place." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” no está en tu Mac: se usa Generic CMYK en su lugar."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” não está neste Mac: o Generic CMYK fica no lugar dele."
+          }
+        }
+      }
+    },
+    "“%@” isn’t on this Mac: sRGB is used in its place." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” no está en tu Mac: se usa sRGB en su lugar."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” não está neste Mac: o sRGB fica no lugar dele."
           }
         }
       }

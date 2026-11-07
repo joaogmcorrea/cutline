@@ -191,8 +191,8 @@ final class Machine {
             #if DEBUG
             if job.logLines != nil, DebugHooks.marksFail { throw CutterError.registrationMarksNotFound("simulado") }
             #endif
-            try await cutter.cut(job.layers, info: info, registration: job.logLines,
-                                    cuttingMat: job.withMat, mat: job.base) { [weak self] progress in
+            try await cutter.cut(job.layers, info: info, media: job.media, registration: job.logLines,
+                                    cuttingMat: job.withMat, mat: job.base, trackEnhancing: job.trackEnhancing) { [weak self] progress in
                 if let seconds = progress.heatingSecondsLeft {
                     let text = seconds > 0
                         ? String(localized: "Heating the Heat Pen… about \(Duration.seconds(seconds).formatted(.time(pattern: .minuteSecond))) left")

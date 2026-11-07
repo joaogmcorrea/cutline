@@ -1,6 +1,23 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Artwork from Illustrator" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arte de Illustrator"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arte do Illustrator"
+          }
+        }
+      }
+    },
     "CFBundleDisplayName" : {
       "comment" : "Bundle display name",
       "extractionState" : "extracted_with_value",

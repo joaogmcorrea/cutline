@@ -26,27 +26,35 @@ enum StartScreen {
 
     static func show() { opener?(id: id) }
 
-    /// What the next new document starts with (picked on the start screen).
-    enum Setup { case printAndCut, importing(URL) }
-    private static var pending: Setup?
+    /// What the next new document starts with (picked on the start screen; `canva`: a page from Open from Canva…, the PDF
+    /// and the design's title; `illustrator`: the PDF of Illustrator's "Send to Cutline" script, Illustrator/).
+    enum Setup { case printAndCut, importing(URL), canva(URL, title: String), illustrator(URL) }
+    /// In order: several new documents can be asked for before the first window shows (files opened together).
+    private static var pending: [Setup?] = []
 
     static func newDocument(_ setup: Setup? = nil) {
-        pending = setup
+        pending.append(setup)
         NSDocumentController.shared.newDocument(nil)
     }
 
     /// The new document's setup, once.
     static func takeSetup() -> Setup? {
-        defer { pending = nil }
-        return pending
+        pending.isEmpty ? nil : pending.removeFirst()
     }
 
-    /// .cutline and .studio3 open as documents; images and vector files go into a new document, as with Import….
+    /// .cutline and .studio3 open as documents; the PDF from Illustrator's script opens as a new document the size of its
+    /// page; images and vector files go into a new document, as with Import….
     static func open(_ urls: [URL]) {
         for url in urls where url.isFileURL {
             let kind = UTType(filenameExtension: url.pathExtension) ?? .data
             if kind.conforms(to: .cutlineDocument) || kind.conforms(to: .studio3) {
-                NSDocumentController.shared.openDocument(withContentsOf: url, display: true) { _, _, _ in }
+                NSDocumentController.shared.openDocument(withContentsOf: url, display: true) { _, _, error in
+                    if let error = error as NSError?, !(error.domain == NSCocoaErrorDomain && error.code == NSUserCancelledError) {
+                        NSApp.presentError(error)
+                    }
+                }
+            } else if kind.conforms(to: .illustratorSend) {
+                newDocument(.illustrator(url))
             } else {
                 newDocument(.importing(url))
             }
@@ -57,6 +65,19 @@ enum StartScreen {
 /// No blank document at launch nor on a Dock click with no windows when the start screen is on: the start screen
 /// shows instead.
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    /// Files opened from the Finder, the Dock or another app (Illustrator's "Send to Cutline" script, Illustrator/):
+    /// documents open as before; the rest goes as from the start screen. With this method AppKit no longer opens the
+    /// files by itself, so every kind goes through `StartScreen.open`.
+    func application(_ application: NSApplication, open urls: [URL]) {
+        StartScreen.open(urls)
+    }
+
+    /// File › Import from iPhone or iPad, after Import… and Merge…: in the menu before launching ends, for AppKit to take
+    /// it as the Continuity Camera item (Editor/DeviceImport.swift).
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        DeviceImport.installMenuItem()
+    }
+
     func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool { !StartScreen.enabled }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
@@ -131,7 +152,7 @@ struct StartView: View {
             Text("MACHINE").font(.caption.weight(.semibold)).foregroundStyle(.secondary).padding(.bottom, 8)
             machineStatus
             Spacer()
-            Button { openWindow(value: ReportRequest(kind: .bug)) } label: { Label("Report a Bug…", image: .info) }
+            Button { openWindow(value: ReportRequest()) } label: { Label("Report a Bug…", image: .info) }
                 .buttonStyle(.borderless)
                 .padding(.bottom, 8)
             SettingsLink { Label("Settings…", image: .snap) }
