@@ -6466,6 +6466,22 @@
         }
       }
     },
+    "Going back to the start…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volviendo al inicio…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voltando ao início…"
+          }
+        }
+      }
+    },
     "Gradient" : {
       "localizations" : {
         "es" : {
@@ -8558,6 +8574,86 @@
         }
       }
     },
+    "Moving to the bottom-left corner mark…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yendo a la escuadra de abajo…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indo até a cantoneira de baixo…"
+          }
+        }
+      }
+    },
+    "Moving to the bottom-right corner (no mark)…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yendo a la esquina inferior derecha (sin marca)…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indo até o canto de baixo à direita (sem marca)…"
+          }
+        }
+      }
+    },
+    "Moving to the square again…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volviendo al cuadrado…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voltando ao quadrado…"
+          }
+        }
+      }
+    },
+    "Moving to the square…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yendo al cuadrado…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indo até o quadrado…"
+          }
+        }
+      }
+    },
+    "Moving to the top-right corner mark…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yendo a la escuadra de arriba…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indo até a cantoneira de cima…"
+          }
+        }
+      }
+    },
     "Multiply" : {
       "localizations" : {
         "es" : {
@@ -10430,6 +10526,22 @@
         }
       }
     },
+    "Print at 100% (actual size): this line measures 50 mm." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imprime al 100 % (tamaño real): esta línea mide 50 mm."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imprima em 100 % (tamanho real): esta linha mede 50 mm."
+          }
+        }
+      }
+    },
     "Print at actual size (⌘P)" : {
       "localizations" : {
         "es" : {
@@ -10798,6 +10910,38 @@
         }
       }
     },
+    "Reading the registration marks…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leyendo las marcas de registro…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lendo as marcas de registro…"
+          }
+        }
+      }
+    },
+    "Reads the registration marks without cutting, then moves the tool (raised) to the corner of each mark, stopping at each one. Everything the machine does goes into a log in Library › Logs › Cutline." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lee las marcas de registro sin cortar y luego lleva la herramienta (levantada) a la esquina de cada marca, deteniéndose en cada una. Todo lo que hace la máquina queda en un registro en Biblioteca › Logs › Cutline."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lê as marcas de registro sem cortar e depois leva a ferramenta (levantada) até o canto de cada marca, parando em cada um. Tudo o que a máquina faz fica num registro em Biblioteca › Logs › Cutline."
+          }
+        }
+      }
+    },
     "Ready" : {
       "localizations" : {
         "es" : {
@@ -10874,6 +11018,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Atualizar"
+          }
+        }
+      }
+    },
+    "Register Marks" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar marcas"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar marcas"
           }
         }
       }

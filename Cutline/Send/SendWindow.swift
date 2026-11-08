@@ -85,6 +85,7 @@ struct SendWindow: View {
             }
             // CUTLINE_TEST_SEND=1 (only with the simulated machine): sends by itself, without pinning the settings in the file.
             if DebugHooks.sendForTest { machine.enqueue(doc.job(name: "Teste", artboard: doc.sendArtboard)) }
+            if DebugHooks.registerMarksForTest, let job = doc.marksCheckJob() { machine.enqueue(job) }
             // CUTLINE_TEST_TEST_SHAPE=x,y[,side]: turns on the test shape at x,y mm (and that size).
             // (x,y from the artboard's corner.)
             let corner = doc.sendArtboard.rect.origin
@@ -444,6 +445,15 @@ struct SendWindow: View {
             .help(!doc.testShape ? "Turn on Test Shape to place the test on the sheet" as LocalizedStringKey
                   : current.map { "Cuts only the square with the C, where it is marked on the sheet, with the settings of \(Material.show(doc.config($0).material))" as LocalizedStringKey }
                   ?? "Cuts only the square with the C, where it is marked on the sheet")
+            if doc.marks {
+                // Reads the marks and points at them with the tool up, without cutting (CutlineKit/MarksCheck.swift).
+                Button("Register Marks") {
+                    if let job = doc.marksCheckJob() { machine.enqueue(job) }
+                }
+                .controlSize(.large)
+                .disabled(machine.studioOpen)
+                .help("Reads the registration marks without cutting, then moves the tool (raised) to the corner of each mark, stopping at each one. Everything the machine does goes into a log in Library › Logs › Cutline.")
+            }
             Button {
                 // Goes into the queue: if the machine is busy, it cuts when the previous one is done.
                 doc.pinSendSettings()

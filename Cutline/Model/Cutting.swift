@@ -295,6 +295,15 @@ extension Document {
                    logLines: registrationToSend(artboard), withMat: withMat, base: cuttingMatSetting, trackEnhancing: trackEnhancing,
                    media: frame.fedSize)
     }
+
+    /// Register Marks (Print & Cut on): the machine reads the marks of the artboard being sent and, without cutting, points
+    /// the tool at the corner of each one (CutlineKit/MarksCheck.swift). nil without the marks.
+    func marksCheckJob() -> Job? {
+        let artboard = sendArtboard
+        guard let registration = registrationToSend(artboard) else { return nil }
+        return Job(name: String(localized: "Register Marks"), origin: ObjectIdentifier(self), layers: [], logLines: registration,
+                   withMat: withMat, base: cuttingMatSetting, media: sheetFrame(artboard).fedSize, marksCheck: true)
+    }
 }
 
 /// One send in the queue: the machine cuts one at a time, in order of arrival.
@@ -330,5 +339,7 @@ struct Job: Identifiable {
     var trackEnhancing = false
     /// The sheet: the size of the artboard sent, in mm.
     var media = CGSize(width: 210, height: 297)
+    /// Register Marks: reads the marks and points at them with the tool up, without cutting (no layers).
+    var marksCheck = false
     var status = JobStatus.waiting
 }

@@ -35,6 +35,7 @@
 //   do:artboardOrder:-1|1 and do:artboardDelete edit the artboards (on the active one), and fit / fitAll fit the active
 //   one or all of them in the canvas; CUTLINE_TEST_SEND_ARTBOARD=2 makes the Send window cut the 2nd artboard;
 //   CUTLINE_TEST_SEND=1 (with CUTLINE_SIMULATE) sends by itself when the Send window opens;
+//   CUTLINE_TEST_REGISTER_MARKS=1 (with CUTLINE_SIMULATE) runs Register Marks when the Send window opens;
 //   CUTLINE_TEST_TEST_CUT=x,y[,side] (with CUTLINE_SIMULATE) sends the test cut at x,y mm when the Send window opens;
 //   CUTLINE_TEST_TEST_SHAPE=x,y[,side] only turns on the test shape there (side in mm);
 //   CUTLINE_TEST_SEND_PLAIN=1 opens the Send window's content in a plain hidden window (a sheet may take the menu bar);
@@ -184,6 +185,13 @@ enum DebugHooks {
     static var sendForTest: Bool {
         let environment = ProcessInfo.processInfo.environment
         return environment["CUTLINE_TEST_SEND"] != nil && environment["CUTLINE_SIMULATE"] != nil
+    }
+
+    /// CUTLINE_TEST_REGISTER_MARKS=1 with CUTLINE_SIMULATE: the Send window runs Register Marks by itself (timeline and
+    /// transcript in ~/Library/Logs/Cutline).
+    static var registerMarksForTest: Bool {
+        let environment = ProcessInfo.processInfo.environment
+        return environment["CUTLINE_TEST_REGISTER_MARKS"] != nil && environment["CUTLINE_SIMULATE"] != nil
     }
 
     /// CUTLINE_TEST_SEND_PLAIN=1 (or =/x.png): the Send window's content opens in a plain window instead of a sheet. In a

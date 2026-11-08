@@ -76,6 +76,8 @@ public actor Cutter {
         public var mediaHeight = 297.0
         /// From the 2nd configuration of the same job on: only resends speed/force/blade.
         public var skipInit = false
+        /// False: only the init and the mat, without the tool (the Studio order sends it after reading the marks).
+        public var toolSettings = true
 
         public init() {}
     }
@@ -92,6 +94,10 @@ public actor Cutter {
         public var skipInit = false
         /// Don't go back to the origin at the end (extra passes and Print & Cut).
         public var skipReset = false
+        /// Print & Cut as Silhouette Studio sends it (seen in the commands a `.studio3` keeps, 08/11/2026): after the marks are
+        /// found, `TB99` and the work area set to the area between the marks (`\0,0`, `Z<length>,<width>`); at the end,
+        /// `TB0` before going back to the origin.
+        public var studioRegistration = false
 
         public init() {}
     }
@@ -126,6 +132,8 @@ public actor Cutter {
     private var swClipping = true
     private var clipFuzz = 0.05
     private var recording: Data?
+    /// While a marks check runs: every write and read, timed (MarksCheck.swift).
+    var timeline: MarksTimeline?
     let log: @Sendable (String) -> Void
 
     /// Everything that was sent (commands and queries), like the Python driver's `cmdfile`.
@@ -229,7 +237,9 @@ public actor Cutter {
         recording?.append(data)
         if !isSimulated, let stale = try? await transport.read(maxLength: 64, timeout: 0.01), !stale.isEmpty {
             log("response before sending \(Self.printable(data)): \(Self.printable(stale))")
+            timeline?.add("← " + Self.printable(stale) + " (arrived before the next command)")
         }
+        timeline?.add("→ " + Self.printable(data))
         do {
             try await transport.write(data, timeout: timeout)
         } catch let error as CutterError {
@@ -252,7 +262,15 @@ public actor Cutter {
     }
 
     func read(maxLength: Int = 64, timeout: TimeInterval = 5) async throws -> Data {
-        try await transport.read(maxLength: maxLength, timeout: timeout)
+        guard timeline != nil else { return try await transport.read(maxLength: maxLength, timeout: timeout) }
+        do {
+            let data = try await transport.read(maxLength: maxLength, timeout: timeout)
+            timeline?.add("← " + Self.printable(data))
+            return data
+        } catch {
+            timeline?.add("← nothing (\(error.localizedDescription))")
+            throw error
+        }
     }
 
     /// Sends a query and returns the response without the ETX (nil if nothing comes).
@@ -388,6 +406,31 @@ public actor Cutter {
             try await send("FW\(media < 100 || media > 300 ? 300 : media)")
         }
 
+        // Force, speed, corners and the AutoBlade depth. With the Studio order (Print & Cut) they go after the marks are
+        // read, in a second setup (`toolSettings`).
+        if o.toolSettings { try await sendToolSettings(o) }
+
+        swClipping = o.swClipping
+        clipFuzz = o.clipFuzz
+
+        // Track enhancing: rollers 3× forward and back (needs force ≥ 19).
+        if let trackEnhancing = o.trackEnhancing, !o.skipInit {
+            if trackEnhancing {
+                try await send("FY0")
+            } else if !hardware.isCameo3On {
+                try await send("FY1")
+            }
+        }
+
+        if !o.skipInit, !hardware.isCameo3On {
+            if let landscape = o.landscape { try await send(["FN0", landscape ? "TB50,1" : "TB50,0"]) }
+            // Don't lift the tool between paths.
+            try await send("FE0,0")
+        }
+    }
+
+    /// The tool part of the setup: holder, force, speed, corners, blade offset and the AutoBlade depth.
+    private func sendToolSettings(_ o: SetupOptions) async throws {
         let tool = Tool(holder: o.toolholder)
         let currentTool: Int? = try await toolSetup().flatMap { setup in
             let parts = setup.split(separator: ",", omittingEmptySubsequences: false)
@@ -463,24 +506,6 @@ public actor Cutter {
                 log("blade: \(value)")
             }
         }
-
-        swClipping = o.swClipping
-        clipFuzz = o.clipFuzz
-
-        // Track enhancing: rollers 3× forward and back (needs force ≥ 19).
-        if let trackEnhancing = o.trackEnhancing, !o.skipInit {
-            if trackEnhancing {
-                try await send("FY0")
-            } else if !hardware.isCameo3On {
-                try await send("FY1")
-            }
-        }
-
-        if !o.skipInit, !hardware.isCameo3On {
-            if let landscape = o.landscape { try await send(["FN0", landscape ? "TB50,1" : "TB50,0"]) }
-            // Don't lift the tool between paths.
-            try await send("FE0,0")
-        }
     }
 
     // MARK: Cut
@@ -528,6 +553,9 @@ public actor Cutter {
                 guard response == Data("    0".utf8) + [GPGL.etx] else {
                     throw CutterError.registrationMarksNotFound(response.map(Self.printable) ?? localized("no response"))
                 }
+                if o.studioRegistration {
+                    try await send(["TB99", GPGL.upperLeft(y: 0, x: 0), GPGL.lowerRight(y: reg.length, x: reg.width)])
+                }
             }
         }
 
@@ -547,7 +575,7 @@ public actor Cutter {
         case .below:
             [GPGL.move(y: (bbox.maxY ?? 0) + o.endPaperOffset, x: 0), "SO0"]
         }
-        if !o.skipReset { try await send(home) }
+        if !o.skipReset { try await send((o.studioRegistration && o.registration != nil ? ["TB0"] : []) + home) }
         return bbox
     }
 

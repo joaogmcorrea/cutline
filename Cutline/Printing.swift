@@ -99,8 +99,13 @@ enum Printing {
             }
         }
         if marks, doc.marks {
-            cg.setFillColor(colors.printColor(CMYK(c: 0, m: 0, y: 0, k: 100)))
-            for sheet in sheets ?? doc.artboards.map(doc.sheetFrame) { cg.fill(doc.marksConfig.rectangles(on: sheet)) }
+            let black = colors.printColor(CMYK(c: 0, m: 0, y: 0, k: 100))
+            cg.setFillColor(black)
+            for sheet in sheets ?? doc.artboards.map(doc.sheetFrame) {
+                cg.fill(doc.marksConfig.rectangles(on: sheet))
+                // The 50 mm line to check the sheet was printed at 100 % (Model/RegistrationMarks.swift).
+                doc.marksConfig.scaleCheck(on: sheet)?.draw(in: cg, color: black)
+            }
         }
     }
 

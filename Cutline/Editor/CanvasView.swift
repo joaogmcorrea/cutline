@@ -593,6 +593,12 @@ struct CanvasView: View {
             forbidden.stroke(hatch, with: .color(.gray.opacity(0.45)), lineWidth: 0.7)
         }
         for rectangle in doc.marksConfig.rectangles(on: sheet) { ctx.fill(Path(viewState.canvas(rectangle)), with: .color(.black)) }
+        // The 50 mm line that prints in the bottom margin, to check the sheet was printed at 100 %.
+        if let check = doc.marksConfig.scaleCheck(on: sheet) {
+            var canvasMM = ctx
+            canvasMM.concatenate(viewState.transform)
+            canvasMM.withCGContext { check.draw(in: $0, color: CGColor.black) }
+        }
     }
 
     /// The artboards' names over their top-left corners and the active one's edge (with more than one, or with the

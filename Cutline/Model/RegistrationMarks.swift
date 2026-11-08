@@ -1,6 +1,7 @@
 // Print & Cut: registration marks in the Silhouette standard (the same as Studio's and inkscape-silhouette's).
 // The machine reads the marks with the optical sensor before cutting and corrects position, scale and rotation;
 // the cuts are relative to them, so only the area between the marks is cut.
+import CoreText
 import CutlineKit
 import SwiftUI
 
@@ -89,6 +90,84 @@ nonisolated struct MarksConfig: Hashable, Codable, Sendable {
 
     /// Equal margin on all four sides (the Page panel edits it this way); nil if they differ.
     var margin: Double? { Set([left, top, right, bottom]).count == 1 ? left : nil }
+
+    /// The scale check printed in an artboard's bottom margin, under the right end of the area between the marks.
+    /// nil when the margin or the area is too small for it.
+    func scaleCheck(on sheet: SheetFrame) -> ScaleCheck? {
+        let size = sheet.fedSize, a = fedArea(size)
+        let y = a.maxY + Self.slack + ScaleCheck.drop
+        guard a.width >= ScaleCheck.length + 10, size.height - y >= ScaleCheck.paperEdge else { return nil }
+        let start = CGPoint(x: a.maxX - ScaleCheck.length, y: y)
+        // The note stays clear of the bottom-left corner mark and the slack around it.
+        return ScaleCheck(start: start, toCanvas: sheet.fromFed, noteRoom: start.x - ScaleCheck.noteGap - (a.minX + length + Self.slack))
+    }
+}
+
+/// A 50 mm line with a note to print at 100 %, in the bottom margin of a Print & Cut sheet. A sheet printed at another
+/// scale ("fit to page" on a phone or in another app) still has its marks found by the machine, which then cuts at the
+/// file's size and misses the art (a report on 08/11/2026: printed at 91 %). A ruler on this line shows it before the
+/// cut. It sits outside the area between the marks (nothing is cut there) and away from the three marks the sensor
+/// looks for. Coordinates in the sheet's mm as it goes on the mat.
+nonisolated struct ScaleCheck: Sendable {
+    /// From the outer edge of one end tick to the other's.
+    static let length = 50.0
+    static let lineWidth = 0.3
+    /// Height of the end ticks.
+    static let tick = 2.0
+    /// From the slack under the area between the marks to the line.
+    static let drop = 3.5
+    /// Room left under the line: printers leave the last 3 to 5 mm of the paper blank.
+    static let paperEdge = 5.0
+    /// The note's size (6.5 pt) and its gap to the line.
+    static let noteSize = 6.5 * 25.4 / 72
+    static let noteGap = 2.0
+
+    /// The line's left end.
+    let start: CGPoint
+    /// Sheet mm → canvas mm.
+    let toCanvas: CGAffineTransform
+    /// Width available for the note, left of the line.
+    let noteRoom: Double
+
+    /// The line and its end ticks.
+    var rectangles: [CGRect] {
+        let w = Self.lineWidth, l = Self.length, t = Self.tick
+        return [CGRect(x: start.x, y: start.y - w / 2, width: l, height: w),
+                CGRect(x: start.x, y: start.y - t / 2, width: w, height: t),
+                CGRect(x: start.x + l - w, y: start.y - t / 2, width: w, height: t)]
+    }
+
+    /// The note's baseline ends here (right-aligned), just under the line's height.
+    var noteEnd: CGPoint { CGPoint(x: start.x - Self.noteGap, y: start.y + 0.8) }
+
+    static var note: String { String(localized: "Print at 100% (actual size): this line measures 50 mm.") }
+
+    /// The note as one line of text in Helvetica, colored; nil when it doesn't fit beside the line.
+    func noteLine(color: CGColor) -> (line: CTLine, width: Double)? {
+        let font = CTFontCreateWithName("Helvetica" as CFString, Self.noteSize, nil)
+        let text = NSAttributedString(string: Self.note, attributes: [
+            NSAttributedString.Key(kCTFontAttributeName as String): font,
+            NSAttributedString.Key(kCTForegroundColorAttributeName as String): color,
+        ])
+        let line = CTLineCreateWithAttributedString(text)
+        let width = CTLineGetTypographicBounds(line, nil, nil, nil)
+        return width <= noteRoom ? (line, width) : nil
+    }
+
+    /// Draws the line and, if it fits, the note in a context in canvas mm (y down).
+    func draw(in cg: CGContext, color: CGColor) {
+        cg.saveGState()
+        defer { cg.restoreGState() }
+        cg.concatenate(toCanvas)
+        cg.setFillColor(color)
+        cg.fill(rectangles)
+        guard let (line, width) = noteLine(color: color) else { return }
+        cg.textMatrix = .identity
+        cg.translateBy(x: noteEnd.x - width, y: noteEnd.y)
+        cg.scaleBy(x: 1, y: -1)
+        cg.textPosition = .zero
+        CTLineDraw(line, cg)
+    }
 }
 
 /// How an artboard goes on the cutting mat (and into the machine), as Silhouette Studio does it: as it is, its top-left

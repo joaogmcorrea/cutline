@@ -103,11 +103,14 @@ extension Cutter {
     /// the outer die cut). With `registration`, reads the marks first and only goes back to the origin at the end,
     /// so the registration isn't lost. `cuttingMat` false = no cutting mat (the machine pulls the sheet directly, `TG0`);
     /// `mat` picks the mat (nil = the machine's default). `trackEnhancing`: the rollers run the media forward and back
-    /// before cutting (`FY0`); it goes once per job, in the first layer's setup.
+    /// before cutting (`FY0`); it goes once per job, in the first layer's setup. `studioOrder` (Print & Cut): the order
+    /// Silhouette Studio sends — the marks are read right after the init and the mat, then the work area is set to the
+    /// area between them, and only then the tool (`PlotOptions.studioRegistration`).
     @discardableResult
     public func cut(_ layers: [CutLayer], info: MachineInfo, media: CGSize = Cutter.a4,
                     registration: Registration? = nil, cuttingMat: Bool = true, mat: CuttingMat? = nil,
-                    trackEnhancing: Bool = false, onProgress: (@Sendable (CutProgress) -> Void)? = nil) async throws -> Status {
+                    trackEnhancing: Bool = false, studioOrder: Bool = false,
+                    onProgress: (@Sendable (CutProgress) -> Void)? = nil) async throws -> Status {
         guard !layers.isEmpty else { throw CutterError.invalidSettings(localized("Nothing to cut.")) }
         for layer in layers { try validate(layer.settings, maxSpeed: info.maxSpeed) }
         try validateTools(layers, info: info)
@@ -155,20 +158,42 @@ extension Cutter {
                 setup.mediaHeight = media.height
                 setup.skipInit = index > 0
                 setup.trackEnhancing = trackEnhancing
+                // Studio order: the first layer's tool goes after the marks are read.
+                let readFirst = studioOrder && registration != nil && index == 0
+                setup.toolSettings = !readFirst
                 try await self.setup(setup)
+
+                if readFirst, let registration {
+                    onProgress?(CutProgress(layer: 1, layerCount: layers.count, layerName: layer.name, pass: 1, passCount: s.passes))
+                    log("Reading the registration marks (up to ~40 s)…")
+                    var marks = PlotOptions()
+                    marks.mediaWidth = media.width
+                    marks.mediaHeight = media.height
+                    marks.registration = registration
+                    marks.studioRegistration = true
+                    marks.skipReset = true
+                    try await self.plot([], marks)
+                    setup.skipInit = true
+                    setup.toolSettings = true
+                    try await self.setup(setup)
+                }
 
                 for pass in 0..<s.passes {
                     count += 1
-                    onProgress?(CutProgress(layer: index + 1, layerCount: layers.count, layerName: layer.name,
-                                            pass: pass + 1, passCount: s.passes))
+                    if !(readFirst && pass == 0) {
+                        onProgress?(CutProgress(layer: index + 1, layerCount: layers.count, layerName: layer.name,
+                                                pass: pass + 1, passCount: s.passes))
+                    }
                     var plot = PlotOptions()
                     plot.mediaWidth = media.width
                     plot.mediaHeight = media.height
                     plot.endPosition = .start
                     plot.registration = registration
-                    plot.skipInit = count > 1
+                    plot.studioRegistration = studioOrder && registration != nil
+                    // With the Studio order the marks were already read (above).
+                    plot.skipInit = count > 1 || plot.studioRegistration
                     plot.skipReset = registration != nil ? count < total : pass < s.passes - 1
-                    if registration != nil, count == 1 { log("Reading the registration marks (up to ~40 s)…") }
+                    if registration != nil, count == 1, !studioOrder { log("Reading the registration marks (up to ~40 s)…") }
                     try await self.plot(layer.paths, plot)
                 }
             }

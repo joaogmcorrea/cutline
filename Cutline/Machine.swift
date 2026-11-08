@@ -117,7 +117,7 @@ final class Machine {
     /// Puts the job in the queue; starts right away if the machine is free. With `registration` (Print & Cut), the
     /// machine reads the marks on the printed sheet before the first cut.
     func enqueue(_ job: Job) {
-        guard !job.layers.isEmpty else { return }
+        guard !job.layers.isEmpty || job.marksCheck else { return }
         queue.append(job)
         Task { await processQueue() }
     }
@@ -191,8 +191,14 @@ final class Machine {
             #if DEBUG
             if job.logLines != nil, DebugHooks.marksFail { throw CutterError.registrationMarksNotFound("simulado") }
             #endif
+            if job.marksCheck, let registration = job.logLines {
+                try await checkMarks(job, registration, cutter)
+                await saveTranscript()
+                return true
+            }
             try await cutter.cut(job.layers, info: info, media: job.media, registration: job.logLines,
-                                    cuttingMat: job.withMat, mat: job.base, trackEnhancing: job.trackEnhancing) { [weak self] progress in
+                                    cuttingMat: job.withMat, mat: job.base, trackEnhancing: job.trackEnhancing,
+                                    studioOrder: Self.studioOrder) { [weak self] progress in
                 if let seconds = progress.heatingSecondsLeft {
                     let text = seconds > 0
                         ? String(localized: "Heating the Heat Pen… about \(Duration.seconds(seconds).formatted(.time(pattern: .minuteSecond))) left")
@@ -410,6 +416,52 @@ final class Machine {
     }
 
     /// Transcript of the commands sent, in ~/Library/Logs/Cutline (like the test's logs/*.gpgl).
+    /// Print & Cut always goes in Silhouette Studio's order (CutlineKit `cut(studioOrder:)`): the work area set to the area
+    /// between the marks right after they are read is what makes the machine fit the cut to the marks it measured. Without
+    /// it, a sheet printed at 91 % (fit to page) was cut at the file's size, off the art; with it, the same sheet cut right on
+    /// the Portrait 4 (08/11/2026). The driver keeps the old order as its default, the one checked against the Python driver.
+    static let studioOrder = true
+
+    /// Register Marks: the machine reads the marks and points at them without cutting. The timeline goes next to the
+    /// transcripts, to compare with a video of the machine.
+    private func checkMarks(_ job: Job, _ registration: Cutter.Registration, _ cutter: Cutter) async throws {
+        let id = job.id
+        let (events, error) = await cutter.checkMarks(registration, media: job.media, cuttingMat: job.withMat, mat: job.base,
+                                                      studioOrder: Self.studioOrder) { [weak self] step in
+            let text = switch step {
+            case .reading: String(localized: "Reading the registration marks…")
+            case .pointing(.square): String(localized: "Moving to the square…")
+            case .pointing(.topRight): String(localized: "Moving to the top-right corner mark…")
+            case .pointing(.bottomRight): String(localized: "Moving to the bottom-right corner (no mark)…")
+            case .pointing(.bottomLeft): String(localized: "Moving to the bottom-left corner mark…")
+            case .pointing(.squareAgain): String(localized: "Moving to the square again…")
+            case .returning: String(localized: "Going back to the start…")
+            }
+            Task { @MainActor in self?.display(text, id) }
+        }
+        saveTimeline(events)
+        if let error { throw error }
+        status(.done, id)
+        state = .connected
+    }
+
+    /// The marks check's timeline, one line per event: seconds from the start, the Mac's clock, what was sent (→),
+    /// received (←) or noted (#).
+    private func saveTimeline(_ events: [MarksCheckEvent]) {
+        guard !events.isEmpty else { return }
+        let folder = FileManager.default.homeDirectoryForCurrentUser.appending(path: "Library/Logs/Cutline")
+        let format = DateFormatter()
+        format.dateFormat = "yyyyMMdd-HHmmss"
+        let clock = DateFormatter()
+        clock.dateFormat = "HH:mm:ss.SSS"
+        let name = format.string(from: Date()) + (simulate ? "-simulado" : "") + "-register-marks.txt"
+        var lines = ["Cutline \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "") · Register Marks",
+                     "seconds from the start · the Mac's clock · → sent to the machine, ← received, # notes", ""]
+        lines += events.map { String(format: "%9.3f s   ", $0.seconds) + clock.string(from: $0.date) + "   " + $0.text }
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try? (lines.joined(separator: "\n") + "\n").write(to: folder.appending(path: name), atomically: true, encoding: .utf8)
+    }
+
     private func saveTranscript() async {
         guard let cutter else { return }
         let payload = await cutter.transcript
