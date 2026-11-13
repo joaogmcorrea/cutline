@@ -12,7 +12,7 @@ enum Feature: String, CaseIterable {
     case typeOnPath, linkedImages, googleFonts, grid
 
     /// The released ones: each release adds its features here.
-    static let released: Set<Feature> = []
+    static let released: Set<Feature> = [.colorProfiles, .colorPicker, .gradients, .layerBlending, .trackEnhancing]
 
     /// Shown in the app: released, or every feature on a Mac that asked to preview them.
     var isOn: Bool { Self.released.contains(self) || Self.previewAll }
