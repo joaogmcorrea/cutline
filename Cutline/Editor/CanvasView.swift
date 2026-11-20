@@ -86,6 +86,19 @@ struct CanvasView: View {
     @AppStorage(Preferences.gridSubdivisions) private var gridSubdivisions = Preferences.defaultGridSubdivisions
     @Environment(\.colorScheme) private var scheme
     @Environment(\.displayScale) private var canvasScale
+    /// Align To (Model/Alignment.swift): with Key Object, the key shows thicker; a click on a selected object makes it the key.
+    @AppStorage(AlignTarget.key) private var alignTo = AlignTarget.selection
+    /// The already selected object a click started on (it becomes the key object if the mouse doesn't move).
+    @State private var keyClick: CanvasObject.ID?
+    /// Artboard tool: the + by the artboard edge the pointer is near (as Illustrator's); a click on it adds one beside.
+    @State private var artboardPlus: ArtboardPlus?
+
+    /// The + by an artboard's edge: which artboard, which side, and whether the pointer is on the button.
+    private struct ArtboardPlus: Equatable {
+        let id: UUID
+        let side: ArtboardSide
+        let hot: Bool
+    }
 
     private enum CanvasGesture {
         case creating(start: CGPoint, current: CGPoint)                                                          // mm
@@ -112,6 +125,8 @@ struct CanvasView: View {
         /// Editing the image inside a shape (Editor/ImageInsideShape.swift): moving, scaling or turning it; `original` is its
         /// placement at the start (pixel → page mm).
         case content(CanvasObject.ID, ContentDrag, start: CGPoint, original: CGAffineTransform, registered: Bool)
+        /// Object › Nest… (Editor/NestMode.swift): marking a part of the artboard that is already cut (mm).
+        case nestArea(start: CGPoint, current: CGPoint)
     }
 
     /// What dragging the content of an image inside a shape does: move it, scale it from the opposite corner (`anchor`; the
@@ -129,7 +144,13 @@ struct CanvasView: View {
     private var dark: Bool { scheme == .dark }
     /// The print bleed's outer edge on screen.
     private static let bleedGuide = Color(red: 0.93, green: 0.11, blue: 0.14)
-    private var backgroundColor: Color { dark ? Color(white: 0.1) : Color(red: 0.89, green: 0.89, blue: 0.9) }
+    private var backgroundColor: Color {
+        // Editing the artboards (the Artboard tool) or nesting: the canvas a little lighter, as Illustrator's with the
+        // Artboard tool, so the mode shows; back as soon as it ends.
+        let editing = doc.tool == .artboard || doc.nest != nil
+        return dark ? Color(white: editing ? 0.15 : 0.1)
+                    : Color(red: editing ? 0.94 : 0.89, green: editing ? 0.94 : 0.89, blue: editing ? 0.95 : 0.9)
+    }
     private var baseColor: Color { dark ? Color(red: 0.17, green: 0.18, blue: 0.17) : Color(red: 0.8, green: 0.82, blue: 0.8) }
 
     var body: some View {
@@ -149,10 +170,12 @@ struct CanvasView: View {
                     tracing.pointer = p
                     pointer.canvas = p
                     pointer.mm = viewState.mm(p)
+                    updateArtboardPlus(p)
                 case .ended:
                     tracing.pointer = nil
                     pointer.canvas = nil
                     pointer.mm = nil
+                    updateArtboardPlus(nil)
                 }
             }
             .pointerStyle(pointerStyle)
@@ -179,6 +202,8 @@ struct CanvasView: View {
                 }
             }
             .onDisappear {
+                // The window closing in the middle of a nest: the document goes back to how it was.
+                doc.nest?.cancel()
                 if let scrollMonitor { NSEvent.removeMonitor(scrollMonitor) }
                 if let keyboardMonitor { NSEvent.removeMonitor(keyboardMonitor) }
                 if let rightClickMonitor { NSEvent.removeMonitor(rightClickMonitor) }
@@ -194,6 +219,7 @@ struct CanvasView: View {
                 if let edit = doc.textEditing, newOne != [edit.id] { doc.finishText() }
                 if let id = doc.imageContentEditing, newOne != [id] { doc.imageContentEditing = nil }
                 rotatePivot = nil
+                if let key = doc.keyObject, !newOne.contains(key) { doc.keyObject = nil }
             }
             // The canvas's origin moved with the 1st artboard (Model/Artboards.swift), or undo brought it back: the view
             // moves the same, so nothing jumps on screen.
@@ -231,6 +257,7 @@ struct CanvasView: View {
         let keyPresses = DebugHooks.testKeys
         guard !keyPresses.isEmpty else { return }
         try? await Task.sleep(for: .milliseconds(1200))
+        var held: CGPoint?
         for text in keyPresses {
             if text.hasPrefix("offset:"), let distance = Double(text.dropFirst(7)) {
                 if let notice = doc.offsetSelection(distance, corner: .round) { NSLog("CUTLINE_TEST offset: %@", notice) }
@@ -239,6 +266,19 @@ struct CanvasView: View {
                 guard mm.count == 2 else { continue }
                 pointer.canvas = viewState.canvas(CGPoint(x: mm[0], y: mm[1]))
                 pointer.mm = CGPoint(x: mm[0], y: mm[1])
+                updateArtboardPlus(pointer.canvas)
+            } else if text.hasPrefix("plus:") {
+                // plus:right|bottom|left|top: the pointer on the Artboard tool's + by that edge of the active artboard, and a
+                // click on it ("plus:right?" only hovers it).
+                let name = text.dropFirst(5).replacingOccurrences(of: "?", with: "")
+                guard let side = ArtboardSide.allCases.first(where: { "\($0)" == name }) else { continue }
+                let c = plusCenter(viewState.canvas(doc.activeArtboard.rect), side)
+                pointer.canvas = c
+                updateArtboardPlus(c)
+                guard !text.hasSuffix("?") else { continue }
+                begin(in: c)
+                finish(in: c)
+                started = false
             } else if text.hasPrefix("drag:") {
                 // drag:x1,y1,x2,y2 (mm): a mouse drag through the same steps; "shift" before it holds ⇧.
                 let mm = text.dropFirst(5).split(separator: ",").compactMap { Double($0) }
@@ -249,6 +289,21 @@ struct CanvasView: View {
                 proceed(in: b)
                 finish(in: b)
                 started = false
+            } else if text.hasPrefix("hold:") {
+                // hold:x1,y1,x2,y2 (mm): a drag that hasn't let go yet (a photo shows it, like the Zoom tool's area);
+                // "release" lets go.
+                let mm = text.dropFirst(5).split(separator: ",").compactMap { Double($0) }
+                guard mm.count == 4 else { continue }
+                let a = viewState.canvas(CGPoint(x: mm[0], y: mm[1])), b = viewState.canvas(CGPoint(x: mm[2], y: mm[3]))
+                begin(in: a)
+                proceed(in: b)
+                held = b
+            } else if text.hasPrefix("sleep:"), let seconds = Double(text.dropFirst(6)) {
+                try? await Task.sleep(for: .seconds(seconds))
+            } else if text == "release", let b = held {
+                finish(in: b)
+                started = false
+                held = nil
             } else if text == "shift" || text == "noshift" {
                 DebugHooks.heldModifiers = text == "shift" ? .shift : []
             } else if text == "command" || text == "nocommand" {
@@ -325,6 +380,8 @@ struct CanvasView: View {
         if gesture == nil, let p = pointer.canvas, let direction = contentRotationAt(p) { return RotatePointer.style(direction) }
         if gesture == nil, let p = pointer.canvas, let (_, direction) = rotationCornerAt(p) { return RotatePointer.style(direction) }
         if doc.tool == .rotate { return RotatePointer.style(45) }
+        // On the Artboard tool's + by an edge: the arrow, as on a button.
+        if doc.tool == .artboard, gesture == nil, artboardPlus?.hot == true { return nil }
         switch doc.tool {
         case .text, .typeOnPath: return .horizontalText
         case .pen, .addNode, .deleteNode: return ToolPointer.style(doc.tool)
@@ -392,6 +449,7 @@ struct CanvasView: View {
         }
         if doc.marks { for artboard in doc.artboards { drawMarks(&ctx, size: size, sheet: doc.sheetFrame(artboard)) } }
         drawArtboards(&ctx)
+        if let nest = doc.nest { drawNest(nest, &ctx) }
 
         if case .creating(let start, let current) = gesture {
             let preview = newShapeObject(frame: creationRect(start, current))
@@ -410,6 +468,10 @@ struct CanvasView: View {
         let selectedObjects = doc.textEditing == nil ? doc.selectedObjects : []
         for object in selectedObjects {
             ctx.stroke(object.shapePath.applying(viewState.transform), with: .color(.accentColor), lineWidth: 1.5)
+        }
+        // Align to Key Object: the key's outline thicker, as Illustrator's (the one clicked, or else the frontmost).
+        if alignTo == .keyObject, !selectedObjects.isEmpty, let key = doc.keyPiece {
+            for object in key { ctx.stroke(object.shapePath.applying(viewState.transform), with: .color(.accentColor), lineWidth: 3.5) }
         }
         // The shape an image dragged over it goes into (Editor/ImageInsideShape.swift).
         if let id = doc.imageDropTarget, let target = doc.objects.first(where: { $0.id == id }) {
@@ -476,14 +538,46 @@ struct CanvasView: View {
         }
 
         if case .zoomArea(let start, let current) = gesture {
+            // Black dashes on a white line, as Illustrator's marquee: it shows on the white sheet and on the dark desk
+            // (a `.primary` line was white in dark mode, invisible on the sheet).
             let area = Path(CGRect.between(start, current, proportional: false, fromCenter: false))
-            ctx.stroke(area, with: .color(.primary.opacity(0.7)), style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
+            ctx.stroke(area, with: .color(.white.opacity(0.9)), lineWidth: 1)
+            ctx.stroke(area, with: .color(.black.opacity(0.85)), style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
         }
 
         if let snapMark {
             let p = viewState.canvas(snapMark)
             let mark = Path(CGRect(x: p.x - 4, y: p.y - 4, width: 8, height: 8))
             ctx.stroke(mark, with: .color(.accentColor), lineWidth: 1.5)
+        }
+    }
+
+    /// Nesting (Editor/NestMode.swift): the pieces outlined, the parts already cut hatched in red, and the one being marked.
+    private func drawNest(_ nest: NestSession, _ ctx: inout GraphicsContext) {
+        let ids = nest.pieceIDs
+        for object in doc.objects where ids.contains(object.id) {
+            ctx.stroke(object.shapePath.applying(viewState.transform), with: .color(.accentColor.opacity(0.85)), lineWidth: 1)
+        }
+        var areas = nest.usedOnCanvas
+        if case .nestArea(let start, let current) = gesture {
+            areas.append(CGRect.between(start, current, proportional: false, fromCenter: false).intersection(nest.artboardRect))
+        }
+        let red = Color(red: 0.93, green: 0.27, blue: 0.27)
+        for area in areas where !area.isNull {
+            let r = viewState.canvas(area)
+            var hatch = Path()
+            let step = 7.0
+            var x = r.minX - r.height
+            while x < r.maxX {
+                hatch.move(to: CGPoint(x: x, y: r.maxY))
+                hatch.addLine(to: CGPoint(x: x + r.height, y: r.minY))
+                x += step
+            }
+            var clipped = ctx
+            clipped.clip(to: Path(r))
+            clipped.fill(Path(r), with: .color(.white.opacity(0.55)))
+            clipped.stroke(hatch, with: .color(red.opacity(0.55)), lineWidth: 1)
+            ctx.stroke(Path(r), with: .color(red), style: StrokeStyle(lineWidth: 1, dash: [5, 3]))
         }
     }
 
@@ -633,6 +727,75 @@ struct CanvasView: View {
                 ctx.stroke(Path(r.insetBy(dx: -0.5, dy: -0.5)), with: .color(.black.opacity(0.75)), lineWidth: 1)
             }
         }
+        if tool, gesture == nil, doc.nest == nil, let plus = artboardPlus,
+           let artboard = doc.artboards.first(where: { $0.id == plus.id }) {
+            drawArtboardPlus(&ctx, at: plusCenter(viewState.canvas(artboard.rect), plus.side), hot: plus.hot)
+        }
+    }
+
+    // MARK: The Artboard tool's + by an edge
+
+    /// The + button's radius and how far its center is from the edge (canvas points).
+    private static let plusRadius = 9.0, plusDistance = 20.0
+
+    /// Where the + of an artboard's side goes (canvas points; `r` is the artboard on screen): out from the middle of that edge.
+    private func plusCenter(_ r: CGRect, _ side: ArtboardSide) -> CGPoint {
+        switch side {
+        case .right: CGPoint(x: r.maxX + Self.plusDistance, y: r.midY)
+        case .left: CGPoint(x: r.minX - Self.plusDistance, y: r.midY)
+        case .bottom: CGPoint(x: r.midX, y: r.maxY + Self.plusDistance)
+        case .top: CGPoint(x: r.midX, y: r.minY - Self.plusDistance)
+        }
+    }
+
+    /// A white circle with a +, as Illustrator's; the pointer on it, in the accent color.
+    private func drawArtboardPlus(_ ctx: inout GraphicsContext, at c: CGPoint, hot: Bool) {
+        let radius = Self.plusRadius
+        let circle = Path(ellipseIn: CGRect(x: c.x - radius, y: c.y - radius, width: 2 * radius, height: 2 * radius))
+        var shadowed = ctx
+        shadowed.addFilter(.shadow(color: .black.opacity(0.25), radius: 2, y: 1))
+        shadowed.fill(circle, with: .color(hot ? .accentColor : .white))
+        if !hot { ctx.stroke(circle, with: .color(.black.opacity(0.8)), lineWidth: 1) }
+        var cross = Path()
+        cross.move(to: CGPoint(x: c.x - 4.5, y: c.y))
+        cross.addLine(to: CGPoint(x: c.x + 4.5, y: c.y))
+        cross.move(to: CGPoint(x: c.x, y: c.y - 4.5))
+        cross.addLine(to: CGPoint(x: c.x, y: c.y + 4.5))
+        ctx.stroke(cross, with: .color(hot ? .white : .black), style: StrokeStyle(lineWidth: 2, lineCap: .round))
+    }
+
+    /// The + the pointer at `p` (canvas points) brings up with the Artboard tool: by the nearest artboard edge, when the
+    /// pointer is along it and close to it (a band inside, out to past the button). Not when the button would fall on
+    /// another artboard.
+    private func artboardPlusAt(_ p: CGPoint) -> ArtboardPlus? {
+        guard doc.tool == .artboard, doc.nest == nil, !space else { return nil }
+        let inside = 24.0, outside = Self.plusDistance + Self.plusRadius + 6
+        let sheets = doc.artboards.map { ($0.id, viewState.canvas($0.rect)) }
+        var best: (plus: ArtboardPlus, distance: Double)?
+        for (id, r) in sheets {
+            for side in ArtboardSide.allCases {
+                // How far out from the edge the pointer is (negative: inside), and whether it is along the edge.
+                let out: Double, along: Bool
+                switch side {
+                case .right: (out, along) = (p.x - r.maxX, p.y >= r.minY && p.y <= r.maxY)
+                case .left: (out, along) = (r.minX - p.x, p.y >= r.minY && p.y <= r.maxY)
+                case .bottom: (out, along) = (p.y - r.maxY, p.x >= r.minX && p.x <= r.maxX)
+                case .top: (out, along) = (r.minY - p.y, p.x >= r.minX && p.x <= r.maxX)
+                }
+                guard along, out >= -inside, out <= outside, abs(out) < best?.distance ?? .infinity else { continue }
+                let c = plusCenter(r, side)
+                guard !sheets.contains(where: { $0.0 != id && $0.1.contains(c) }) else { continue }
+                let hot = hypot(p.x - c.x, p.y - c.y) <= Self.plusRadius + 3
+                best = (ArtboardPlus(id: id, side: side, hot: hot), abs(out))
+            }
+        }
+        return best?.plus
+    }
+
+    /// Keeps the + in step with the pointer (only a change redraws the canvas).
+    private func updateArtboardPlus(_ p: CGPoint?) {
+        let plus = p.flatMap { artboardPlusAt($0) }
+        if plus != artboardPlus { artboardPlus = plus }
     }
 
     /// View › Show Grid: lines on the sheet, under the objects (and under the print bleed), in the color from Settings;
@@ -870,29 +1033,21 @@ struct CanvasView: View {
         return event.clickCount
     }
 
-    private var newShape: ShapeKind {
-        switch doc.tool {
-        case .ellipse: .ellipse
-        case .star: .star(points: 5, innerRadius: 0.5)
-        default: .rectangle(radius: 0)
+    /// The shape tool's new object (Editor/ShapeSizeWindow.swift).
+    private func newShapeObject(frame: CGRect) -> CanvasObject { doc.shapeObject(doc.tool, frame: frame) }
+
+    private func lineObject(_ start: CGPoint, _ end: CGPoint) -> CanvasObject? { doc.lineObject(from: start, to: end) }
+
+    /// A click on a selected piece: it becomes the key object and Align To goes to Key Object; a click on the key again
+    /// lets it go (back to Align to Selection), as in Illustrator.
+    private func toggleKey(_ id: CanvasObject.ID) {
+        if alignTo == .keyObject, doc.keyObject != nil, doc.keyPiece?.contains(where: { $0.id == id }) == true {
+            doc.keyObject = nil
+            alignTo = .selection
+        } else {
+            doc.keyObject = id
+            alignTo = .keyObject
         }
-    }
-
-    /// The shape tool's new object (the polygon is a path with its parameter, see `PolygonShape`).
-    private func newShapeObject(frame: CGRect) -> CanvasObject {
-        var object = doc.newObject(newShape, frame: frame)
-        if doc.tool == .polygon { object.setPolygon(sides: PolygonShape.defaultSides) }
-        return object
-    }
-
-    /// The Line tool's object: an open path of two nodes, without fill (it cuts like any stroke).
-    private func lineObject(_ start: CGPoint, _ end: CGPoint) -> CanvasObject? {
-        guard start != end else { return nil }
-        var object = doc.newObject(.shapePath([]), frame: .zero)
-        object.setNodes([Subpath(nodes: [Node(point: start), Node(point: end)], closed: false)])
-        object.fill = nil
-        object.label = String(localized: "Line")
-        return object
     }
 
     /// The point along the multiple of 45° closest to the pointer's direction, as far as the pointer goes in it.
@@ -907,7 +1062,7 @@ struct CanvasView: View {
     /// the drag asks in either direction, from the corner where the drag started (⌥: from the center).
     private func creationRect(_ start: CGPoint, _ current: CGPoint) -> CGRect {
         guard doc.tool == .polygon else { return CGRect.between(start, current, proportional: shift, fromCenter: option) }
-        let aspect = PolygonShape.naturalAspect(sides: PolygonShape.defaultSides)
+        let aspect = PolygonShape.naturalAspect(sides: ShapeSizes.polygonSides)
         let dx = current.x - start.x, dy = current.y - start.y
         let factor = option ? 2.0 : 1.0
         let width = max(abs(dx), abs(dy) / aspect) * factor, height = width * aspect
@@ -940,6 +1095,11 @@ struct CanvasView: View {
         let p = viewState.mm(canvasPoint)
         if space || doc.tool == .hand {
             gesture = .pan(start: canvasPoint, origin: viewState.origin)
+            return
+        }
+        // Nesting: the canvas only marks (or gives back) the parts of the artboard already cut.
+        if doc.nest != nil {
+            gesture = .nestArea(start: p, current: p)
             return
         }
         if let rulers, beginOnRuler(canvasPoint, rulers) { return }
@@ -989,7 +1149,8 @@ struct CanvasView: View {
                 doc.selection = objectAt(canvasPoint).map { [$0] } ?? []
             }
         case .eyedropper:
-            if let target = objectAt(canvasPoint) { doc.eyedrop(from: target, at: p) }
+            // ⇧: only the color, for the square in front (as Illustrator's).
+            if let target = objectAt(canvasPoint) { doc.eyedrop(from: target, at: p, colorOnly: shift, tolerance: tolerance) }
         case .zoom:
             gesture = .zoomArea(start: canvasPoint, current: canvasPoint)
         case .artboard:
@@ -1048,6 +1209,8 @@ struct CanvasView: View {
             }
             // In a group, the whole outermost group.
             let unit = doc.unit(of: target)
+            // A click (without moving) on one of two or more selected pieces makes it the key object, as in Illustrator.
+            keyClick = !shift && doc.selection.contains(target) && doc.selectedPieces.count >= 2 ? target : nil
             if shift {
                 if doc.selection.contains(target) { doc.selection.subtract(unit) } else { doc.selection.formUnion(unit) }
             } else if !doc.selection.contains(target) {
@@ -1071,9 +1234,15 @@ struct CanvasView: View {
         }
     }
 
-    /// Artboard tool: a handle of the active artboard resizes it; inside an artboard, it becomes active and the drag moves
-    /// it (with its artwork); elsewhere, the drag draws a new one.
+    /// Artboard tool: the + by an edge adds one beside it; a handle of the active artboard resizes it; inside an artboard,
+    /// it becomes active and the drag moves it (with its artwork); elsewhere, the drag draws a new one.
     private func beginArtboard(_ canvasPoint: CGPoint, _ p: CGPoint) {
+        // The + by an edge: a new artboard of the same size on that side, active.
+        if let plus = artboardPlusAt(canvasPoint), plus.hot {
+            doc.addArtboard(beside: plus.id, plus.side)
+            updateArtboardPlus(canvasPoint)
+            return
+        }
         let active = doc.activeArtboard
         let r = viewState.canvas(active.rect)
         if let handle = Handle.allCases.first(where: { h in
@@ -1164,6 +1333,8 @@ struct CanvasView: View {
     private func proceed(in canvasPoint: CGPoint) {
         let p = viewState.mm(canvasPoint)
         switch gesture {
+        case .nestArea(let start, _):
+            gesture = .nestArea(start: start, current: p)
         case .creating(let start, _):
             gesture = .creating(start: start, current: snapping(p))
         case .line(let start, _):
@@ -1270,6 +1441,14 @@ struct CanvasView: View {
             tracing.targets = nil
         }
         switch gesture {
+        case .nestArea(let start, _):
+            let p = viewState.mm(canvasPoint)
+            let area = CGRect.between(start, p, proportional: false, fromCenter: false)
+            if area.width * viewState.scale < 4 && area.height * viewState.scale < 4 {
+                _ = doc.nest?.unmarkUsed(at: p)
+            } else {
+                doc.nest?.markUsed(area)
+            }
         case .moving(_, _, _, let registered):
             // ⌘ held over a shape: the dragged image goes into it (the move and this are one undo step).
             if let target = doc.imageDropTarget, command, let picture = doc.draggedImage, let key = picture.image?.key,
@@ -1277,21 +1456,33 @@ struct CanvasView: View {
                 doc.putImage(ImageForShape(key: key, pixels: pixels), into: [target], removing: [picture.id], register: !registered)
             }
             doc.imageDropTarget = nil
+            if !registered, let id = keyClick { toggleKey(id) }
+            keyClick = nil
+        case .resizing(_, let originals, _, let registered):
+            // A text stretched by the handles: its new height becomes its size in pt, as Illustrator shows it (the same undo
+            // step as the drag).
+            if registered { doc.foldTextStretch(originals) }
         case .rotating(_, let start, _, _, _, let moved):
             // A Rotate tool click: the next turns go around that point (as in Illustrator).
             if !moved { rotatePivot = start }
         case .creating(let start, let current):
-            var frame = creationRect(start, current)
-            // Click without dragging: a 30 mm shape centered on the click.
+            let frame = creationRect(start, current)
+            // Click without dragging: the window asks the size, as Illustrator's (Editor/ShapeSizeWindow.swift).
             if frame.width * viewState.scale < 4 || frame.height * viewState.scale < 4 {
-                let height = doc.tool == .polygon ? 30 * PolygonShape.naturalAspect(sides: PolygonShape.defaultSides) : 30
-                frame = CGRect(x: start.x - 15, y: start.y - height / 2, width: 30, height: height)
+                doc.shapeRequest = ShapeRequest(tool: doc.tool, point: start, fromCenter: option)
+                break
             }
-            doc.add(newShapeObject(frame: frame))
+            let object = newShapeObject(frame: frame)
+            doc.add(object)
+            ShapeSizes.remember(object, tool: doc.tool)
         case .line(let start, let current):
-            // A click without dragging draws nothing.
-            guard hypot(current.x - start.x, current.y - start.y) * viewState.scale >= 3, let line = lineObject(start, current) else { break }
+            // A click without dragging: the window asks the length and the angle.
+            guard hypot(current.x - start.x, current.y - start.y) * viewState.scale >= 3, let line = lineObject(start, current) else {
+                doc.shapeRequest = ShapeRequest(tool: .line, point: start)
+                break
+            }
             doc.add(line)
+            ShapeSizes.rememberLine(from: start, to: current)
         case .selectingArea(let start, let current, let sum):
             let area = CGRect.between(start, current, proportional: false, fromCenter: false)
             // A click without dragging on empty space only clears the selection (a zero-size area caught the objects' boxes).
@@ -1636,8 +1827,24 @@ struct CanvasView: View {
     /// ⌘8 makes a compound path (⌥⇧⌘8 releases it), ⌘B/⌘I/⌘U bold, italic and underline of the selected texts. ⌘R, ⌘U (snap, without a text) and ⌘; (guides)
     /// belong to the View menu.
     private func keyboard(_ event: NSEvent) -> NSEvent? {
-        guard let nsWindow, event.window === nsWindow, nsWindow.attachedSheet == nil,
-              !(nsWindow.firstResponder is NSText) else { return event }
+        guard let nsWindow, event.window === nsWindow, nsWindow.attachedSheet == nil else { return event }
+        if let nest = doc.nest, nsWindow.firstResponder is NSText, event.type == .keyDown {
+            // Nesting with the cursor in a field of its bar (Spacing): Esc still cancels the nest; Return confirms the
+            // field and gives the keyboard back to the canvas, so the next Return applies.
+            switch event.keyCode {
+            case 53:
+                nsWindow.makeFirstResponder(nil)
+                nest.cancel()
+                return nil
+            case 36, 76:
+                DispatchQueue.main.async { nsWindow.makeFirstResponder(nil) }
+                return event
+            default:
+                return event
+            }
+        }
+        guard !(nsWindow.firstResponder is NSText) else { return event }
+        if let nest = doc.nest { return nestKeyboard(event, nest) }
         let command = event.modifierFlags.contains(.command)
         let withModifier = !event.modifierFlags.intersection([.command, .option, .control]).isEmpty
         let goingDown = event.type == .keyDown
@@ -1723,7 +1930,7 @@ struct CanvasView: View {
             doc.defaultColors()
             return nil
         case 123...126 where event.modifierFlags.isDisjoint(with: [.command, .control]):   // arrows
-            // Move the selection by the steps in Settings (1 mm; with ⇧, 10 mm; with ⌥, 0.1 mm). Without a selection, they
+            // Move the selection by the steps in Settings (1 pt; with ⇧, 10 pt; with ⌥, 0.1 mm, as Illustrator). Without a selection, they
             // go to whoever comes next.
             guard !doc.selection.isEmpty else { return event }
             guard goingDown else { return nil }
@@ -1749,12 +1956,33 @@ struct CanvasView: View {
         }
     }
 
+    /// While nesting: Return applies, Esc cancels, the space bar still moves the view; the editing keys (and ⌘Z, which would
+    /// undo under the preview) do nothing. Other ⌘ shortcuts go on to the menus.
+    private func nestKeyboard(_ event: NSEvent, _ nest: NestSession) -> NSEvent? {
+        let goingDown = event.type == .keyDown
+        let modifiers = event.modifierFlags.intersection([.command, .option, .control])
+        switch event.keyCode {
+        case 49 where modifiers.isEmpty:   // space
+            space = goingDown
+            return nil
+        case 36, 76:   // return, enter
+            if goingDown, modifiers.isEmpty { nest.apply() }
+            return nil
+        case 53:   // esc
+            if goingDown { nest.cancel() }
+            return nil
+        default:
+            if modifiers.contains(.command), event.charactersIgnoringModifiers?.lowercased() != "z" { return event }
+            return nil
+        }
+    }
+
     /// Right click (or ⌃-click) on the canvas: selects what is underneath, if it isn't selected, and opens the
     /// context menu. While typing a text, the menu is the text's.
     private func rightClick(_ event: NSEvent) -> NSEvent? {
         guard let nsWindow, event.window === nsWindow, nsWindow.attachedSheet == nil, let p = tracing.pointer,
               event.type == .rightMouseDown || event.modifierFlags.contains(.control),
-              doc.textEditing == nil, gesture == nil, pen == nil else { return event }
+              doc.textEditing == nil, doc.nest == nil, gesture == nil, pen == nil else { return event }
         if let rulers, rulers.contains(p) { return event }
         if let target = objectAt(p), !doc.selection.contains(target), let object = doc.objects.first(where: { $0.id == target }) {
             doc.selection = doc.tool.editsNodes ? [target] : doc.unit(of: target)

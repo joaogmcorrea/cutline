@@ -23,7 +23,8 @@
 //   in the keys, offset:2 (mm; < 0 inside) offsets the selection with round corners, hover:x,y (mm) puts the pointer
 //   there (the Eyedropper's loupe shows in a photo), log writes the document's state (NSLog "CUTLINE_TEST state" and
 //   "CUTLINE_TEST frames"), do:spaceH runs that document action (list in `perform`), drag:x1,y1,x2,y2 (mm) drags
-//   the mouse, and shift / noshift hold and let go of ⇧ for the next steps;
+//   the mouse, plus:right (bottom, left, top) clicks the Artboard tool's + by that edge of the active artboard
+//   ("plus:right?" only puts the pointer on it), and shift / noshift hold and let go of ⇧ for the next steps;
 //   CUTLINE_TEST_SETTINGS=1 opens Cutline › Settings; CUTLINE_START=1 keeps the start screen on in a hidden test, and
 //   CUTLINE_TEST_RECENT=/a.cutline:/b.studio3 shows those files as its recent ones (the owner's list stays untouched),
 //   CUTLINE_TEST_START=blank|printAndCut picks that way to start 1 s after it opens;
@@ -99,6 +100,14 @@
 //   (Esc); "command" / "nocommand" hold and let go of ⌘ for the next drag: steps (dragging an image onto a shape).
 //   CUTLINE_TEST_DROP_AT=x,y (mm) drops CUTLINE_TEST_DROP's file there instead of the window's middle. The "log" step writes
 //   each image's fitting ("CUTLINE_TEST images").
+//   Shape windows, tips, arrows, Align To, Send zoom (16/11/2026): CUTLINE_TEST_SHAPE_STEPS=width:50;height:20;radius:20;
+//   radius2:8;count:5;angle:30;ok drives a shape tool's size window (opened by click:x,y after do:tool:rectangle, polygon,
+//   star, line or ellipse), CUTLINE_TEST_SHAPE_PLAIN=star:/x.png draws one into a file; CUTLINE_TEST_TOOL_TIP=rectangle shows
+//   that tool's tip; CUTLINE_TEST_ARROWS=1 shows every number field's arrows; CUTLINE_TEST_SEND_ZOOM=3@x,y zooms the Send
+//   preview. In the keys: hold:x1,y1,x2,y2 (mm) drags without letting go (a photo shows the Zoom tool's area), release lets
+//   go, sleep:2 waits, do:align:top aligns to what -alignTo says (an argument: nothing saved), do:key:Label sets the key object.
+//   Rich tips and the side panel's order (19/11/2026): CUTLINE_TEST_PANEL_TIP=nest shows an icon's tip, CUTLINE_TEST_TIP_TIME=1.5
+//   stops the animations at that second, CUTLINE_TEST_PANEL_DRAG=nest:-110 shows a drag stopped midway (and logs the order).
 //   CUTLINE_HIDDEN=1 (with `open -g`) tests without showing up: the windows stay behind the desktop.
 #if DEBUG
 import AppKit
@@ -282,6 +291,63 @@ enum DebugHooks {
     /// CUTLINE_TEST_PICKER_STEPS=hex:000000;axis:red;field:0.3,0.7;strip:0.5;rgb:255,0,0;hsb:120,50,50;cmyk:0,0,0,100;
     /// web;noweb;swatches;revert;sample;ok drives the open picker, one step every 0.4 s, and logs its state after each
     /// ("CUTLINE_TEST picker").
+    /// CUTLINE_TEST_SHAPE_STEPS=width:40;height:20;link;radius:15;radius2:6;count:7;angle:30;sleep:1;ok|cancel drives a shape
+    /// tool's size window (a click without dragging: click:x,y in CUTLINE_TEST_KEYS after do:tool:rectangle), one step every
+    /// 0.4 s; lengths in the Settings unit's mm. CUTLINE_TEST_SHAPE_PLAIN=rectangle:/x.png shows that tool's window in a plain
+    /// hidden window and draws it into the file.
+    static func driveShapeWindow(width: Binding<Double>, height: Binding<Double>, linked: Binding<Bool>, radius: Binding<Double>,
+                                 radius2: Binding<Double>, count: Binding<Double>, angle: Binding<Double>, ok: @escaping () -> Void,
+                                 cancel: @escaping () -> Void) {
+        let steps = (ProcessInfo.processInfo.environment["CUTLINE_TEST_SHAPE_STEPS"] ?? "").split(separator: ";").map(String.init)
+        guard !steps.isEmpty else { return }
+        Task { @MainActor in
+            for step in steps {
+                try? await Task.sleep(for: .milliseconds(400))
+                let parts = step.split(separator: ":", maxSplits: 1).map(String.init)
+                let v = parts.count > 1 ? Double(parts[1]) : nil
+                switch parts[0] {
+                case "width": if let v { width.wrappedValue = v }
+                case "height": if let v { height.wrappedValue = v }
+                case "link": linked.wrappedValue.toggle()
+                case "radius": if let v { radius.wrappedValue = v }
+                case "radius2": if let v { radius2.wrappedValue = v }
+                case "count": if let v { count.wrappedValue = v }
+                case "angle": if let v { angle.wrappedValue = v }
+                case "sleep": if let v { try? await Task.sleep(for: .seconds(v)) }
+                case "ok": ok()
+                case "cancel": cancel()
+                default: NSLog("CUTLINE_TEST shape window: unknown step %@", step)
+                }
+            }
+        }
+    }
+
+    /// CUTLINE_TEST_SEND_ZOOM=3 (or 3@x,y, in the preview's points) zooms the Send window's preview, as pinching there does.
+    static var sendPreviewZoom: (zoom: Double, point: CGPoint?)? {
+        guard let value = ProcessInfo.processInfo.environment["CUTLINE_TEST_SEND_ZOOM"] else { return nil }
+        let parts = value.split(separator: "@")
+        guard let z = Double(parts[0]) else { return nil }
+        let xy = parts.count > 1 ? parts[1].split(separator: ",").compactMap { Double($0) } : []
+        return (z, xy.count == 2 ? CGPoint(x: xy[0], y: xy[1]) : nil)
+    }
+
+    /// CUTLINE_TEST_ARROWS=1 shows every number field's arrows, as if the pointer were over each (for a photo).
+    static let showAllArrows = ProcessInfo.processInfo.environment["CUTLINE_TEST_ARROWS"] != nil
+
+    /// CUTLINE_TEST_TOOL_TIP=rectangle shows that tool's tip (and lights its button), as if the pointer were over it.
+    static var toolTipForTest: Tool? { ProcessInfo.processInfo.environment["CUTLINE_TEST_TOOL_TIP"].flatMap(Tool.init(rawValue:)) }
+
+    /// CUTLINE_TEST_SHAPE_PLAIN=rectangle:/x.png (see `driveShapeWindow`), 1 s after the window.
+    static func showShapeWindowPlain(_ doc: Document) {
+        guard let value = ProcessInfo.processInfo.environment["CUTLINE_TEST_SHAPE_PLAIN"],
+              let colon = value.firstIndex(of: ":"), let tool = Tool(rawValue: String(value[..<colon])) else { return }
+        let output = String(value[value.index(after: colon)...])
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            showPlain(ShapeSizeWindow(doc: doc, request: ShapeRequest(tool: tool, point: CGPoint(x: 50, y: 50))), title: "CutlineTestShape",
+                      size: CGSize(width: 300, height: tool == .star ? 230 : 190), output: output)
+        }
+    }
+
     /// CUTLINE_TEST_ROTATE_STEPS: angle:45;preview;sleep:1;ok|copy|cancel, one every 0.4 s, in the Rotate window.
     static func driveRotateWindow(angle: Binding<Double>, preview: Binding<Bool>, copy: @escaping () -> Void, ok: @escaping () -> Void,
                                   cancel: @escaping () -> Void) {
@@ -403,6 +469,23 @@ enum DebugHooks {
     /// CUTLINE_OPEN_PANEL=pathfinder opens that collapsed panel next to the icon strip.
     static var openPanel: Panel? {
         ProcessInfo.processInfo.environment["CUTLINE_OPEN_PANEL"].flatMap(Panel.init(rawValue:))
+    }
+
+    /// CUTLINE_TEST_PANEL_TIP=nest shows that side panel icon's rich tip, as if the pointer were over it.
+    static var panelTipForTest: Panel? {
+        ProcessInfo.processInfo.environment["CUTLINE_TEST_PANEL_TIP"].flatMap(Panel.init(rawValue:))
+    }
+
+    /// CUTLINE_TEST_TIP_TIME=1.5 stops the rich tips' animations at that second of the loop (a photo of one moment).
+    static var tipTime: Double? { ProcessInfo.processInfo.environment["CUTLINE_TEST_TIP_TIME"].flatMap { Double($0) } }
+
+    /// CUTLINE_TEST_PANEL_DRAG=nest:-110 shows the side panel in the middle of dragging that panel that far (points; up is
+    /// negative) and logs the order it would leave ("CUTLINE_TEST panel order"); nothing is saved. The order itself can be
+    /// given as an argument: --args -ordemPaineis 'nest,pagina,…'.
+    static var panelDrag: (Panel, Double)? {
+        let parts = (ProcessInfo.processInfo.environment["CUTLINE_TEST_PANEL_DRAG"] ?? "").split(separator: ":")
+        guard parts.count == 2, let panel = Panel(rawValue: String(parts[0])), let distance = Double(parts[1]) else { return nil }
+        return (panel, distance)
     }
 
     /// CUTLINE_COLLAPSED=Color,Stroke opens the side panel with those sections collapsed.
@@ -596,10 +679,48 @@ enum DebugHooks {
 
     /// The "do:" step of CUTLINE_TEST_KEYS: runs a document action by name, as its menu item does (the menus are
     /// disabled in a hidden copy): do:spaceH, do:spaceV.
+    /// Object › Nest… (Editor/NestMode.swift) in the keys: do:nest starts it (on the selection, or the active artboard);
+    /// do:nestQty:0:12 asks 12 of the 1st design; do:nestTurn:never|half|any; do:nestSpacing:3; do:nestHoles:0|1;
+    /// do:nestFill:1|0 (Fill the artboard); do:nestArtboards:1|0 (Add artboards for what doesn't fit); do:nestUsed:x,y,w,h (canvas mm); do:nestApply; do:nestCancel; do:nestLog writes the session
+    /// (NSLog "CUTLINE_TEST nest").
+    static func nest(_ name: String, _ doc: Document) {
+        let parts = name.split(separator: ":").map(String.init)
+        if parts[0] == "nest" { doc.startNest(); return }
+        guard let session = doc.nest else { NSLog("CUTLINE_TEST nest: not nesting (%@)", name); return }
+        switch parts[0] {
+        case "nestQty" where parts.count == 3: session.setQuantity(Int(parts[1]) ?? 0, Int(parts[2]) ?? 0)
+        case "nestTurn" where parts.count == 2: if let t = NestTurn(rawValue: parts[1]) { session.settings.turn = t }
+        case "nestSpacing" where parts.count == 2: session.settings.spacing = Double(parts[1]) ?? 2
+        case "nestHoles" where parts.count == 2: session.settings.holes = parts[1] == "1"
+        case "nestFill" where parts.count == 2: session.fill = parts[1] == "1"
+        case "nestArtboards" where parts.count == 2: session.addArtboards = parts[1] == "1"
+        case "nestUsed" where parts.count == 2:
+            let v = parts[1].split(separator: ",").compactMap { Double($0) }
+            if v.count == 4 { session.markUsed(CGRect(x: v[0], y: v[1], width: v[2], height: v[3])) }
+        case "nestApply": session.apply()
+        case "nestCancel": session.cancel()
+        case "nestLog":
+            let designs = session.designs.map { "\($0.name)×\($0.total) (\($0.existing) there, +\($0.fillCopies) fill, \(session.onArtboard.indices.contains($0.id) ? session.onArtboard[$0.id] : 0) here)" }
+            NSLog("CUTLINE_TEST nest: %@ · fitting %d of %d · new artboards %d · used %d%% · leftover %.1f mm · too big %d · left out %d · removing %d · working %@ · %.2f s",
+                  designs.joined(separator: ", "), session.fitting, session.asked, session.extraArtboards, session.usedPercent,
+                  session.result?.leftover ?? -1, session.result?.tooBig.count ?? 0, session.leftOut, session.removing,
+                  session.working ? "yes" : "no", session.lastDuration)
+        default: NSLog("CUTLINE_TEST nest: unknown %@", name)
+        }
+    }
+
     static func perform(_ name: String, _ doc: Document) {
+        if name.hasPrefix("nest") { return nest(name, doc) }
         switch name {
         case "spaceH": doc.distribute(.horizontal)
+        case _ where name.hasPrefix("align:"):
+            // do:align:left (an AlignMode), to what -alignTo says (an argument: nothing saved).
+            if let mode = AlignMode(rawValue: String(name.dropFirst(6))) { doc.align(mode) }
+        case _ where name.hasPrefix("key:"):
+            // do:key:Label makes that object the key object (as a click on it does).
+            doc.keyObject = doc.objects.first { $0.label == String(name.dropFirst(4)) || $0.name == String(name.dropFirst(4)) }?.id
         case "spaceV": doc.distribute(.vertical)
+        case "marks": doc.toggleMarks()
         case "sameFill": doc.selectSame(.fill)
         case "sameStroke": doc.selectSame(.strokeColor)
         case "newLayer": doc.newLayer()
@@ -817,7 +938,9 @@ enum DebugHooks {
         NSLog("CUTLINE_TEST frames: %@", frames.joined(separator: " "))
         let objects = doc.objects.map { o in "\(o.label ?? "?")[\(o.absoluteNodes.map(\.nodes.count).map(String.init).joined(separator: "+"))]" }
         let text = doc.selectedObjects.lazy.compactMap { o -> CharacterStyle? in if case .text(let t) = o.shape { t.style(in: 0) } else { nil } }.first
-        NSLog("CUTLINE_TEST state: text=%@ underline=%d", text?.postscript ?? text?.font ?? "-", text?.underline == true ? 1 : 0)
+        let stretch = doc.selectedObjects.lazy.compactMap(\.textAnchor).first?.scale ?? CGSize(width: 1, height: 1)
+        NSLog("CUTLINE_TEST state: text=%@ underline=%d size=%.2f scale=%.3fx%.3f", text?.postscript ?? text?.font ?? "-",
+              text?.underline == true ? 1 : 0, text?.size ?? 0, stretch.width, stretch.height)
         NSLog("CUTLINE_TEST state: tool=%@ zoom=%.2f objects=%@ selected=%ld guides v=%@ h=%@ fill=%@ stroke=%@",
               doc.tool.rawValue, zoom, objects.joined(separator: " "), doc.selection.count,
               doc.guides.verticals.map { String(format: "%.1f", $0) }.joined(separator: ","),
@@ -912,6 +1035,8 @@ enum DebugHooks {
         DispatchQueue.main.asyncAfter(deadline: .now() + wait) {
             Printing.printDocument(doc, in: nil, pdf: URL(fileURLWithPath: outputPath))
             print("printed to \(outputPath)")
+            // The name Save as PDF suggests (without .cutline).
+            NSLog("CUTLINE_TEST print title: %@", Printing.jobTitle(NSApp.windows.first { $0.windowController?.document != nil }))
         }
     }
 

@@ -173,6 +173,13 @@ struct EditorCommands: Commands {
                 .disabled(!(doc?.canReleaseClippingMask ?? false))
         }
         .disabled(selectedObjects.isEmpty || isTyping)
+        if Feature.nesting.isOn {
+            Divider()
+            // Packs the selection (or, with nothing selected, the active artboard) close together: Editor/NestMode.swift.
+            Button("Nest…") { act { $0.startNest() } }
+                .keyboardShortcut("n", modifiers: [.command, .option])
+                .disabled(!(doc?.canNest ?? false))
+        }
         Divider()
         Button("Convert to Path") { act { $0.convertToPath() } }
             .disabled(!selectedObjects.contains(where: \.isParametric))

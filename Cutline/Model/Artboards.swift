@@ -66,7 +66,7 @@ nonisolated enum PagePreset: String, CaseIterable, Identifiable, Sendable {
 nonisolated struct Artboard: Hashable, Codable, Sendable, Identifiable {
     /// The keys stored on disk are in Portuguese, like the rest of the .cutline format.
     enum CodingKeys: String, CodingKey {
-        case name = "nome", x, y, width = "largura", height = "altura"
+        case name = "nome", x, y, width = "largura", height = "altura", used = "areasUsadas"
     }
 
     /// Only for the interface (lists, the Send window's choice); doesn't go into the file.
@@ -74,6 +74,9 @@ nonisolated struct Artboard: Hashable, Codable, Sendable, Identifiable {
     /// nil = "Artboard N" (by its place in the list, in the app's language).
     var name: String?
     var rect: CGRect
+    /// Parts of the sheet already cut (a leftover sheet), relative to the artboard's top-left corner, in mm: Object › Nest
+    /// keeps the pieces out of them (Editor/NestMode.swift). Optional in the file (the versions before ignore it).
+    var used: [CGRect] = []
 
     /// The smallest and largest side (Silhouette Studio refuses pages outside 10–3,000 mm).
     static let sides = 10.0...3000.0
@@ -92,6 +95,8 @@ nonisolated struct Artboard: Hashable, Codable, Sendable, Identifiable {
         let width = try c.decodeIfPresent(Double.self, forKey: .width) ?? PagePreset.a4.size.width
         let height = try c.decodeIfPresent(Double.self, forKey: .height) ?? PagePreset.a4.size.height
         rect = CGRect(x: x, y: y, width: Self.limited(width), height: Self.limited(height))
+        used = (try? c.decodeIfPresent([[Double]].self, forKey: .used))?
+            .compactMap { $0.count == 4 ? CGRect(x: $0[0], y: $0[1], width: $0[2], height: $0[3]) : nil } ?? []
     }
 
     func encode(to encoder: Encoder) throws {
@@ -101,6 +106,9 @@ nonisolated struct Artboard: Hashable, Codable, Sendable, Identifiable {
         try c.encode(Double(rect.minY), forKey: .y)
         try c.encode(Double(rect.width), forKey: .width)
         try c.encode(Double(rect.height), forKey: .height)
+        if !used.isEmpty {
+            try c.encode(used.map { [Double($0.minX), Double($0.minY), Double($0.width), Double($0.height)] }, forKey: .used)
+        }
     }
 
     static func limited(_ side: Double) -> Double { min(max(side.isFinite ? side : 210, sides.lowerBound), sides.upperBound) }
@@ -110,7 +118,7 @@ nonisolated struct Artboard: Hashable, Codable, Sendable, Identifiable {
     var preset: PagePreset? { PagePreset.matching(rect.size) }
 
     /// The same artboard, the same in the file (the id is only the interface's).
-    func sameAs(_ other: Artboard) -> Bool { name == other.name && rect == other.rect }
+    func sameAs(_ other: Artboard) -> Bool { name == other.name && rect == other.rect && used == other.used }
 
     /// "Artboard 2" when it has no name of its own.
     func title(_ index: Int) -> String { name ?? Self.defaultName(index) }

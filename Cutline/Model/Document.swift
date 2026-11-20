@@ -483,6 +483,16 @@ nonisolated struct RotateRequest: Identifiable, Sendable {
     var pivot: CGPoint?
 }
 
+/// A shape tool clicked without dragging (Editor/ShapeSizeWindow.swift): its window asks the size, as Illustrator's. `point`
+/// is where the click was (page mm); `fromCenter` = ⌥-click (a rectangle or an ellipse centered there, not starting there).
+/// Here, not there: the Finder's previews compile the document without the editor.
+nonisolated struct ShapeRequest: Identifiable, Sendable {
+    let id = UUID()
+    var tool: Tool
+    var point: CGPoint
+    var fromCenter = false
+}
+
 /// Tolerant reading: missing fields (files from earlier versions) get the default value.
 extension CanvasObject {
     nonisolated init(from decoder: Decoder) throws {
@@ -914,6 +924,11 @@ nonisolated final class Document: @unchecked Sendable {
     var pathTextOptionsOpen = false
     /// Object › Transform › Rotate… open on the window (Editor/RotateWindow.swift); nil = closed.
     var rotateRequest: RotateRequest?
+    /// Align to Key Object: the selected object clicked to be the key (it stays put; Model/Alignment.swift); doesn't go into
+    /// the file.
+    var keyObject: CanvasObject.ID?
+    /// A shape tool's size window open on the window (Editor/ShapeSizeWindow.swift); nil = closed.
+    var shapeRequest: ShapeRequest?
     /// The gradient the Gradient panel applies when the selection has none (the last one used); doesn't go into the file.
     var lastGradient = GradientFill.standard
     /// The shape whose image is being moved, scaled and turned inside it (double click; Esc leaves: Editor/ImageInsideShape.swift);

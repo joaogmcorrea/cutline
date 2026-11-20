@@ -128,7 +128,7 @@ struct GradientSection: View {
                     .labelsHidden()
                     HStack(spacing: 6) {
                         Text("Angle").foregroundStyle(.secondary)
-                        TextField("Angle", value: Binding(get: { Int(g.angle.rounded()) }, set: { v in
+                        let angle = Binding(get: { Int(g.angle.rounded()) }, set: { (v: Int) in
                             // −180 to 180, as in Illustrator.
                             var a = Double(v).truncatingRemainder(dividingBy: 360)
                             if a > 180 { a -= 360 } else if a < -180 { a += 360 }
@@ -136,11 +136,13 @@ struct GradientSection: View {
                             var updated = g
                             updated.angle = a
                             doc.changeGradient(to: updated)
-                        }), format: .number)
+                        })
+                        TextField("Angle", value: angle, format: .number)
                             .labelsHidden()
                             .textFieldStyle(.roundedBorder)
                             .multilineTextAlignment(.trailing)
                             .frame(width: 48)
+                            .stepperArrows(angle)
                             .disabled(g.kind == .radial)
                         Text(verbatim: "°").foregroundStyle(.secondary)
                         Spacer(minLength: 0)
@@ -173,17 +175,19 @@ struct GradientSection: View {
                     .lineLimit(1)
                 Spacer(minLength: 4)
                 Text("Location").foregroundStyle(.secondary)
-                TextField("Location", value: Binding(get: { Int((g.stops[stop].location * 100).rounded()) }, set: { v in
+                let location = Binding(get: { Int((g.stops[stop].location * 100).rounded()) }, set: { (v: Int) in
                     var updated = g
                     updated.stops[stop].location = Double(min(max(v, 0), 100)) / 100
                     guard updated != g else { return }
                     selectedStop = updated.sortedIndex(of: stop)
                     doc.changeGradient(to: updated)
-                }), format: .number)
+                })
+                TextField("Location", value: location, format: .number)
                     .labelsHidden()
                     .textFieldStyle(.roundedBorder)
                     .multilineTextAlignment(.trailing)
                     .frame(width: 44)
+                    .stepperArrows(location)
                 Text(verbatim: "%").foregroundStyle(.secondary)
                 Button("Delete Stop", image: .trash) { delete(stop, from: g) }
                     .labelStyle(.iconOnly)

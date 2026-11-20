@@ -243,15 +243,17 @@ private struct ColorChannels: View {
                     ColorTrack(value: channel.value, maximum: channel.maximum, colors: channel.colors) { v, final in
                         doc.setColor(doc.colorTarget, channel.apply(v), final: final)
                     }
-                    TextField(channel.label, value: Binding(get: { channel.value }, set: { updated in
+                    let amount = Binding(get: { channel.value }, set: { (updated: Int) in
                         let v = min(max(updated, 0), channel.maximum)
                         if v != channel.value { doc.setColor(doc.colorTarget, channel.apply(v)) }
-                    }), format: .number)
+                    })
+                    TextField(channel.label, value: amount, format: .number)
                         .labelsHidden()
                         .textFieldStyle(.roundedBorder)
                         .multilineTextAlignment(.trailing)
                         .monospacedDigit()
                         .frame(width: 44)
+                        .stepperArrows(amount)
                     Text(channel.unit)
                         .font(.caption)
                         .foregroundStyle(.secondary)

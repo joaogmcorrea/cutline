@@ -16,6 +16,8 @@ struct CutlineApp: App {
         UserDefaults.standard.set("always", forKey: "AppleWindowTabbingMode")
         // Settings › Appearance: light, dark or as the system.
         AppAppearance.current.apply()
+        // The arrows' old steps (1 mm, 10 mm) give way to Illustrator's (once).
+        Preferences.migrateArrowSteps()
         // The Google Fonts added to Cutline, for this process only, before any document opens (GoogleFonts/).
         GoogleFonts.activateAdded()
         // Fonts activated while the app is open (Adobe Fonts) apply to text already drawn.

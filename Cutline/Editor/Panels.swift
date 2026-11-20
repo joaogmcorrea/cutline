@@ -17,6 +17,11 @@ struct ToolsPanel: View {
     /// The transformation group (Rotate) comes after the shapes, as in Illustrator.
     private let groups: [[Tool]] = [[.selection, .direct], [.pen, .text], [.line, .rectangle, .ellipse, .polygon, .star], [.rotate],
                                     [.eyedropper], [.artboard, .hand, .zoom]]
+    /// The tool under the pointer (its button lights up) and the one whose tip shows beside the capsule, as Illustrator's
+    /// rich tooltips: after a moment over a button; from one button to the next it follows at once.
+    @State private var hovered: Tool?
+    @State private var tip: Tool?
+    @State private var tipTimer: Task<Void, Never>?
 
     var body: some View {
         VStack(spacing: 4) {
@@ -42,15 +47,63 @@ struct ToolsPanel: View {
         }
         .padding(6)
         .glassEffect(.regular, in: .capsule)
+        .overlayPreferenceValue(ToolButtonBounds.self) { bounds in
+            GeometryReader { proxy in
+                if let tip, let anchor = bounds[tip] {
+                    ToolTipCard(tool: tip)
+                        .offset(x: proxy.size.width + 10, y: proxy[anchor].minY - 4)
+                        .allowsHitTesting(false)
+                        .transition(.opacity)
+                }
+            }
+        }
+        .animation(.easeOut(duration: 0.12), value: tip)
         .onChange(of: doc.tool) { _, newOne in
             if Self.penGroup.contains(newOne) { penSlot = newOne }
             if Self.textGroup.contains(newOne) { textSlot = newOne }
         }
+        .onChange(of: penGroupOpen || textGroupOpen) { _, open in if open { hideTip() } }
+        #if DEBUG
+        .task {
+            tip = DebugHooks.toolTipForTest
+            hovered = tip
+        }
+        #endif
+    }
+
+    /// The pointer went into a button or out of it.
+    private func hover(_ tool: Tool, _ inside: Bool) {
+        tipTimer?.cancel()
+        if inside {
+            hovered = tool
+            // A tip already showing follows the pointer at once; otherwise, after a moment (as the system's tooltips).
+            if tip != nil {
+                tip = tool
+            } else {
+                tipTimer = Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(600))
+                    if !Task.isCancelled, hovered == tool { tip = tool }
+                }
+            }
+        } else if hovered == tool {
+            hovered = nil
+            // A moment to reach the next button without the tip blinking.
+            tipTimer = Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(120))
+                if !Task.isCancelled, hovered == nil { tip = nil }
+            }
+        }
+    }
+
+    private func hideTip() {
+        tipTimer?.cancel()
+        tip = nil
     }
 
     private func button(_ tool: Tool, group: Bool = false) -> some View {
         let active = doc.tool == tool
         return Button {
+            hideTip()
             doc.tool = tool
             // The Rotate tool's window, as in Illustrator: a double click or ⌥-click on the tool (around the selection's center).
             if tool == .rotate, !doc.selection.isEmpty, NSEvent.modifierFlags.contains(.option) || (NSApp.currentEvent?.type == .leftMouseUp && (NSApp.currentEvent?.clickCount ?? 1) >= 2) {
@@ -62,7 +115,7 @@ struct ToolsPanel: View {
                 .frame(width: 20, height: 20)
                 .frame(width: 36, height: 36)
                 .foregroundStyle(active ? Color.white : Color.primary)
-                .background(Circle().fill(active ? Color.accentColor : .clear))
+                .background(Circle().fill(active ? Color.accentColor : hovered == tool ? Color.primary.opacity(0.12) : .clear))
                 .overlay(alignment: .bottomTrailing) {
                     // The little corner of a group, as in Illustrator.
                     if group {
@@ -78,9 +131,13 @@ struct ToolsPanel: View {
                     }
                 }
                 .contentShape(Circle())
+                .anchorPreference(key: ToolButtonBounds.self, value: .bounds) { [tool: $0] }
         }
         .buttonStyle(.plain)
-        .help(tool.shortcutLabel.map { "\(tool.name) (\($0))" } ?? tool.name)
+        .onHover { hover(tool, $0) }
+        // VoiceOver reads the name and what it does (the tip is only drawn).
+        .accessibilityLabel(tool.name)
+        .accessibilityHint(tool.summary)
     }
 
     /// A group's slot (the Pen's, the Text's): the last one used; holding it (or a right click) shows the group.
@@ -172,7 +229,48 @@ private struct ToolColors: View {
     }
 }
 
+/// Where each tool button is, for the tip beside it.
+private struct ToolButtonBounds: PreferenceKey {
+    static let defaultValue: [Tool: Anchor<CGRect>] = [:]
+    static func reduce(value: inout [Tool: Anchor<CGRect>], nextValue: () -> [Tool: Anchor<CGRect>]) {
+        value.merge(nextValue()) { $1 }
+    }
+}
+
+/// A tool's tip, as Illustrator's: the name, the shortcut in a little key and what the tool does; the Artboard tool's
+/// with its animation on top (Editor/FeatureTips.swift).
+private struct ToolTipCard: View {
+    let tool: Tool
+
+    var body: some View {
+        RichTipCard(title: tool.name, shortcut: tool.shortcutLabel, summary: tool.summary, preview: tool == .artboard ? .artboards : nil)
+    }
+}
+
 extension Tool {
+    /// What the tool does, in the tip over its button (a sentence or two, as Illustrator's).
+    var summary: String {
+        switch self {
+        case .selection: String(localized: "Select, move and resize objects. Drag just outside a corner to rotate; ⌥-drag makes a copy.")
+        case .direct: String(localized: "Select and drag single anchor points and their handles to reshape a path.")
+        case .pen: String(localized: "Draw paths point by point: click for corners, drag for curves. Click the first point to close the path.")
+        case .addNode: String(localized: "Click a path’s outline to add an anchor point.")
+        case .deleteNode: String(localized: "Click an anchor point to remove it from the path.")
+        case .text: String(localized: "Click to type text right on the canvas, or click a text to edit it.")
+        case .typeOnPath: String(localized: "Click a path or a shape’s outline to type along it.")
+        case .line: String(localized: "Drag to draw a straight line (⇧: steps of 45°). Click to enter its length and angle.")
+        case .rectangle: String(localized: "Drag to draw a rectangle (⇧: a square; ⌥: from the center). Click to enter its size.")
+        case .ellipse: String(localized: "Drag to draw an ellipse (⇧: a circle; ⌥: from the center). Click to enter its size.")
+        case .polygon: String(localized: "Drag to draw a regular polygon. Click to enter its radius and number of sides.")
+        case .star: String(localized: "Drag to draw a star. Click to enter its two radii and number of points.")
+        case .rotate: String(localized: "Drag to rotate the selection. Click to move the center it turns around; ⌥-click to type an angle.")
+        case .eyedropper: String(localized: "Click an object to copy its fill and stroke to the selection. Hold ⇧ to pick only the color, for the square in front.")
+        case .artboard: String(localized: "Draw, move and resize artboards. Each one prints as a page and can be sent on its own.")
+        case .hand: String(localized: "Drag to move around the canvas. Hold the space bar to use it from any tool.")
+        case .zoom: String(localized: "Click to zoom in (⌥: zoom out), or drag around an area to fill the window with it.")
+        }
+    }
+
     /// Prototype icons (Assets.xcassets).
     var icon: String {
         switch self {

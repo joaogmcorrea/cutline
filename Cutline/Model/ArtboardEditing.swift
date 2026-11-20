@@ -4,6 +4,9 @@
 import CoreGraphics
 import Foundation
 
+/// A side of an artboard: where the Artboard tool's + by an edge puts the new one.
+enum ArtboardSide: CaseIterable { case right, bottom, left, top }
+
 extension Document {
     /// Space between a new artboard and the ones already there (mm).
     static let artboardGap = 20.0
@@ -18,6 +21,28 @@ extension Document {
     func newArtboard() {
         let box = artboardsBox, size = activeArtboard.size
         addArtboard(CGRect(x: box.maxX + Self.artboardGap, y: artboards[0].rect.minY, width: size.width, height: size.height))
+    }
+
+    /// New artboard the size of `id`, beside it on `side`, `artboardGap` away, active (the + the Artboard tool shows by an
+    /// edge, as Illustrator's). A place another artboard already takes pushes it further that way, past the one in the way.
+    func addArtboard(beside id: UUID, _ side: ArtboardSide) {
+        guard let source = artboards.first(where: { $0.id == id })?.rect else { return }
+        let gap = Self.artboardGap
+        var r = source
+        func place(past other: CGRect) {
+            switch side {
+            case .right: r.origin.x = other.maxX + gap
+            case .left: r.origin.x = other.minX - gap - r.width
+            case .bottom: r.origin.y = other.maxY + gap
+            case .top: r.origin.y = other.minY - gap - r.height
+            }
+        }
+        place(past: source)
+        for _ in artboards.indices {
+            guard let blocker = artboards.first(where: { $0.rect.insetBy(dx: -gap / 2, dy: -gap / 2).intersects(r) }) else { break }
+            place(past: blocker.rect)
+        }
+        addArtboard(r)
     }
 
     /// New artboard at a place (the Artboard tool's drag), active.

@@ -100,10 +100,33 @@ extension Document {
 
     /// Eyedropper: on an image, the pixel's color goes where X points (fill or stroke); on another object, its fill,
     /// stroke (the cut), width and line style go to the other selected objects — without them, to the next objects.
-    func eyedrop(from id: CanvasObject.ID, at p: CGPoint) {
+    /// With ⇧ (`colorOnly`, as Illustrator's), only the color under the point (the stroke's on the outline, `tolerance` mm,
+    /// the fill's inside) goes to the square in front, fill or stroke.
+    func eyedrop(from id: CanvasObject.ID, at p: CGPoint, colorOnly: Bool = false, tolerance: Double = 1) {
         guard let source = objects.first(where: { $0.id == id }) else { return }
         if let picked = pixelColor(of: source, at: p) {
             setColor(colorTarget, picked)
+            return
+        }
+        if colorOnly {
+            guard let picked = colorUnder(source, at: p, tolerance: tolerance) else { return }
+            // The source itself doesn't change (as without ⇧); with nothing else selected, the color is for the next objects.
+            let targets = selection.subtracting([id])
+            if targets.isEmpty {
+                if colorTarget == .strokeColor { defaultStroke = picked } else { defaultFill = picked }
+            } else {
+                registrar()
+                for i in objects.indices where targets.contains(objects[i].id) {
+                    if colorTarget == .strokeColor {
+                        objects[i].strokeColor = picked
+                        objects[i].cutsLine = true
+                    } else {
+                        objects[i].fill = picked
+                        objects[i].gradient = nil
+                    }
+                }
+            }
+            remember(picked)
             return
         }
         let targets = selection.subtracting([id])
@@ -125,6 +148,17 @@ extension Document {
         }
         if let fill = source.fill { remember(fill) }
         if source.cutsLine { remember(source.strokeColor) }
+    }
+
+    /// The color a vector object shows at `p` (mm): its stroke on the outline (or when it has no fill), its fill inside
+    /// (a gradient: the color it keeps, the 1st stop's); nil when it shows none there.
+    func colorUnder(_ object: CanvasObject, at p: CGPoint, tolerance: Double) -> CMYK? {
+        let outline = object.shapePath.cgPath
+        let width = max(2 * tolerance, object.strokeWidth * 25.4 / 72)
+        let onOutline = outline.copy(strokingWithWidth: width, lineCap: .round, lineJoin: .round, miterLimit: 4).contains(p)
+        if onOutline, object.cutsLine { return object.strokeColor }
+        if let fill = object.fill, outline.contains(p, using: .evenOdd) { return fill }
+        return object.cutsLine ? object.strokeColor : object.fill
     }
 
     /// The color of the image's pixel under `p` (mm); nil outside the image or on a transparent pixel. The pixel goes

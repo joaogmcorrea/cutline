@@ -67,6 +67,37 @@ extension CanvasObject {
         setLocalFrame(r)
         return dx
     }
+
+    /// A text stretched by the handles (or the W and H fields), as Illustrator shows it: the change in height becomes the
+    /// font size (twice as tall says 72 pt, not 36 pt at 200 %), with the leading, baseline shift, indents and spaces in pt
+    /// growing the same; what is left of the change in width stays as the horizontal scale. `old` is the stretch before
+    /// (`textAnchor.scale`); the frame stays where it is. A text on a path keeps its letters' size.
+    mutating func foldStretchIntoSize(from old: CGSize) {
+        guard case .text(var text) = shape, textPath == nil, let anchor = textAnchor, old.height > 0 else { return }
+        let f = anchor.scale.height / old.height
+        guard f.isFinite, f > 0, abs(f - 1) > 1e-6 else { return }
+        text.apply { style in
+            style.size = min(max(style.size * f, 0.1), 10_000)
+            style.leading = style.leading.map { $0 * f }
+            style.offset *= f
+        }
+        text.leftIndent *= f
+        text.rightIndent *= f
+        text.firstLineIndent *= f
+        text.spaceBefore *= f
+        text.spaceAfter *= f
+        replaceText(text, origin: anchor.origin, scale: CGSize(width: anchor.scale.width / f, height: old.height))
+    }
+}
+
+extension Document {
+    /// After a resize: each text in `originals` (as it was before) takes its new height as its font size.
+    func foldTextStretch(_ originals: [CanvasObject.ID: CanvasObject]) {
+        for i in objects.indices {
+            guard let before = originals[objects[i].id]?.textAnchor?.scale else { continue }
+            objects[i].foldStretchIntoSize(from: before)
+        }
+    }
 }
 
 extension TextBox {

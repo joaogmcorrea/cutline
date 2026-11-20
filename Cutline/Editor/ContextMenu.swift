@@ -36,6 +36,12 @@ enum ContextMenu {
         if let inside = doc.selectedObjects.first(where: \.hasImageInside), doc.selection.count == 1 {
             menu.addItem(item(String(localized: "Edit Contents")) { doc.editContent(inside.id) })
         }
+        if Feature.nesting.isOn {
+            // With the selection, or the whole active artboard (Editor/NestMode.swift).
+            menu.addItem(item(String(localized: "Nest…"), keyEvent: "n", modifiers: [.command, .option], isActive: doc.canNest) {
+                doc.startNest()
+            })
+        }
         menu.addItem(.separator())
         // Transform, as in Illustrator's right click: Rotate… (the window) and the quick turns, around the selection's center.
         menu.addItem(submenu(String(localized: "Transform"), isActive: algo, [

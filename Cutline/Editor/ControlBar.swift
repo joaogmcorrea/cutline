@@ -46,6 +46,8 @@ struct ControlBar: View {
     @AppStorage("reguas") private var rulersOn = true
     @AppStorage("snap") private var snapOn = true
     @AppStorage(LengthUnit.key) private var unit = LengthUnit.mm
+    /// What the alignments align to (Illustrator's Align To; Model/Alignment.swift).
+    @AppStorage(AlignTarget.key) private var alignTo = AlignTarget.selection
 
     static let height = 32.0
 
@@ -72,25 +74,12 @@ struct ControlBar: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            historyAndZoom
-            separator
-            if doc.tool == .artboard {
-                // The Artboard tool's bar, as in Illustrator: the active artboard's name, size and orientation.
-                ViewThatFits(in: .horizontal) {
-                    ArtboardBar(doc: doc)
-                    ScrollView(.horizontal, showsIndicators: false) { ArtboardBar(doc: doc) }
-                }
+            if let nest = doc.nest {
+                // Object › Nest… (Editor/NestMode.swift): the settings are in the Nest panel; the bar only says so.
+                NestStatusBar(session: nest)
             } else {
-                // Without room, the alignments become a menu (as in Illustrator); in a very narrow window, the
-                // selection part scrolls sideways instead of squeezing the fields.
-                ViewThatFits(in: .horizontal) {
-                    selection(alignInMenu: false)
-                    selection(alignInMenu: true)
-                    ScrollView(.horizontal, showsIndicators: false) { selection(alignInMenu: true) }
-                }
+                normalBar
             }
-            separator
-            helpers
         }
         .font(.callout)
         .padding(.horizontal, 12)
@@ -100,6 +89,29 @@ struct ControlBar: View {
         .background(Self.background)
         .overlay(alignment: .top) { Self.hairline.frame(height: 1) }
         .overlay(alignment: .bottom) { Self.hairline.frame(height: 1) }
+    }
+
+    /// The bar outside the modes: history and zoom, the selection (or the Artboard tool's), the helpers.
+    @ViewBuilder private var normalBar: some View {
+        historyAndZoom
+        separator
+        if doc.tool == .artboard {
+            // The Artboard tool's bar, as in Illustrator: the active artboard's name, size and orientation.
+            ViewThatFits(in: .horizontal) {
+                ArtboardBar(doc: doc)
+                ScrollView(.horizontal, showsIndicators: false) { ArtboardBar(doc: doc) }
+            }
+        } else {
+            // Without room, the alignments become a menu (as in Illustrator); in a very narrow window, the
+            // selection part scrolls sideways instead of squeezing the fields.
+            ViewThatFits(in: .horizontal) {
+                selection(alignInMenu: false)
+                selection(alignInMenu: true)
+                ScrollView(.horizontal, showsIndicators: false) { selection(alignInMenu: true) }
+            }
+        }
+        separator
+        helpers
     }
 
     /// Dark: #1D1D1D from the sketch; light: a gray close to the canvas's.
@@ -236,6 +248,8 @@ struct ControlBar: View {
                 Button { doc.align(mode) } label: { Label("Align \(mode.name)", image: mode.icon) }
             }
             Divider()
+            alignToPicker
+            Divider()
             ForEach(SpacingAxis.allCases) { axis in
                 Button { doc.distribute(axis) } label: { Label(axis.name, image: axis.icon) }
                     .disabled(howMany < 3)
@@ -246,7 +260,36 @@ struct ControlBar: View {
         .menuStyle(.borderlessButton)
         .fixedSize()
         .disabled(howMany == 0)
-        .help(howMany > 1 ? "Align to the selection" as LocalizedStringKey : "Align to the sheet")
+        .help(alignHelp(nil, howMany))
+    }
+
+    /// Align to Selection, Key Object or Artboard (a check on the chosen one).
+    private var alignToPicker: some View {
+        Picker("Align To", selection: $alignTo) {
+            ForEach(AlignTarget.allCases) { target in
+                Label(target.name, image: target.icon).tag(target)
+            }
+        }
+        .pickerStyle(.inline)
+        .labelsHidden()
+    }
+
+    /// What an alignment does with this many pieces selected (one: to the artboard, whatever Align To says).
+    private func alignHelp(_ mode: AlignMode?, _ howMany: Int) -> LocalizedStringKey {
+        let target = howMany == 1 ? AlignTarget.artboard : alignTo
+        guard let mode else {
+            switch target {
+            case .selection: return "Align to the selection"
+            case .keyObject: return "Align to the key object"
+            case .artboard: return "Align to the artboard"
+            }
+        }
+        guard howMany > 0 else { return "Align \(mode.name)" }
+        switch target {
+        case .selection: return "Align \(mode.name) to the selection"
+        case .keyObject: return "Align \(mode.name) to the key object"
+        case .artboard: return "Align \(mode.name) to the artboard"
+        }
     }
 
     /// Stroke style (solid or dashed) and width, as in Studio's bar.
@@ -269,7 +312,7 @@ struct ControlBar: View {
             .menuIndicator(.visible)
             .fixedSize()
             .help(style.line == .solid ? "Solid stroke" as LocalizedStringKey : "Dashed stroke: the cut is perforated")
-            field(nil, strokeWidth, minimum: 0, maximum: 100, unit: "pt", width: 34) { doc.setStrokeWidth($0) }
+            field(nil, strokeWidth, minimum: 0, maximum: 100, unit: "pt", width: 34, step: 0.25) { doc.setStrokeWidth($0) }
                 .help(strokeWidth > 0 ? "Weight: this stroke will also be printed" as LocalizedStringKey
                       : "Weight: 0 pt shows on screen, doesn’t print and marks the cut")
         }
@@ -330,6 +373,17 @@ struct ControlBar: View {
 
     private func alignments(_ howMany: Int) -> some View {
         HStack(spacing: 0) {
+            // Align To, as Illustrator's: the chosen one's icon, the menu with the three.
+            Menu {
+                alignToPicker
+            } label: {
+                Image(alignTo.icon).resizable().frame(width: 18, height: 18)
+            }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.visible)
+            .fixedSize()
+            .padding(.trailing, 4)
+            .help(howMany == 1 ? Text("\(alignTo.name). One object alone aligns to the artboard.") : Text(verbatim: alignTo.name))
             ForEach(AlignMode.allCases) { mode in
                 Button {
                     doc.align(mode)
@@ -343,8 +397,7 @@ struct ControlBar: View {
                 .buttonStyle(.plain)
                 .disabled(howMany == 0)
                 .opacity(howMany == 0 ? 0.35 : 1)
-                .help(howMany == 1 ? "Align \(mode.name) to the sheet" as LocalizedStringKey
-                      : howMany > 1 ? "Align \(mode.name) to the selection" : "Align \(mode.name)")
+                .help(alignHelp(mode, howMany))
             }
             Divider().frame(height: 16).padding(.horizontal, 4)
             // Space: equal gaps between 3 or more pieces (Studio's Space Horizontally/Vertically).
@@ -423,18 +476,20 @@ struct ControlBar: View {
     }
 
     /// Numeric field: applies on confirm (Enter or leaving the field), as in Illustrator. A `length` is in mm and shows
-    /// in the Settings unit (with its symbol, unless `unit` says otherwise).
+    /// in the Settings unit (with its symbol, unless `unit` says otherwise). Over it, the arrows add or take `step`
+    /// (in what it shows; a length: 1 mm, or 0.1 cm or in).
     private func field(_ label: LocalizedStringKey?, _ value: Double, minimum: Double = -10_000, maximum: Double = 10_000,
-                       length: Bool = false, unit symbol: String? = nil, width: Double = 42, apply: @escaping (Double) -> Void) -> some View {
+                       length: Bool = false, unit symbol: String? = nil, width: Double = 42, step: Double = 1,
+                       apply: @escaping (Double) -> Void) -> some View {
         let factor = length ? unit.mmPer : 1
+        // The field confirms the value again on losing focus: it only applies (and registers the undo) if it changed.
+        let shown = Binding(get: { value / factor }, set: { (updated: Double) in
+            let v = min(max(updated * factor, minimum), maximum)
+            if abs(v - value) > 1e-9 { apply(v) }
+        })
         return HStack(spacing: 4) {
             if let label { Text(label).foregroundStyle(.secondary).fixedSize() }
-            // The field confirms the value again on losing focus: it only applies (and registers the undo) if it changed.
-            TextField(label ?? "", value: Binding(get: { value / factor }, set: { updated in
-                let v = min(max(updated * factor, minimum), maximum)
-                if abs(v - value) > 1e-9 { apply(v) }
-            }),
-                      format: .number.precision(.fractionLength(0...(length ? unit.fractionDigits : 2))))
+            TextField(label ?? "", value: shown, format: .number.precision(.fractionLength(0...(length ? unit.fractionDigits : 2))))
                 .textFieldStyle(.plain)
                 .multilineTextAlignment(.trailing)
                 .monospacedDigit()
@@ -442,6 +497,7 @@ struct ControlBar: View {
                 .padding(.horizontal, 6)
                 .padding(.vertical, 3)
                 .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 6))
+                .stepperArrows(shown, step: length && unit != .mm ? 0.1 : step)
             let shown = symbol ?? (length ? unit.symbol : "")
             if !shown.isEmpty { Text(verbatim: shown).foregroundStyle(.secondary).fixedSize() }
         }
@@ -461,10 +517,11 @@ private struct TextFields: View {
             StyleMenu(doc: doc, style: style, compact: true)
                 .frame(width: 110)
             HStack(spacing: 5) {
-                TextField("Size", value: Binding(get: { style.size }, set: { updated in
+                let size = Binding(get: { style.size }, set: { (updated: Double) in
                     let v = min(max(updated, 1), 1000)
                     if v != style.size { doc.changeStyle { $0.size = v } }
-                }), format: .number.precision(.fractionLength(0...1)))
+                })
+                TextField("Size", value: size, format: .number.precision(.fractionLength(0...1)))
                     .textFieldStyle(.plain)
                     .multilineTextAlignment(.trailing)
                     .monospacedDigit()
@@ -472,6 +529,7 @@ private struct TextFields: View {
                     .padding(.horizontal, 6)
                     .padding(.vertical, 3)
                     .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 6))
+                    .stepperArrows(size)
                     .onSubmit { doc.returnFocusToText() }
                 Text("pt").foregroundStyle(.secondary).fixedSize()
             }

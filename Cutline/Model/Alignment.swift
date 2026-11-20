@@ -33,6 +33,37 @@ nonisolated enum AlignMode: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
+/// What the alignments align to, as Illustrator's Align To: the selection's box, the key object (it stays put; a click on
+/// one of the selected objects makes it the key) or the active artboard. One piece alone always aligns to the artboard.
+/// An app setting (`alignTo`), like Illustrator's.
+nonisolated enum AlignTarget: String, CaseIterable, Identifiable, Sendable {
+    case selection, keyObject, artboard
+
+    static let key = "alignTo"
+
+    var id: Self { self }
+
+    /// In Assets.xcassets (Tabler).
+    var icon: String {
+        switch self {
+        case .selection: "alignToSelection"
+        case .keyObject: "alignToKeyObject"
+        case .artboard: "alignToArtboard"
+        }
+    }
+
+    var name: String {
+        switch self {
+        case .selection: String(localized: "Align to Selection")
+        case .keyObject: String(localized: "Align to Key Object")
+        case .artboard: String(localized: "Align to Artboard")
+        }
+    }
+
+    /// The one chosen (for code outside the views).
+    static var current: AlignTarget { UserDefaults.standard.string(forKey: key).flatMap(AlignTarget.init(rawValue:)) ?? .selection }
+}
+
 /// Equal gaps between 3 or more pieces (Silhouette Studio's Space Horizontally/Vertically, Illustrator's
 /// Distribute Spacing).
 nonisolated enum SpacingAxis: CaseIterable, Identifiable, Sendable {
@@ -74,12 +105,29 @@ extension Document {
         return frames.dropFirst().reduce(first) { $0.union($1) }
     }
 
-    /// One piece (an object, or a whole group): aligns to the sheet; several: to the selection box (as in the prototype
-    /// and in Illustrator). A group moves as a whole.
+    /// The key object's piece (Align to Key Object, with two or more pieces): the one clicked, or else the frontmost.
+    var keyPiece: [CanvasObject]? {
+        let pieces = selectedPieces
+        guard pieces.count >= 2 else { return nil }
+        if let keyObject, let piece = pieces.first(where: { $0.contains { $0.id == keyObject } }) { return piece }
+        return pieces.max { a, b in
+            (objects.firstIndex { $0.id == a.last!.id } ?? 0) < (objects.firstIndex { $0.id == b.last!.id } ?? 0)
+        }
+    }
+
+    /// One piece (an object, or a whole group): aligns to the artboard; several: to what Align To says (the selection box,
+    /// the key object or the artboard), as in Illustrator. A group moves as a whole.
     func align(_ mode: AlignMode) {
         guard let box = selectionBox else { return }
         let pieces = selectedPieces
-        let target = pieces.count == 1 ? activeArtboard.rect : box
+        let target: CGRect
+        switch pieces.count == 1 ? .artboard : AlignTarget.current {
+        case .selection: target = box
+        case .artboard: target = activeArtboard.rect
+        case .keyObject:
+            let key = keyPiece ?? []
+            target = key.dropFirst().reduce(key.first?.bounds ?? box) { $0.union($1.bounds) }
+        }
         registrar()
         for piece in pieces {
             let b = piece.dropFirst().reduce(piece[0].bounds) { $0.union($1.bounds) }
@@ -139,7 +187,12 @@ extension Document {
     /// Takes the selection box to `newOne`: moves and stretches each object in the same proportion.
     func fitSelection(to newOne: CGRect) {
         guard let old = selectionBox, old != newOne else { return }
-        modifySelection { o in o.frame = Self.stretch(o.frame.standardized, of: old, to: newOne) }
+        modifySelection { o in
+            let before = o.textAnchor?.scale
+            o.frame = Self.stretch(o.frame.standardized, of: old, to: newOne)
+            // A text's new height becomes its size in pt (Model/TextEditing.swift).
+            if let before { o.foldStretchIntoSize(from: before) }
+        }
     }
 
     /// Where frame `q` ends up when box `old` (which contains it) becomes `newOne`.

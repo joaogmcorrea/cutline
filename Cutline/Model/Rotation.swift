@@ -178,7 +178,11 @@ extension Document {
     /// Takes the selection's box to `newRect`, worked out in the box's own space (one undo step).
     func fitSelection(_ box: RotatedBox, to newRect: CGRect) {
         guard newRect != box.rect else { return }
-        modifySelection { o in o = Self.fit(o, from: box, to: newRect) }
+        modifySelection { o in
+            let before = o.textAnchor?.scale
+            o = Self.fit(o, from: box, to: newRect)
+            if let before { o.foldStretchIntoSize(from: before) }
+        }
     }
 
     /// Moves the selection on the page (one undo step).

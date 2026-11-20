@@ -111,8 +111,8 @@ struct RotateWindow: View {
 }
 
 /// A small dial beside the angle, as Illustrator's: the line points at the angle (counterclockwise from the right);
-/// dragging on it sets the angle (⇧: steps of 45°).
-private struct AngleDial: View {
+/// dragging on it sets the angle (⇧: steps of 45°). Also in the Line window (Editor/ShapeSizeWindow.swift).
+struct AngleDial: View {
     @Binding var angle: Double
     private let side = 28.0
 

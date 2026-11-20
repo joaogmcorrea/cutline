@@ -219,6 +219,11 @@ struct KindField: View {
                     .textFieldStyle(.plain)
                     .multilineTextAlignment(.trailing)
                     .monospacedDigit()
+                    // The arrows step from the value (from the first suggestion while it is automatic).
+                    .stepperArrows(Binding(get: { value ?? suggestions.first ?? minimum }, set: { updated in
+                        let v = min(max(updated, minimum), maximum)
+                        if v != value { assign(v) }
+                    }))
                 if !unit.isEmpty { Text(unit).foregroundStyle(.secondary) }
                 Menu {
                     if automatic != nil {

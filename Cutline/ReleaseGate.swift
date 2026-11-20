@@ -10,9 +10,12 @@ enum Feature: String, CaseIterable {
     case colorProfiles, colorPicker, gradients, layerBlending, trackEnhancing
     // 1.7.0 (20/11/2026)
     case typeOnPath, linkedImages, googleFonts, grid
+    // 1.8.0 (the week after 1.7.0)
+    case nesting
 
     /// The released ones: each release adds its features here.
-    static let released: Set<Feature> = [.colorProfiles, .colorPicker, .gradients, .layerBlending, .trackEnhancing]
+    static let released: Set<Feature> = [.colorProfiles, .colorPicker, .gradients, .layerBlending, .trackEnhancing,
+                                          .typeOnPath, .linkedImages, .googleFonts, .grid]
 
     /// Shown in the app: released, or every feature on a Mac that asked to preview them.
     var isOn: Bool { Self.released.contains(self) || Self.previewAll }

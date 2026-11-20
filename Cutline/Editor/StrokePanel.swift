@@ -28,13 +28,14 @@ struct StrokeSection: View {
             }
             line("Weight") {
                 HStack(spacing: 6) {
-                    TextField("Weight", value: Binding(get: { strokeWidth }, set: { doc.setStrokeWidth($0) }),
-                              format: .number.precision(.fractionLength(0...2)))
+                    let weight = Binding(get: { strokeWidth }, set: { (v: Double) in doc.setStrokeWidth(min(max(v, 0), 100)) })
+                    TextField("Weight", value: weight, format: .number.precision(.fractionLength(0...2)))
                         .labelsHidden()
                         .textFieldStyle(.roundedBorder)
                         .multilineTextAlignment(.trailing)
                         .monospacedDigit()
                         .frame(width: 56)
+                        .stepperArrows(weight, step: 0.25)
                     Text("pt").foregroundStyle(.secondary)
                 }
             }
@@ -51,14 +52,16 @@ struct StrokeSection: View {
                     HStack(spacing: 6) {
                         segments(LineJoin.allCases, current: style.join, icon: Icons.join, tip: \.tip) { v in doc.setStyle { $0.join = v } }
                         Text("Limit").foregroundStyle(.secondary)
-                        TextField("Miter limit", value: Binding(get: { style.miterLimit }, set: { updated in
+                        let limit = Binding(get: { style.miterLimit }, set: { (updated: Double) in
                             let v = min(max(updated, 1), 500)
                             if v != style.miterLimit { doc.setStyle { $0.miterLimit = v } }
-                        }), format: .number.precision(.fractionLength(0...1)))
+                        })
+                        TextField("Miter limit", value: limit, format: .number.precision(.fractionLength(0...1)))
                             .labelsHidden()
                             .textFieldStyle(.roundedBorder)
                             .multilineTextAlignment(.trailing)
                             .frame(width: 40)
+                            .stepperArrows(limit)
                             .help("Miter limit")
                             .disabled(style.join != .sharp)
                     }

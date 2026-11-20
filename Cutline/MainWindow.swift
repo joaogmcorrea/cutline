@@ -105,6 +105,7 @@ struct MainWindow: View {
         .background {
             Color.clear.sheet(item: $manyPathsNow) { ManyPathsWindow(doc: doc, origin: $0) }.modifier(AssignProfileSheet(doc: doc))
                 .modifier(ColorPickerSheet(doc: doc)).modifier(PathTextOptionsSheet(doc: doc)).modifier(RotateSheet(doc: doc))
+                .modifier(ShapeSizeSheet(doc: doc))
         }
         .focusedSceneValue(\.document, doc)
         .focusedSceneValue(\.viewControl, control)
@@ -162,6 +163,7 @@ struct MainWindow: View {
             DebugHooks.editTextForTest(doc)
             DebugHooks.modifyForTest(doc)
             DebugHooks.openPickerForTest(doc)
+            DebugHooks.showShapeWindowPlain(doc)
             DebugHooks.showFontListForTest(doc)
             DebugHooks.pathfinderForTest(doc)
             if let url = DebugHooks.importForTest { openImported(url, link: DebugHooks.linkImport) }
@@ -367,7 +369,8 @@ struct MainWindow: View {
         }
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.cutlineDocument]
-        panel.nameFieldStringValue = String(localized: "\(nsWindow.title) (selection)")
+        // Without the window title's ".cutline" (shown when the Finder shows every extension), as the PDF's name.
+        panel.nameFieldStringValue = String(localized: "\(Printing.jobTitle(nsWindow)) (selection)")
         panel.beginSheetModal(for: nsWindow) { response in
             guard response == .OK, let url = panel.url else { return }
             do {

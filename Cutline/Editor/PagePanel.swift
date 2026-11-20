@@ -44,10 +44,14 @@ struct PageSection: View {
                         OrientationButtons(doc: doc, artboard: artboard)
                     }
                 }
+                // Across both columns, to the right: added to the label column, the fields (fixed width) made the
+                // section wider than the side panel (309 pt in Spanish, 291 in English), and the panels got cut on both
+                // sides.
                 GridRow {
-                    Text(verbatim: "").gridColumnAlignment(.trailing)
                     ArtboardSizeFields(doc: doc, artboard: artboard)
                         .controlSize(.small)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .gridCellColumns(2)
                 }
                 if doc.artboards.count > 1 {
                     GridRow {

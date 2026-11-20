@@ -211,13 +211,31 @@ extension CanvasObject {
 
     /// Star with the first point up, stretched to fill the frame exactly.
     /// (The regular polygon is in `PolygonShape.subpaths`.)
-    nonisolated static func star(in r: CGRect, points: Int, innerRadius: Double) -> Path {
+    /// The star's corners on a unit circle (outer radius 1), the first one pointing up.
+    private nonisolated static func starCorners(points: Int, innerRadius: Double) -> [CGPoint] {
         let n = max(3, points)
-        let unitOnes = (0..<(2 * n)).map { i -> CGPoint in
+        return (0..<(2 * n)).map { i -> CGPoint in
             let radius = i % 2 == 0 ? 1 : min(max(innerRadius, 0.05), 1)
             let a = -Double.pi / 2 + Double(i) * Double.pi / Double(n)
             return CGPoint(x: radius * cos(a), y: radius * sin(a))
         }
+    }
+
+    /// The frame of the star whose outer corners lie on a circle of `radius` around `center` (the Star window).
+    nonisolated static func starFrame(points: Int, innerRadius: Double, radius: Double, center: CGPoint) -> CGRect {
+        let p = starCorners(points: points, innerRadius: innerRadius)
+        let minX = p.map(\.x).min()!, maxX = p.map(\.x).max()!, minY = p.map(\.y).min()!, maxY = p.map(\.y).max()!
+        return CGRect(x: center.x + minX * radius, y: center.y + minY * radius, width: (maxX - minX) * radius, height: (maxY - minY) * radius)
+    }
+
+    /// The outer radius of a star drawn in this frame (what the Star window shows after a drag).
+    nonisolated static func starRadius(points: Int, innerRadius: Double, frame: CGRect) -> Double {
+        let p = starCorners(points: points, innerRadius: innerRadius)
+        return frame.width / max(p.map(\.x).max()! - p.map(\.x).min()!, 0.001)
+    }
+
+    nonisolated static func star(in r: CGRect, points: Int, innerRadius: Double) -> Path {
+        let unitOnes = starCorners(points: points, innerRadius: innerRadius)
         let minX = unitOnes.map(\.x).min()!, maxX = unitOnes.map(\.x).max()!
         let minY = unitOnes.map(\.y).min()!, maxY = unitOnes.map(\.y).max()!
         var path = Path()
@@ -662,6 +680,19 @@ nonisolated extension PolygonShape {
             let a = Double.pi / 2 + Double.pi / Double(n) + 2 * Double.pi * Double(k) / Double(n)
             return CGPoint(x: cos(a), y: sin(a))
         }
+    }
+
+    /// The frame of the regular polygon whose corners lie on a circle of `radius` around `center` (the Polygon window).
+    static func frame(sides: Int, radius: Double, center: CGPoint) -> CGRect {
+        let p = unitCorners(sides)
+        let minX = p.map(\.x).min()!, maxX = p.map(\.x).max()!, minY = p.map(\.y).min()!, maxY = p.map(\.y).max()!
+        return CGRect(x: center.x + minX * radius, y: center.y + minY * radius, width: (maxX - minX) * radius, height: (maxY - minY) * radius)
+    }
+
+    /// The radius of a regular polygon drawn in this frame (what the Polygon window shows after a drag).
+    static func radius(sides: Int, frame: CGRect) -> Double {
+        let p = unitCorners(sides)
+        return frame.width / max(p.map(\.x).max()! - p.map(\.x).min()!, 0.001)
     }
 
     /// Height ÷ width of the regular polygon (a frame with this proportion keeps it regular).

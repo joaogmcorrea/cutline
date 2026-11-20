@@ -20,7 +20,7 @@ struct ArtboardsSection: View {
                 }
             }
             HStack(spacing: 2) {
-                button("New Artboard", .plus) { doc.newArtboard() }
+                button("New Artboard", .add) { doc.newArtboard() }
                 button("Delete Artboard (its artwork stays on the canvas)", .trash) { doc.deleteArtboard(doc.activeArtboardID) }
                     .disabled(doc.artboards.count < 2)
                 Spacer(minLength: 0)
@@ -164,10 +164,11 @@ struct ArtboardSizeFields: View {
         HStack(spacing: 4) {
             Text(label).foregroundStyle(.secondary).fixedSize()
             // The field confirms the value again on losing focus: it only applies (and registers the undo) if it changed.
-            TextField(label, value: Binding(get: { unit.show(value) }, set: { updated in
+            let shown = Binding(get: { unit.show(value) }, set: { (updated: Double) in
                 let v = Artboard.limited(unit.mm(updated))
                 if abs(v - value) > 1e-6 { apply(v) }
-            }), format: .number.precision(.fractionLength(0...unit.fractionDigits)))
+            })
+            TextField(label, value: shown, format: .number.precision(.fractionLength(0...unit.fractionDigits)))
                 .textFieldStyle(.plain)
                 .multilineTextAlignment(.trailing)
                 .monospacedDigit()
@@ -175,12 +176,13 @@ struct ArtboardSizeFields: View {
                 .padding(.horizontal, 6)
                 .padding(.vertical, 3)
                 .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 6))
+                .stepperArrows(shown, step: unit == .mm ? 1 : 0.1)
         }
     }
 }
 
-/// The control bar with the Artboard tool (⇧O): the active artboard's name, size and orientation, New and Delete, and
-/// whether its artwork moves with it.
+/// The control bar with the Artboard tool (⇧O): the active artboard's name, size and orientation, New (+) and Delete,
+/// and whether its artwork moves with it.
 struct ArtboardBar: View {
     @Bindable var doc: Document
     @AppStorage(Preferences.moveArtworkWithArtboard) private var moveArtwork = true
@@ -199,9 +201,17 @@ struct ArtboardBar: View {
                 .toggleStyle(.checkbox)
                 .fixedSize()
                 .help("Moving an artboard moves the artwork on it too")
-            Button("New") { doc.newArtboard() }
-                .controlSize(.small)
-                .help("New Artboard, the size of this one, to the right of the others")
+            Button { doc.newArtboard() } label: {
+                Image(.add)
+                    .resizable()
+                    .frame(width: 16, height: 16)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 26, height: 24)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text("New Artboard"))
+            .help("New Artboard, the size of this one, to the right of the others")
             Button("Delete") { doc.deleteArtboard(artboard.id) }
                 .controlSize(.small)
                 .disabled(doc.artboards.count < 2)

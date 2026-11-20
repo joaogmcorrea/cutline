@@ -564,14 +564,25 @@ struct SendWindow: View {
 
 /// The artboard being sent, with the cuts: the chosen color highlighted; the disabled ones disappear. With Print & Cut,
 /// with the marks. With Test Shape on, the test cut shows dashed: dragging it moves it, dragging its corner handle
-/// resizes it.
+/// resizes it. It zooms (the buttons at the bottom, pinching, ⌘ or ⌥ with the scroll wheel) up to 8×; zoomed in, scrolling or
+/// dragging outside the test cut moves around.
 struct SheetPreview: View {
     let doc: Document
     let artboard: Artboard
     let lines: [CutLine]
     let highlight: CMYK?
-    /// What the drag started on: moving the test (from that corner, in mm) or resizing it.
+    /// What the drag started on: moving the test (from that corner, in mm), resizing it, or moving the zoomed view
+    /// (from that offset).
     @State private var testDrag: TestDrag?
+    /// 1 = the whole sheet; `pan` moves the zoomed view (points).
+    @State private var zoom = 1.0
+    @State private var pan = CGSize.zero
+    /// The zoom and offset when a pinch started.
+    @State private var pinchStart: (zoom: Double, pan: CGSize)?
+    /// The pointer over the preview (for the scroll wheel), in its points.
+    @State private var hoverPoint: CGPoint?
+    @State private var previewSize = CGSize.zero
+    @State private var scrollMonitor: Any?
     /// What prints (fills, images, printed strokes) and the print bleed, under the cut lines, like Studio's send preview.
     @State private var art = SheetArt()
     @State private var bleedPreview = BleedPreview()
@@ -580,7 +591,11 @@ struct SheetPreview: View {
     private enum TestDrag {
         case move(CGPoint)
         case resize
+        case pan(CGSize)
     }
+
+    static let maxZoom = 8.0
+    private static let zoomSteps = [1.0, 1.5, 2, 3, 4, 6, 8]
 
     /// Size of the corner handle, in points.
     private static let handle = 6.0
@@ -597,9 +612,42 @@ struct SheetPreview: View {
     /// Points per mm of a preview transform (it may be turned).
     private static func scale(_ t: CGAffineTransform) -> Double { hypot(t.a, t.b) }
 
+    /// The fitted transform, zoomed around the preview's middle and moved by `pan`.
+    private func viewTransform(_ size: CGSize, _ frame: SheetFrame) -> CGAffineTransform {
+        let c = CGPoint(x: size.width / 2, y: size.height / 2)
+        return Self.transform(size, frame).concatenating(CGAffineTransform(translationX: -c.x, y: -c.y))
+            .concatenating(CGAffineTransform(scaleX: zoom, y: zoom))
+            .concatenating(CGAffineTransform(translationX: c.x + pan.width, y: c.y + pan.height))
+    }
+
+    /// Zooms to `newZoom` keeping the point `q` (preview points) where it is.
+    private func zoom(to newZoom: Double, around q: CGPoint, from start: (zoom: Double, pan: CGSize)? = nil) {
+        let (z, p) = start ?? (zoom, pan)
+        let z2 = min(max(newZoom, 1), Self.maxZoom)
+        let c = CGPoint(x: previewSize.width / 2, y: previewSize.height / 2)
+        let k = z2 / z
+        zoom = z2
+        pan = clamped(CGSize(width: q.x - c.x - (q.x - c.x - p.width) * k, height: q.y - c.y - (q.y - c.y - p.height) * k))
+    }
+
+    /// Keeps the zoomed sheet over the preview's middle (no offset at 1×).
+    private func clamped(_ offset: CGSize) -> CGSize {
+        guard zoom > 1, previewSize.width > 0 else { return .zero }
+        let c = CGPoint(x: previewSize.width / 2, y: previewSize.height / 2)
+        let r = artboard.rect.applying(Self.transform(previewSize, doc.sheetFrame(artboard)))
+        return CGSize(width: min(max(offset.width, -(r.maxX - c.x) * zoom), -(r.minX - c.x) * zoom),
+                      height: min(max(offset.height, -(r.maxY - c.y) * zoom), -(r.minY - c.y) * zoom))
+    }
+
+    /// The next zoom step in or out (the buttons), around the middle.
+    private func step(_ direction: Int) {
+        let next = direction > 0 ? Self.zoomSteps.first { $0 > zoom + 0.01 } : Self.zoomSteps.last { $0 < zoom - 0.01 }
+        zoom(to: next ?? (direction > 0 ? Self.maxZoom : 1), around: CGPoint(x: previewSize.width / 2, y: previewSize.height / 2))
+    }
+
     var body: some View {
         GeometryReader { geometry in
-            let t = Self.transform(geometry.size, doc.sheetFrame(artboard))
+            let t = viewTransform(geometry.size, doc.sheetFrame(artboard))
             sheet
                 .overlay(alignment: .topLeading) {
                     // Over the corner handle the pointer shows it resizes.
@@ -613,29 +661,102 @@ struct SheetPreview: View {
                     }
                 }
                 .gesture(dragTest(t))
+                .simultaneousGesture(MagnifyGesture()
+                    .onChanged { value in
+                        if pinchStart == nil { pinchStart = (zoom, pan) }
+                        zoom(to: pinchStart!.zoom * value.magnification, around: value.startLocation, from: pinchStart)
+                    }
+                    .onEnded { _ in pinchStart = nil })
+                .onContinuousHover { phase in
+                    if case .active(let p) = phase { hoverPoint = p } else { hoverPoint = nil }
+                }
                 .help(doc.testShape ? Text("Drag the test cut (the dashed square) to where you want to test on the sheet, or its corner to resize it")
                       : Text(verbatim: ""))
+                .onAppear { previewSize = geometry.size }
+                .onChange(of: geometry.size) { _, size in
+                    previewSize = size
+                    pan = clamped(pan)
+                }
         }
+        .clipped()
+        .overlay(alignment: .bottom) { zoomControls.offset(y: 24) }
+        .onAppear {
+            scrollMonitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { event in scrolled(event) ? nil : event }
+            #if DEBUG
+            if let z = DebugHooks.sendPreviewZoom {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                    zoom(to: z.zoom, around: z.point ?? CGPoint(x: previewSize.width / 2, y: previewSize.height / 2))
+                }
+            }
+            #endif
+        }
+        .onDisappear {
+            if let scrollMonitor { NSEvent.removeMonitor(scrollMonitor) }
+            scrollMonitor = nil
+        }
+    }
+
+    /// −, the zoom (a click fits the whole sheet) and +, below the preview.
+    private var zoomControls: some View {
+        HStack(spacing: 2) {
+            Button { step(-1) } label: { Image(.zoomOut).resizable().frame(width: 15, height: 15).frame(width: 24, height: 22) }
+                .disabled(zoom <= 1)
+                .help("Zoom Out")
+            Button {
+                zoom = 1
+                pan = .zero
+            } label: {
+                Text(verbatim: "\(Int((zoom * 100).rounded()))%").monospacedDigit().frame(minWidth: 42)
+            }
+            .help("Show the whole sheet")
+            Button { step(1) } label: { Image(.zoomIn).resizable().frame(width: 15, height: 15).frame(width: 24, height: 22) }
+                .disabled(zoom >= Self.maxZoom)
+                .help("Zoom In")
+        }
+        .buttonStyle(.borderless)
+        .font(.caption)
+        .padding(.horizontal, 4)
+    }
+
+    /// The scroll wheel over the preview: with ⌘ or ⌥ it zooms around the pointer; zoomed in, it moves around. Elsewhere
+    /// (the settings column) it scrolls as usual.
+    private func scrolled(_ event: NSEvent) -> Bool {
+        guard let p = hoverPoint, event.window?.isKeyWindow == true || event.window?.sheetParent != nil else { return false }
+        let dx = event.scrollingDeltaX * (event.hasPreciseScrollingDeltas ? 1 : 10)
+        let dy = event.scrollingDeltaY * (event.hasPreciseScrollingDeltas ? 1 : 10)
+        if !event.modifierFlags.isDisjoint(with: [.command, .option]) {
+            zoom(to: zoom * exp(dy * (event.hasPreciseScrollingDeltas ? 0.01 : 0.02)), around: p)
+            return true
+        }
+        guard zoom > 1 else { return false }
+        pan = clamped(CGSize(width: pan.width + dx, height: pan.height + dy))
+        return true
     }
 
     /// Drag the test cut or its corner; clicking elsewhere on the sheet moves it there. Nothing with Test Shape off.
     private func dragTest(_ t: CGAffineTransform) -> some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { gesture in
-                guard doc.testShape else { return }
+                guard doc.testShape || zoom > 1 else { return }
                 let toMM = t.inverted()
                 let box = doc.testBox
                 if testDrag == nil {
                     let p = gesture.startLocation.applying(toMM)
                     let grab = 1.5 * Self.handle / Self.scale(t)
-                    if abs(p.x - box.maxX) <= grab && abs(p.y - box.maxY) <= grab {
+                    if doc.testShape, abs(p.x - box.maxX) <= grab && abs(p.y - box.maxY) <= grab {
                         testDrag = .resize
+                    } else if doc.testShape, box.insetBy(dx: -3, dy: -3).contains(p) {
+                        testDrag = .move(box.origin)
+                    } else if zoom > 1 {
+                        // Zoomed in, a drag outside the test cut moves around (a click still puts the test there, on release).
+                        testDrag = .pan(pan)
                     } else {
-                        testDrag = .move(box.insetBy(dx: -3, dy: -3).contains(p)
-                                         ? box.origin : CGPoint(x: p.x - box.width / 2, y: p.y - box.height / 2))
+                        testDrag = .move(CGPoint(x: p.x - box.width / 2, y: p.y - box.height / 2))
                     }
                 }
                 switch testDrag {
+                case .pan(let start):
+                    pan = clamped(CGSize(width: start.width + gesture.translation.width, height: start.height + gesture.translation.height))
                 case .move(let start):
                     // The pointer's way in canvas mm (the preview may be turned).
                     let a = gesture.startLocation.applying(toMM), b = gesture.location.applying(toMM)
@@ -649,14 +770,21 @@ struct SheetPreview: View {
                     break
                 }
             }
-            .onEnded { _ in testDrag = nil }
+            .onEnded { gesture in
+                // Zoomed in, a click outside the test cut (without dragging) still puts the test there.
+                if case .pan = testDrag, doc.testShape, hypot(gesture.translation.width, gesture.translation.height) < 3 {
+                    let p = gesture.startLocation.applying(t.inverted()), box = doc.testBox
+                    doc.moveTest(to: CGPoint(x: p.x - box.width / 2, y: p.y - box.height / 2))
+                }
+                testDrag = nil
+            }
     }
 
     private var sheet: some View {
         Canvas { ctx, size in
             let m = 8.0
             let sheet = artboard.rect, frame = doc.sheetFrame(artboard)
-            let t = Self.transform(size, frame)
+            let t = viewTransform(size, frame)
             let scale = Self.scale(t)
             ctx.fill(Path(roundedRect: sheet.insetBy(dx: -m, dy: -m).applying(t), cornerRadius: 3 * scale),
                      with: .color(.gray.opacity(0.35)))

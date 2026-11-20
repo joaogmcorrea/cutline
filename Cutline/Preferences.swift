@@ -126,9 +126,34 @@ nonisolated enum Preferences {
         (max(number(gridSpacing) ?? defaultGridSpacing, 0.5), min(max(Int(number(gridSubdivisions) ?? Double(defaultGridSubdivisions)), 1), 50))
     }
 
-    /// How far the arrows move the selection, in mm: normal, with ⇧ and with ⌥.
+    /// How far the arrows move the selection, in mm: Illustrator's 1 pt, 10 pt with ⇧, and 0.1 mm with ⌥ (decision of the
+    /// owner, 16/11/2026: the 1 mm and 10 mm before were too far).
+    static let defaultArrowStep = 25.4 / 72, defaultArrowStepShift = 254.0 / 72, defaultArrowStepOption = 0.1
+
     static var arrowSteps: (normal: Double, shift: Double, option: Double) {
-        (number(arrowStep) ?? 1, number(arrowStepShift) ?? 10, number(arrowStepOption) ?? 0.1)
+        (number(arrowStep) ?? defaultArrowStep, number(arrowStepShift) ?? defaultArrowStepShift, number(arrowStepOption) ?? defaultArrowStepOption)
+    }
+
+    /// Once: the old steps (1 mm, 10 mm), which the Settings fields used to save just by being left, give way to the new
+    /// defaults. A step someone typed (anything else) stays.
+    static func migrateArrowSteps() {
+        let defaults = UserDefaults.standard, done = "arrowStepsMigrated"
+        guard !defaults.bool(forKey: done) else { return }
+        let old = [arrowStep: 1.0, arrowStepShift: 10.0].filter { number($0.key) == $0.value }.map(\.key)
+        #if DEBUG
+        // A hidden test never writes the owner's settings: the same result only in memory (the argument domain wins).
+        if ProcessInfo.processInfo.environment["CUTLINE_HIDDEN"] != nil {
+            var arguments = defaults.volatileDomain(forName: UserDefaults.argumentDomain)
+            for key in old where arguments[key] == nil {
+                arguments[key] = key == arrowStep ? defaultArrowStep : defaultArrowStepShift
+            }
+            defaults.removeVolatileDomain(forName: UserDefaults.argumentDomain)
+            defaults.setVolatileDomain(arguments, forName: UserDefaults.argumentDomain)
+            return
+        }
+        #endif
+        for key in old { defaults.removeObject(forKey: key) }
+        defaults.set(true, forKey: done)
     }
 
     /// The settings the Trace window opens with.
@@ -168,9 +193,9 @@ struct SettingsView: View {
     @AppStorage(Preferences.gridColor) private var gridColor = Preferences.defaultGridColor
     @AppStorage(Preferences.gridSpacing) private var gridSpacing = Preferences.defaultGridSpacing
     @AppStorage(Preferences.gridSubdivisions) private var gridSubdivisions = Preferences.defaultGridSubdivisions
-    @AppStorage(Preferences.arrowStep) private var arrowStep = 1.0
-    @AppStorage(Preferences.arrowStepShift) private var arrowStepShift = 10.0
-    @AppStorage(Preferences.arrowStepOption) private var arrowStepOption = 0.1
+    @AppStorage(Preferences.arrowStep) private var arrowStep = Preferences.defaultArrowStep
+    @AppStorage(Preferences.arrowStepShift) private var arrowStepShift = Preferences.defaultArrowStepShift
+    @AppStorage(Preferences.arrowStepOption) private var arrowStepOption = Preferences.defaultArrowStepOption
     @AppStorage(Preferences.traceMargin) private var traceMargin = TraceParameters().margin
     @AppStorage(Preferences.traceNodes) private var traceNodes = TraceParameters().nodes
     @AppStorage(Preferences.traceSmoothing) private var traceSmoothing = TraceParameters().smoothing
@@ -246,8 +271,12 @@ struct SettingsView: View {
     private func length(_ title: LocalizedStringKey, _ mm: Binding<Double>) -> some View {
         LabeledContent(title) {
             HStack(spacing: 4) {
-                TextField(title, value: Binding(get: { unit.show(mm.wrappedValue) }, set: { mm.wrappedValue = max(unit.mm($0), 0) }),
-                          format: .number.precision(.fractionLength(0...unit.fractionDigits)))
+                // Only what was typed is saved: leaving the field gives back the rounded number it shows ("0.35" for 1 pt),
+                // which would replace the value (and save a default that never changed).
+                TextField(title, value: Binding(get: { unit.show(mm.wrappedValue) }, set: { typed in
+                    let v = max(unit.mm(typed), 0)
+                    if abs(unit.show(v) - unit.show(mm.wrappedValue)) > 0.5 * pow(10, -Double(unit.fractionDigits)) { mm.wrappedValue = v }
+                }), format: .number.precision(.fractionLength(0...unit.fractionDigits)))
                     .labelsHidden()
                     .multilineTextAlignment(.trailing)
                     .frame(width: 70)

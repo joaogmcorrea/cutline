@@ -13,6 +13,15 @@ import SwiftUI
 enum Printing {
     static let pointsPerMM = 72 / 25.4
 
+    /// The document's name without ".cutline" or ".studio3": the print panel's Save as PDF suggests "Name.pdf", not
+    /// "Name.cutline.pdf" (the window's title has the extension when the Finder shows them all).
+    static func jobTitle(_ nsWindow: NSWindow?) -> String {
+        let document = nsWindow?.windowController?.document as? NSDocument
+        let name = document?.fileURL?.deletingPathExtension().lastPathComponent ?? document?.displayName ?? nsWindow?.title ?? "Cutline"
+        let fileExtension = (name as NSString).pathExtension.lowercased()
+        return ["cutline", "studio3"].contains(fileExtension) ? (name as NSString).deletingPathExtension : name
+    }
+
     /// The system print panel (as a sheet over the window). With `pdf`, writes straight to the file, without a panel.
     static func printDocument(_ doc: Document, in nsWindow: NSWindow?, pdf: URL? = nil) {
         let info = NSPrintInfo()
@@ -34,7 +43,7 @@ enum Printing {
             info.dictionary()[NSPrintInfo.AttributeKey.jobSavingURL.rawValue] = pdf
         }
         let operation = NSPrintOperation(view: PrintedSheets(doc: doc), printInfo: info)
-        operation.jobTitle = nsWindow?.title ?? "Cutline"
+        operation.jobTitle = jobTitle(nsWindow)
         if pdf != nil {
             operation.showsPrintPanel = false
             operation.showsProgressPanel = false

@@ -388,10 +388,11 @@ struct ImageFitBar: View {
     /// A % field that applies on confirm, like the bar's other fields.
     private func percentField(_ value: Double, minimum: Double, maximum: Double, apply: @escaping (Double) -> Void) -> some View {
         HStack(spacing: 2) {
-            TextField("", value: Binding(get: { value }, set: { updated in
+            let percent = Binding(get: { value }, set: { (updated: Double) in
                 let v = min(max(updated, minimum), maximum)
                 if abs(v - value) > 1e-6 { apply(v) }
-            }), format: .number.precision(.fractionLength(0...1)))
+            })
+            TextField("", value: percent, format: .number.precision(.fractionLength(0...1)))
                 .labelsHidden()
                 .textFieldStyle(.plain)
                 .multilineTextAlignment(.trailing)
@@ -400,6 +401,7 @@ struct ImageFitBar: View {
                 .padding(.horizontal, 5)
                 .padding(.vertical, 3)
                 .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 6))
+                .stepperArrows(percent)
             Text(verbatim: "%").foregroundStyle(.secondary).fixedSize()
         }
     }
