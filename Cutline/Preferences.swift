@@ -1,5 +1,6 @@
-// App settings (Cutline › Settings…, ⌘,): appearance, start screen, length unit, guide color, how far the arrows move, the
-// color profiles (Editor/ColorProfileViews.swift), the Trace defaults, the preferred connection and the updates. Stored in UserDefaults; the document keeps everything in mm.
+// App settings (Cutline › Settings…, ⌘,), in tabs (23/11/2026): General (language, appearance, start screen, length unit,
+// updates), Canvas (guides, grid, how far the arrows move), Color (the profiles, Editor/ColorProfileViews.swift), Import
+// (the Trace defaults) and Machine (the preferred connection). Stored in UserDefaults; the document keeps everything in mm.
 import Sparkle
 import SwiftUI
 
@@ -184,11 +185,265 @@ extension Color {
     }
 }
 
+/// The tabs of Cutline › Settings…, as the Settings of Safari or Final Cut (proposal A of the redesign, 23/11/2026).
+/// The last one opened comes back.
+nonisolated enum SettingsTab: String, Sendable {
+    case general, canvas, color, importing, machine
+
+    static let key = "settingsTab"
+}
+
+/// The language of the interface: the Mac's (the default) or one of Cutline's. Stored where the system keeps the
+/// language of each app (System Settings › General › Language & Region › Applications): `AppleLanguages` in Cutline's
+/// own domain, so both places always show the same choice. It takes effect when Cutline opens again.
+nonisolated enum AppLanguage: String, CaseIterable, Identifiable, Sendable {
+    case system, english = "en", portuguese = "pt-BR", spanish = "es"
+
+    static let key = "AppleLanguages"
+
+    var id: Self { self }
+
+    init(code: String) {
+        switch code.lowercased() {
+        case let c where c.hasPrefix("pt"): self = .portuguese
+        case let c where c.hasPrefix("es"): self = .spanish
+        case let c where c.hasPrefix("en"): self = .english
+        default: self = .system
+        }
+    }
+
+    /// Each language in itself, as in System Settings; System Default says which one the Mac gives.
+    var name: String {
+        switch self {
+        case .system: String(localized: "System Default (\(Self.macChoice.name))")
+        case .english: "English"
+        case .portuguese: "Português (Brasil)"
+        case .spanish: "Español"
+        }
+    }
+
+    /// The one stored for Cutline. `UserDefaults.standard` would also read the Mac's list, so only Cutline's domain.
+    static var chosen: AppLanguage {
+        guard let id = Bundle.main.bundleIdentifier,
+              let first = (UserDefaults.standard.persistentDomain(forName: id)?[key] as? [String])?.first else { return .system }
+        return AppLanguage(code: first)
+    }
+
+    /// What the Mac gives Cutline without a choice of its own: the first of the Mac's languages that Cutline has.
+    static var macChoice: AppLanguage {
+        let mac = UserDefaults.standard.persistentDomain(forName: UserDefaults.globalDomain)?[key] as? [String] ?? Locale.preferredLanguages
+        let code = Bundle.preferredLocalizations(from: Bundle.main.localizations.filter { $0 != "Base" }, forPreferences: mac).first ?? "en"
+        let language = AppLanguage(code: code)
+        return language == .system ? .english : language
+    }
+
+    /// The language on screen now.
+    static var running: AppLanguage {
+        let language = AppLanguage(code: Bundle.main.preferredLocalizations.first ?? "en")
+        return language == .system ? .english : language
+    }
+
+    /// The language Cutline opens in with this choice.
+    var resolved: AppLanguage { self == .system ? Self.macChoice : self }
+
+    @MainActor func save() {
+        #if DEBUG
+        // A hidden test never writes the owner's settings.
+        if ProcessInfo.processInfo.environment["CUTLINE_HIDDEN"] != nil { return }
+        #endif
+        if self == .system {
+            UserDefaults.standard.removeObject(forKey: Self.key)
+        } else {
+            UserDefaults.standard.set([rawValue], forKey: Self.key)
+        }
+    }
+
+    /// A sentence of the catalog in this language (its .lproj), so whoever picks it can read the notice. English, the
+    /// catalog's source, has no table of its own: the key is the text.
+    func text(_ key: String) -> String {
+        guard resolved != .english,
+              let path = Bundle.main.path(forResource: resolved.rawValue, ofType: "lproj"),
+              let bundle = Bundle(path: path) else { return key }
+        return bundle.localizedString(forKey: key, value: key, table: nil)
+    }
+
+    /// Restart Now: the documents with changes are reviewed as when quitting (Cancel keeps Cutline open), then Cutline
+    /// quits and opens again.
+    @MainActor static func relaunch() { Relauncher.shared.start() }
+}
+
+@MainActor private final class Relauncher: NSObject {
+    static let shared = Relauncher()
+
+    func start() {
+        NSDocumentController.shared.reviewUnsavedDocuments(withAlertTitle: nil, cancellable: true, delegate: self,
+                                                           didReviewAllSelector: #selector(reviewed(_:didReviewAll:contextInfo:)),
+                                                           contextInfo: nil)
+    }
+
+    @objc private func reviewed(_ controller: NSDocumentController, didReviewAll: Bool, contextInfo: UnsafeMutableRawPointer?) {
+        guard didReviewAll else { return }
+        // A shell that waits for this process to end and opens the app again (the same way Sparkle restarts it).
+        let shell = Process()
+        shell.executableURL = URL(fileURLWithPath: "/bin/sh")
+        shell.arguments = ["-c", "while /bin/kill -0 \(ProcessInfo.processInfo.processIdentifier) 2>/dev/null; do /bin/sleep 0.2; done; /usr/bin/open \"$0\"",
+                           Bundle.main.bundlePath]
+        do { try shell.run() } catch { return }
+        NSApp.terminate(nil)
+    }
+}
+
 /// Cutline › Settings…
 struct SettingsView: View {
-    @AppStorage(LengthUnit.key) private var unit = LengthUnit.mm
+    @AppStorage(SettingsTab.key) private var tab = SettingsTab.general
+
+    var body: some View {
+        TabView(selection: $tab) {
+            Tab("General", image: "settingsTabGeneral", value: SettingsTab.general) { GeneralSettings() }
+            Tab("Canvas", image: "settingsTabCanvas", value: SettingsTab.canvas) { CanvasSettings() }
+            if Feature.colorProfiles.isOn {
+                Tab("Color", image: "settingsTabColor", value: SettingsTab.color) { ColorTab() }
+            }
+            Tab("Import", image: "settingsTabImport", value: SettingsTab.importing) { ImportSettings() }
+            Tab("Machine", image: "settingsTabMachine", value: SettingsTab.machine) { MachineSettings() }
+        }
+        #if DEBUG
+        .onAppear {
+            if let test = DebugHooks.settingsTab { tab = test }
+            DebugHooks.resizeSettings()
+        }
+        #endif
+    }
+}
+
+/// One tab, laid out as the Settings of Final Cut (owner's request, 23/11/2026): labels with a colon on the left,
+/// controls on the right, checkboxes and pop-up menus, every number with its ˅ ˄ arrows. The window can grow; the
+/// form stays at the top, in the middle.
+private struct SettingsPane<Content: View>: View {
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        // A grid of our own and not Form's columns style, which pushed the rows with a text field to the left of the
+        // others (the numbers didn't line up with the colors and menus).
+        Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 10, verticalSpacing: 14) { content }
+            .toggleStyle(.checkbox)
+            .padding(.horizontal, 40)
+            .padding(.vertical, 24)
+            .fixedSize()
+            // Opens just as big as the tab needs (at least 620 wide, so the tabs don't jump); dragging the corner
+            // makes it bigger, never smaller.
+            .frame(minWidth: 620, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+}
+
+/// One row: the label with its colon on the left (right-aligned), the controls on the right, on the label's baseline.
+/// Without a title, the controls go under the ones above (a button under its menus).
+struct SettingsRow<Content: View>: View {
+    let title: LocalizedStringKey?
+    @ViewBuilder let content: Content
+
+    init(_ title: LocalizedStringKey? = nil, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.content = content()
+    }
+
+    var body: some View {
+        GridRow {
+            if let title { Text(title).gridColumnAlignment(.trailing) } else { Color.clear.gridCellUnsizedAxes([.horizontal, .vertical]) }
+            content
+        }
+    }
+}
+
+/// The small text under a control that says what it does.
+struct SettingsNote: View {
+    let text: LocalizedStringKey
+
+    init(_ text: LocalizedStringKey) { self.text = text }
+
+    var body: some View {
+        Text(text)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .frame(width: 330, alignment: .leading)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+private struct GeneralSettings: View {
     @AppStorage(AppAppearance.key) private var appearance = AppAppearance.automatic
     @AppStorage(StartScreen.key) private var startScreen = true
+    @AppStorage(LengthUnit.key) private var unit = LengthUnit.mm
+    @AppStorage(GoogleFonts.shownKey) private var googleFonts = true
+    @State private var language = AppLanguage.chosen
+
+    var body: some View {
+        SettingsPane {
+            Section {
+                SettingsRow("Language:") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Picker("Language:", selection: $language) {
+                            Text(verbatim: AppLanguage.system.name).tag(AppLanguage.system)
+                            Divider()
+                            ForEach(AppLanguage.allCases.filter { $0 != .system }) { Text(verbatim: $0.name).tag($0) }
+                        }
+                        .labelsHidden()
+                        .fixedSize()
+                        .onChange(of: language) { _, chosen in chosen.save() }
+                        if language.resolved != AppLanguage.running {
+                            HStack(spacing: 8) {
+                                Text(verbatim: language.text("Cutline will be in English the next time it opens."))
+                                    .fixedSize(horizontal: false, vertical: true)
+                                Button(language.text("Restart Now")) { AppLanguage.relaunch() }
+                                    .buttonStyle(.borderedProminent)
+                            }
+                            .font(.callout)
+                            .frame(width: 330, alignment: .leading)
+                        }
+                        SettingsNote("Cutline follows the Mac’s language unless you choose one here. It changes when Cutline opens again. The same choice is in System Settings › General › Language & Region › Applications.")
+                    }
+                }
+                SettingsRow("Appearance:") {
+                    Picker("Appearance:", selection: $appearance) {
+                        ForEach(AppAppearance.allCases) { Text($0.name).tag($0) }
+                    }
+                    .labelsHidden()
+                    .fixedSize()
+                    .onChange(of: appearance) { _, chosen in chosen.apply() }
+                }
+                SettingsRow("Start screen:") {
+                    Toggle("Show when no document is open", isOn: $startScreen)
+                        .help("When Cutline opens with no document and when the last one closes; off, it opens a blank document.")
+                }
+                SettingsRow("Length:") {
+                    Picker("Length:", selection: $unit) {
+                        ForEach(LengthUnit.allCases) { Text(verbatim: "\($0.name) (\($0.symbol))").tag($0) }
+                    }
+                    .labelsHidden()
+                    .fixedSize()
+                    .help("Rulers, position and size, margins and the other lengths. Documents always store millimeters.")
+                }
+                if Feature.googleFonts.isOn {
+                    SettingsRow("Fonts:") {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Toggle("Show Google Fonts in the font list", isOn: $googleFonts)
+                            SettingsNote("Off, Cutline never talks to Google. The fonts you already added keep working.")
+                        }
+                    }
+                }
+            }
+            Divider()
+            Section {
+                UpdatesSettings(updater: Updates.controller.updater)
+            }
+        }
+        #if DEBUG
+        .onAppear { if let test = DebugHooks.settingsLanguage { language = test } }
+        #endif
+    }
+}
+
+private struct CanvasSettings: View {
     @AppStorage(Preferences.guideColor) private var guideColor = Preferences.defaultGuideColor
     @AppStorage(Preferences.gridColor) private var gridColor = Preferences.defaultGridColor
     @AppStorage(Preferences.gridSpacing) private var gridSpacing = Preferences.defaultGridSpacing
@@ -196,106 +451,199 @@ struct SettingsView: View {
     @AppStorage(Preferences.arrowStep) private var arrowStep = Preferences.defaultArrowStep
     @AppStorage(Preferences.arrowStepShift) private var arrowStepShift = Preferences.defaultArrowStepShift
     @AppStorage(Preferences.arrowStepOption) private var arrowStepOption = Preferences.defaultArrowStepOption
+
+    var body: some View {
+        SettingsPane {
+            Section {
+                ColorRow(title: "Guide color:", hex: $guideColor)
+                if Feature.grid.isOn {
+                    ColorRow(title: "Grid color:", hex: $gridColor)
+                    LengthRow(title: "Gridline every:", mm: Binding(get: { gridSpacing }, set: { gridSpacing = max($0, 0.5) }))
+                    SettingsRow("Subdivisions:") {
+                        StepperField(value: Binding(get: { Double(gridSubdivisions) }, set: { gridSubdivisions = Int($0.rounded()) }),
+                                     step: 1, range: 1...50, fractionDigits: 0)
+                    }
+                }
+            }
+            Divider()
+            Section {
+                LengthRow(title: "Arrow keys move:", mm: $arrowStep, fine: true)
+                LengthRow(title: "With ⇧:", mm: $arrowStepShift, fine: true)
+                LengthRow(title: "With ⌥:", mm: $arrowStepOption, fine: true)
+            }
+        }
+    }
+}
+
+private struct ColorTab: View {
+    var body: some View {
+        SettingsPane { ColorSettingsSection() }
+    }
+}
+
+private struct ImportSettings: View {
     @AppStorage(Preferences.traceMargin) private var traceMargin = TraceParameters().margin
     @AppStorage(Preferences.traceNodes) private var traceNodes = TraceParameters().nodes
     @AppStorage(Preferences.traceSmoothing) private var traceSmoothing = TraceParameters().smoothing
-    @AppStorage(PreferredConnection.key) private var connection = PreferredConnection.usb
+    @AppStorage(LengthUnit.key) private var unit = LengthUnit.mm
 
     var body: some View {
-        Form {
-            Section("General") {
-                Picker("Appearance", selection: $appearance) {
-                    ForEach(AppAppearance.allCases) { Text($0.name).tag($0) }
-                }
-                .pickerStyle(.segmented)
-                .onChange(of: appearance) { _, chosen in chosen.apply() }
-                Toggle("Show the start screen", isOn: $startScreen)
-                Text("When Cutline opens with no document and when the last one closes; off, it opens a blank document.")
-                    .font(.caption).foregroundStyle(.secondary)
-            }
-            Section("Units") {
-                Picker("Length", selection: $unit) {
-                    ForEach(LengthUnit.allCases) { Text(verbatim: "\($0.name) (\($0.symbol))").tag($0) }
-                }
-                Text("Rulers, position and size, margins and the other lengths. Documents always store millimeters.")
-                    .font(.caption).foregroundStyle(.secondary)
-            }
-            Section("Canvas") {
-                ColorPicker("Guide color", selection: Binding(get: { Color(hex: guideColor) }, set: { guideColor = $0.hex }),
-                            supportsOpacity: false)
-                if Feature.grid.isOn {
-                    ColorPicker("Grid color", selection: Binding(get: { Color(hex: gridColor) }, set: { gridColor = $0.hex }),
-                                supportsOpacity: false)
-                    length("Gridline every", Binding(get: { gridSpacing }, set: { gridSpacing = max($0, 0.5) }))
-                    LabeledContent("Subdivisions") {
-                        HStack(spacing: 4) {
-                            TextField("Subdivisions", value: Binding(get: { gridSubdivisions }, set: { gridSubdivisions = min(max($0, 1), 50) }),
-                                      format: .number)
-                                .labelsHidden()
-                                .multilineTextAlignment(.trailing)
-                                .frame(width: 70)
-                            Stepper("Subdivisions", value: Binding(get: { gridSubdivisions }, set: { gridSubdivisions = min(max($0, 1), 50) }),
-                                    in: 1...50)
-                                .labelsHidden()
+        SettingsPane {
+            // A group of values, as Final Cut's Durations: the group on the left, each value with its own label.
+            SettingsRow("Trace Image:") {
+                VStack(alignment: .leading, spacing: 8) {
+                    Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 8, verticalSpacing: 8) {
+                        GridRow {
+                            Text("Margin:").gridColumnAlignment(.trailing)
+                            LengthField(mm: $traceMargin)
+                        }
+                        GridRow {
+                            Text("Node count:")
+                            PercentField(value: $traceNodes)
+                        }
+                        GridRow {
+                            Text("Smoothing:")
+                            PercentField(value: $traceSmoothing)
                         }
                     }
+                    SettingsNote("What the Trace window opens with.")
                 }
-                length("Arrow keys move", $arrowStep)
-                length("With ⇧", $arrowStepShift)
-                length("With ⌥", $arrowStepOption)
-            }
-            if Feature.colorProfiles.isOn { ColorSettingsSection() }
-            Section("Trace Image") {
-                length("Margin", $traceMargin)
-                percent("Node count", $traceNodes)
-                percent("Smoothing", $traceSmoothing)
-                Text("What the Trace window opens with.").font(.caption).foregroundStyle(.secondary)
-            }
-            Section("Machine") {
-                Picker("Try first", selection: $connection) {
-                    ForEach(PreferredConnection.allCases) { Text($0.name).tag($0) }
-                }
-                Text("When the machine is on the cable and on Bluetooth at the same time. If it doesn’t answer, the other one is tried.")
-                    .font(.caption).foregroundStyle(.secondary)
-            }
-            Section("Updates") {
-                UpdatesSettings(updater: Updates.controller.updater)
-            }
-        }
-        .formStyle(.grouped)
-        .frame(width: 480)
-        .fixedSize(horizontal: false, vertical: true)
-    }
-
-    /// A length in mm, shown and typed in the chosen unit.
-    private func length(_ title: LocalizedStringKey, _ mm: Binding<Double>) -> some View {
-        LabeledContent(title) {
-            HStack(spacing: 4) {
-                // Only what was typed is saved: leaving the field gives back the rounded number it shows ("0.35" for 1 pt),
-                // which would replace the value (and save a default that never changed).
-                TextField(title, value: Binding(get: { unit.show(mm.wrappedValue) }, set: { typed in
-                    let v = max(unit.mm(typed), 0)
-                    if abs(unit.show(v) - unit.show(mm.wrappedValue)) > 0.5 * pow(10, -Double(unit.fractionDigits)) { mm.wrappedValue = v }
-                }), format: .number.precision(.fractionLength(0...unit.fractionDigits)))
-                    .labelsHidden()
-                    .multilineTextAlignment(.trailing)
-                    .frame(width: 70)
-                Text(verbatim: unit.symbol).foregroundStyle(.secondary).frame(width: 24, alignment: .leading)
             }
         }
     }
+}
 
-    private func percent(_ title: LocalizedStringKey, _ value: Binding<Double>) -> some View {
-        LabeledContent(title) {
-            HStack(spacing: 4) {
-                TextField(title, value: Binding(get: { value.wrappedValue }, set: { value.wrappedValue = min(max($0, 0), 100) }),
-                          format: .number.precision(.fractionLength(0)))
+private struct MachineSettings: View {
+    @AppStorage(PreferredConnection.key) private var connection = PreferredConnection.usb
+    @AppStorage(TestCut.sizeKey) private var testSize = TestCut.defaultSide
+
+    var body: some View {
+        SettingsPane {
+            SettingsRow("Try first:") {
+                VStack(alignment: .leading, spacing: 8) {
+                    Picker("Try first:", selection: $connection) {
+                        ForEach(PreferredConnection.allCases) { Text($0.name).tag($0) }
+                    }
                     .labelsHidden()
-                    .multilineTextAlignment(.trailing)
-                    .frame(width: 70)
-                Text(verbatim: "%").foregroundStyle(.secondary).frame(width: 24, alignment: .leading)
+                    .fixedSize()
+                    SettingsNote("When the machine is on the cable and on Bluetooth at the same time. If it doesn’t answer, the other one is tried.")
+                }
+            }
+            SettingsRow("Test cut:") {
+                VStack(alignment: .leading, spacing: 8) {
+                    LengthField(mm: Binding(get: { testSize }, set: { testSize = min(max($0, TestCut.sides.lowerBound), TestCut.sides.upperBound) }))
+                    SettingsNote("The size of the test square in the Send window of a new document. You can still change it there.")
+                }
             }
         }
+    }
+}
+
+/// A color well with its code beside it. The code gives the row a text baseline: a well alone sat higher than its
+/// label and pushed the row to the right of the others.
+private struct ColorRow: View {
+    let title: LocalizedStringKey
+    @Binding var hex: String
+
+    var body: some View {
+        SettingsRow(title) {
+            HStack(spacing: 8) {
+                ColorPicker(title, selection: Binding(get: { Color(hex: hex) }, set: { hex = $0.hex }), supportsOpacity: false)
+                    .labelsHidden()
+                Text(verbatim: "#" + hex.uppercased())
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
+/// A length in mm, shown and typed in the chosen unit, with its arrows.
+private struct LengthRow: View {
+    let title: LocalizedStringKey
+    @Binding var mm: Double
+    var fine = false
+
+    var body: some View {
+        SettingsRow(title) { LengthField(mm: $mm, fine: fine) }
+    }
+}
+
+private struct LengthField: View {
+    @Binding var mm: Double
+    /// Small steps (the arrow keys' distances); otherwise whole millimeters.
+    var fine = false
+    @AppStorage(LengthUnit.key) private var unit = LengthUnit.mm
+
+    var body: some View {
+        StepperField(value: Binding(get: { unit.show(mm) }, set: { typed in
+            // Only a real change is saved: leaving the field gives back the rounded number it shows ("0.35" for 1 pt),
+            // which would replace the value (and save a default that never changed).
+            let v = max(unit.mm(typed), 0)
+            if abs(unit.show(v) - unit.show(mm)) > 0.5 * pow(10, -Double(unit.fractionDigits)) { mm = v }
+        }), step: step, range: 0...Double.greatestFiniteMagnitude, fractionDigits: unit.fractionDigits, unit: unit.symbol)
+    }
+
+    private var step: Double {
+        switch unit {
+        case .mm: fine ? 0.1 : 1
+        case .cm, .inch: fine ? 0.01 : 0.1
+        }
+    }
+}
+
+private struct PercentField: View {
+    @Binding var value: Double
+
+    var body: some View {
+        StepperField(value: $value, step: 5, range: 0...100, fractionDigits: 0, unit: "%")
+    }
+}
+
+/// A number as Final Cut shows it: a field with ˅ on the left and ˄ on the right (and the ↓ ↑ keys while typing), then
+/// the unit. The arrows go to the next multiple of the step.
+struct StepperField: View {
+    @Binding var value: Double
+    let step: Double
+    let range: ClosedRange<Double>
+    let fractionDigits: Int
+    var unit: String? = nil
+
+    var body: some View {
+        HStack(spacing: 6) {
+            HStack(spacing: 0) {
+                arrow(.chevronDown, -1)
+                TextField(value: $value, format: .number.precision(.fractionLength(0...fractionDigits))) { EmptyView() }
+                    .textFieldStyle(.plain)
+                    .multilineTextAlignment(.center)
+                    .frame(width: 52)
+                    .onKeyPress(.upArrow) { move(1); return .handled }
+                    .onKeyPress(.downArrow) { move(-1); return .handled }
+                arrow(.chevronUp, 1)
+            }
+            .padding(.vertical, 3)
+            .background(RoundedRectangle(cornerRadius: 5).fill(Color(nsColor: .controlBackgroundColor)))
+            .overlay(RoundedRectangle(cornerRadius: 5).strokeBorder(Color(nsColor: .separatorColor)))
+            if let unit { Text(verbatim: unit).foregroundStyle(.secondary) }
+        }
+    }
+
+    private func arrow(_ icon: ImageResource, _ direction: Double) -> some View {
+        Button { move(direction) } label: {
+            Image(icon)
+                .resizable()
+                .frame(width: 11, height: 11)
+                .frame(width: 20, height: 18)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(.secondary)
+        .disabled(direction < 0 ? value <= range.lowerBound : value >= range.upperBound)
+    }
+
+    private func move(_ direction: Double) {
+        let next = direction > 0 ? (value / step + 1e-9).rounded(.down) + 1 : (value / step - 1e-9).rounded(.up) - 1
+        value = min(max(next * step, range.lowerBound), range.upperBound)
     }
 }
 
@@ -306,15 +654,17 @@ private struct UpdatesSettings: View {
     @State private var can = false
 
     var body: some View {
-        Toggle("Check for updates automatically", isOn: Binding(get: { automatic }, set: {
-            automatic = $0
-            updater.automaticallyChecksForUpdates = $0
-        }))
-        .onAppear { automatic = updater.automaticallyChecksForUpdates }
-        LabeledContent("") {
-            Button("Check Now") { updater.checkForUpdates() }
-                .disabled(!can)
-                .onReceive(updater.publisher(for: \.canCheckForUpdates)) { can = $0 }
+        SettingsRow("Updates:") {
+            VStack(alignment: .leading, spacing: 8) {
+                Toggle("Check for updates automatically", isOn: Binding(get: { automatic }, set: {
+                    automatic = $0
+                    updater.automaticallyChecksForUpdates = $0
+                }))
+                .onAppear { automatic = updater.automaticallyChecksForUpdates }
+                Button("Check Now") { updater.checkForUpdates() }
+                    .disabled(!can)
+                    .onReceive(updater.publisher(for: \.canCheckForUpdates)) { can = $0 }
+            }
         }
     }
 }

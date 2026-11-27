@@ -51,6 +51,8 @@ enum TipPreview {
     case offset
     /// Nest: scattered pieces packing together on the artboard and scattering again.
     case nest
+    /// Type on a Path: letters coming one by one along an arc (the start screen's spotlight, WhatsNew.swift).
+    case typeOnPath
 
     /// How long one loop takes (seconds).
     var period: Double {
@@ -58,12 +60,13 @@ enum TipPreview {
         case .artboards: 5.5
         case .offset: 4
         case .nest: 5
+        case .typeOnPath: 5
         }
     }
 }
 
-/// The looping animation, drawn on a gray pasteboard like the canvas.
-private struct TipAnimation: View {
+/// The looping animation, drawn on a gray pasteboard like the canvas (also on the start screen's spotlight).
+struct TipAnimation: View {
     let preview: TipPreview
     @Environment(\.colorScheme) private var scheme
     @State private var start = Date()
@@ -77,6 +80,7 @@ private struct TipAnimation: View {
                 case .artboards: TipDrawing.artboards(&ctx, size: size, t: t)
                 case .offset: TipDrawing.offset(&ctx, size: size, t: t)
                 case .nest: TipDrawing.nest(&ctx, size: size, t: t)
+                case .typeOnPath: TipDrawing.typeOnPath(&ctx, size: size, t: t)
                 }
             }
         }
@@ -302,5 +306,48 @@ private enum TipDrawing {
             ctx.fill(placed, with: .color(piece.color.opacity(0.14)))
             ctx.stroke(placed, with: .color(piece.color), lineWidth: 1.2)
         }
+    }
+    // MARK: Type on a Path
+
+    /// The letters of "Happy Birthday" come one by one along a dashed arc, from its start to its end, and leave together.
+    static func typeOnPath(_ ctx: inout GraphicsContext, size: CGSize, t: Double) {
+        let page = CGRect(x: 40, y: 12, width: 170, height: 106)
+        sheet(&ctx, page)
+        let a = CGPoint(x: 58, y: 100), c = CGPoint(x: 125, y: -2), b = CGPoint(x: 192, y: 100)
+        func point(_ u: Double) -> CGPoint {
+            CGPoint(x: (1 - u) * (1 - u) * a.x + 2 * (1 - u) * u * c.x + u * u * b.x,
+                    y: (1 - u) * (1 - u) * a.y + 2 * (1 - u) * u * c.y + u * u * b.y)
+        }
+        var arc = Path()
+        arc.move(to: a)
+        arc.addQuadCurve(to: b, control: c)
+        ctx.stroke(arc, with: .color(cutBlue.opacity(0.7)), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+        // Points every 1/200 of the curve, to place the letters by the length along it.
+        let samples = (0...200).map { point(Double($0) / 200) }
+        var lengths = [0.0]
+        for i in 1..<samples.count { lengths.append(lengths[i - 1] + hypot(samples[i].x - samples[i - 1].x, samples[i].y - samples[i - 1].y)) }
+        let letters = Array("Happy Birthday")
+        // About how wide each letter is, so the narrow ones don't leave gaps.
+        let widths = letters.map { "iltr ".contains($0) ? 6.5 : ($0 == "B" ? 12.0 : 10.5) }
+        let total = widths.reduce(0, +)
+        let leave = 1 - ease(t, 4.1, 4.7)
+        var along = (lengths.last! - total) / 2
+        for (i, letter) in letters.enumerated() {
+            defer { along += widths[i] }
+            guard letter != " " else { continue }
+            let shown = ease(t, 0.4 + Double(i) * 0.17, 0.6 + Double(i) * 0.17) * leave
+            guard shown > 0 else { continue }
+            let target = along + widths[i] / 2
+            let j = min(max(lengths.firstIndex { $0 >= target } ?? samples.count - 1, 1), samples.count - 1)
+            let p = samples[j], q = samples[j - 1]
+            var letterCtx = ctx
+            letterCtx.opacity = shown
+            letterCtx.translateBy(x: p.x, y: p.y)
+            letterCtx.rotate(by: .radians(atan2(p.y - q.y, p.x - q.x)))
+            letterCtx.draw(Text(verbatim: String(letter)).font(.system(size: 17, weight: .bold, design: .serif))
+                .foregroundStyle(Color(red: 0.84, green: 0.2, blue: 0.42)), at: CGPoint(x: 0, y: -2), anchor: .bottom)
+        }
+        // The path's start and end.
+        for end in [a, b] { ctx.fill(Path(ellipseIn: CGRect(x: end.x - 3, y: end.y - 3, width: 6, height: 6)), with: .color(cutBlue)) }
     }
 }

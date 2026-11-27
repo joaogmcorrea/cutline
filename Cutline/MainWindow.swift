@@ -145,6 +145,10 @@ struct MainWindow: View {
             case .illustrator(let url):
                 openPage(url, title: IllustratorScript.title(of: url), from: .illustrator)
                 IllustratorScript.discard(url)
+            case .tryNest:
+                doc.addNestSample()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { doc.startNest() }
+            case .typeOnPath: doc.addTypeOnPathSample()
             case nil: break
             }
         }

@@ -1,6 +1,7 @@
 // Start screen, as Illustrator's Home: shows when Cutline opens with no document (instead of a blank one) and when the
-// last document closes. New document, Open, ways to start (blank sheet, Print & Cut, trace an image, a Silhouette
-// Studio file), the recent files with a preview drawn from the file itself, and the machine. Settings › General (or
+// last document closes. New document, Open, the version's highlights and What's New (WhatsNew.swift), ways to start
+// (blank sheet, Print & Cut, trace an image, a Silhouette Studio file), the recent files in a grid or a list with a
+// preview drawn from the file itself, and the machine. Settings › General (or
 // "Show at launch" here) turns it off: then Cutline opens a blank document, as before.
 import AppKit
 import CutlineKit
@@ -27,8 +28,10 @@ enum StartScreen {
     static func show() { opener?(id: id) }
 
     /// What the next new document starts with (picked on the start screen; `canva`: a page from Open from Canva…, the PDF
-    /// and the design's title; `illustrator`: the PDF of Illustrator's "Send to Cutline" script, Illustrator/).
-    enum Setup { case printAndCut, importing(URL), canva(URL, title: String), illustrator(URL) }
+    /// and the design's title; `illustrator`: the PDF of Illustrator's "Send to Cutline" script, Illustrator/;
+    /// `tryNest` and `typeOnPath`: the spotlight's Try buttons, a few shapes nesting or a circle with the Type on a Path
+    /// tool, WhatsNew.swift).
+    enum Setup { case printAndCut, importing(URL), canva(URL, title: String), illustrator(URL), tryNest, typeOnPath }
     /// In order: several new documents can be asked for before the first window shows (files opened together).
     private static var pending: [Setup?] = []
 
@@ -92,8 +95,12 @@ struct StartView: View {
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
     @AppStorage(StartScreen.key) private var showAtLaunch = true
+    /// The recent files as cards (`grid`) or rows (`list`).
+    @AppStorage("startRecentLayout") private var recentLayout = "grid"
     @State private var recent: [URL] = []
     @State private var dropping = false
+    @State private var whatsNewOpen = false
+    private let whatsNew = WhatsNew.current
 
     var body: some View {
         HStack(spacing: 0) {
@@ -112,14 +119,21 @@ struct StartView: View {
                 RoundedRectangle(cornerRadius: 14).strokeBorder(Color.accentColor, lineWidth: 3).padding(6).allowsHitTesting(false)
             }
         }
+        .sheet(isPresented: $whatsNewOpen) {
+            if let whatsNew { WhatsNewSheet(entry: whatsNew) }
+        }
         .onAppear {
             StartScreen.opener = openWindow
             recent = NSDocumentController.shared.recentDocumentURLs
             #if DEBUG
             if let files = DebugHooks.recentForTest { recent = files }
+            if DebugHooks.removeRecent { DispatchQueue.main.asyncAfter(deadline: .now() + 1) { if let first = recent.first { removeFromRecents(first) } } }
+            if DebugHooks.whatsNewSheet { DispatchQueue.main.asyncAfter(deadline: .now() + 1) { whatsNewOpen = true } }
             switch DebugHooks.startAction {
             case "blank": DispatchQueue.main.asyncAfter(deadline: .now() + 1) { StartScreen.newDocument() }
             case "printAndCut": DispatchQueue.main.asyncAfter(deadline: .now() + 1) { StartScreen.newDocument(.printAndCut) }
+            case "tryNest": DispatchQueue.main.asyncAfter(deadline: .now() + 1) { StartScreen.newDocument(.tryNest) }
+            case "typeOnPath": DispatchQueue.main.asyncAfter(deadline: .now() + 1) { StartScreen.newDocument(.typeOnPath) }
             default: break
             }
             #endif
@@ -152,10 +166,15 @@ struct StartView: View {
             Text("MACHINE").font(.caption.weight(.semibold)).foregroundStyle(.secondary).padding(.bottom, 8)
             machineStatus
             Spacer()
+            if whatsNew != nil {
+                Button { whatsNewOpen = true } label: { Label("What’s New", image: .whatsNew) }
+                    .buttonStyle(.borderless)
+                    .padding(.bottom, 8)
+            }
             Button { openWindow(value: ReportRequest()) } label: { Label("Report a Bug…", image: .info) }
                 .buttonStyle(.borderless)
                 .padding(.bottom, 8)
-            SettingsLink { Label("Settings…", image: .snap) }
+            SettingsLink { Label("Settings…", image: .settingsTabGeneral) }
                 .buttonStyle(.borderless)
         }
         .foregroundStyle(.primary)
@@ -203,6 +222,9 @@ struct StartView: View {
                         .frame(maxWidth: .infinity, alignment: .trailing)
                 }
                 .padding(.top, 30)
+                if let whatsNew {
+                    StartSpotlight(entry: whatsNew) { whatsNewOpen = true }.padding(.top, 24)
+                }
                 heading("START WITH").padding(.top, 30)
                 HStack(spacing: 14) {
                     StartCard(icon: .newDocument, title: "Blank sheet", detail: "A4, ready to draw or import") { StartScreen.newDocument() }
@@ -212,14 +234,35 @@ struct StartView: View {
                     StartCard(icon: .toolTrace, title: "Trace an image", detail: "PNG, JPEG or PSD → cut line") { pick([.image]) }
                     StartCard(icon: .openDocument, title: "Silhouette Studio file", detail: "Opens a .studio3") { pick([.studio3]) }
                 }
-                heading("RECENT").padding(.top, 32)
+                HStack(alignment: .firstTextBaseline) {
+                    heading("RECENT")
+                    Spacer()
+                    if !recent.isEmpty {
+                        Picker("Show recent files as", selection: $recentLayout) {
+                            Image(.viewGrid).accessibilityLabel("Grid").tag("grid")
+                            Image(.viewList).accessibilityLabel("List").tag("list")
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                        .fixedSize()
+                        .help("Show recent files as")
+                    }
+                }
+                .padding(.top, 32)
                 if recent.isEmpty {
                     Text("The files you open show up here.")
                         .foregroundStyle(.secondary)
                         .padding(.vertical, 30)
+                } else if shownLayout == "list" {
+                    VStack(spacing: 0) {
+                        ForEach(recent, id: \.self) { url in
+                            RecentRow(url: url).contextMenu { recentMenu(url) }
+                            Divider()
+                        }
+                    }
                 } else {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 160, maximum: 220), spacing: 14)], alignment: .leading, spacing: 14) {
-                        ForEach(recent, id: \.self) { url in RecentCard(url: url) }
+                        ForEach(recent, id: \.self) { url in RecentCard(url: url).contextMenu { recentMenu(url) } }
                     }
                 }
                 Text("Drop a file anywhere on this window to open it.")
@@ -230,6 +273,34 @@ struct StartView: View {
             }
             .padding(.horizontal, 36)
         }
+    }
+
+    /// A recent file's right-click menu, as Illustrator's and Final Cut's.
+    @ViewBuilder private func recentMenu(_ url: URL) -> some View {
+        Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([url]) }
+        Button("Remove from Recents") { removeFromRecents(url) }
+    }
+
+    /// Out of this list and of File › Open Recent (AppKit can only clear the whole list: the others go back in, in the same
+    /// order). A hidden test's list (CUTLINE_TEST_RECENT) only leaves the screen: the owner's stays as it is.
+    private func removeFromRecents(_ url: URL) {
+        recent.removeAll { $0 == url }
+        #if DEBUG
+        if DebugHooks.recentForTest != nil { return }
+        #endif
+        let controller = NSDocumentController.shared
+        let kept = controller.recentDocumentURLs.filter { $0.standardizedFileURL != url.standardizedFileURL }
+        controller.clearRecentDocuments(nil)
+        for other in kept.reversed() { controller.noteNewRecentDocumentURL(other) }
+    }
+
+    /// The layout picked, or the hidden test's (CUTLINE_TEST_RECENT_LAYOUT, not saved: a test copy shares the owner's
+    /// preferences).
+    private var shownLayout: String {
+        #if DEBUG
+        if let test = DebugHooks.recentLayout { return test }
+        #endif
+        return recentLayout
     }
 
     private func heading(_ text: LocalizedStringKey) -> some View {
@@ -317,9 +388,54 @@ private struct RecentCard: View {
         .task { preview = PagePreview.image(of: url, width: 300) }
     }
 
-    private var kind: LocalizedStringKey {
+    private var kind: LocalizedStringKey { Self.kind(of: url) }
+
+    private var date: Date? { Self.date(of: url) }
+
+    static func kind(of url: URL) -> LocalizedStringKey {
         UTType(filenameExtension: url.pathExtension)?.conforms(to: .studio3) == true ? "Silhouette Studio" : "Cutline"
     }
 
-    private var date: Date? { (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate }
+    static func date(of url: URL) -> Date? { (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate }
+}
+
+/// A recent file as a row of the list: its page drawn small, the name, the kind and when it changed.
+private struct RecentRow: View {
+    let url: URL
+    @State private var preview: CGImage?
+    @State private var over = false
+
+    var body: some View {
+        Button {
+            NSDocumentController.shared.openDocument(withContentsOf: url, display: true) { _, _, _ in }
+        } label: {
+            HStack(spacing: 14) {
+                ZStack {
+                    if let preview {
+                        Image(decorative: preview, scale: 2).resizable().aspectRatio(contentMode: .fit)
+                            .shadow(color: .black.opacity(0.25), radius: 1, y: 0.5)
+                    } else {
+                        Image(nsImage: NSWorkspace.shared.icon(forFile: url.path)).resizable().frame(width: 32, height: 32)
+                    }
+                }
+                .frame(width: 54, height: 42)
+                Text(url.deletingPathExtension().lastPathComponent).font(.callout.weight(.semibold)).lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text(RecentCard.kind(of: url)).font(.callout).foregroundStyle(.secondary).frame(width: 150, alignment: .leading)
+                Group {
+                    if let date = RecentCard.date(of: url) { Text(date, format: .relative(presentation: .named)) } else { Text(verbatim: "") }
+                }
+                .font(.callout).foregroundStyle(.secondary).frame(width: 130, alignment: .trailing)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(.quaternary.opacity(over ? 0.7 : 0), in: RoundedRectangle(cornerRadius: 8))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { over = $0 }
+        .help(url.path)
+        // 2 px per point of a 40 pt wide page.
+        .task { preview = PagePreview.image(of: url, width: 80) }
+    }
 }

@@ -286,7 +286,7 @@ struct FontButton: View {
         }
         .buttonStyle(.plain)
         .help(installed ? "Font" as LocalizedStringKey
-              : Feature.googleFonts.isOn && GoogleFonts.missing(style.font) != nil
+              : GoogleFonts.shown && GoogleFonts.missing(style.font) != nil
               ? "Font not installed on this Mac. It's on Google Fonts: open the list to add it to Cutline."
               : "Font not installed on this Mac: the text shows in another font until it's installed or activated (no need to quit Cutline)")
         #if DEBUG
@@ -378,7 +378,7 @@ struct FontList: View {
     var body: some View {
         VStack(spacing: 0) {
             // Before Google Fonts is released (ReleaseGate.swift), only the installed fonts, as before.
-            if Feature.googleFonts.isOn {
+            if GoogleFonts.shown {
                 Picker("Fonts", selection: $source) {
                     Text("Installed").tag(FontSource.installed)
                     Text(verbatim: "Google Fonts").tag(FontSource.google)
@@ -388,7 +388,7 @@ struct FontList: View {
                 .padding(.horizontal, 10)
                 .padding(.top, 10)
             }
-            switch Feature.googleFonts.isOn ? source : .installed {
+            switch GoogleFonts.shown ? source : .installed {
             case .installed: InstalledFontList(current: current, choose: choose, search: $search)
             case .google: GoogleFontsTab(current: current, choose: choose, search: $googleSearch, category: $category)
             }
@@ -445,7 +445,7 @@ private struct InstalledFontList: View {
                 if let firstOne = filtered.first { choose(firstOne) }
             }
             // The text's font is missing and Google Fonts has it (a document from another Mac): add it right here.
-            if Feature.googleFonts.isOn, let family = GoogleFonts.missing(current) {
+            if GoogleFonts.shown, let family = GoogleFonts.missing(current) {
                 MissingFontBanner(name: current, family: family)
             }
             Divider()

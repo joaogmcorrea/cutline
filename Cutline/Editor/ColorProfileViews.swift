@@ -65,34 +65,46 @@ struct ColorSettingsSection: View {
     private var settings = ColorSettings.shared
 
     var body: some View {
-        Section("Color") {
+        // Final Cut's layout (Settings › Color): labels with a colon on the left, the menus and the note on the right
+        // (SettingsRow, Preferences.swift).
+        Section {
             let cmykList = [ColorProfile.none] + ColorProfiles.available(.cmyk, loaded: settings.loaded)
-            Picker("CMYK profile", selection: Binding(get: { settings.cmyk }, set: { settings.setCMYK($0) })) {
-                ProfileOptions(list: cmykList, chosen: settings.cmyk)
+            SettingsRow("CMYK profile:") {
+                Picker("CMYK profile:", selection: Binding(get: { settings.cmyk }, set: { settings.setCMYK($0) })) {
+                    ProfileOptions(list: cmykList, chosen: settings.cmyk)
+                }
+                .labelsHidden()
+                .fixedSize()
             }
-            Picker("RGB working space", selection: Binding(get: { settings.rgb }, set: { settings.setRGB($0) })) {
-                ProfileOptions(list: ColorProfiles.available(.rgb, loaded: settings.loaded), chosen: settings.rgb)
+            SettingsRow("RGB working space:") {
+                Picker("RGB working space:", selection: Binding(get: { settings.rgb }, set: { settings.setRGB($0) })) {
+                    ProfileOptions(list: ColorProfiles.available(.rgb, loaded: settings.loaded), chosen: settings.rgb)
+                }
+                .labelsHidden()
+                .fixedSize()
+                .disabled(settings.cmyk.isNone)
             }
-            .disabled(settings.cmyk.isNone)
-            LabeledContent("") {
-                Button("Load Profile…") {
-                    if let (profile, model) = ProfileLoader.choose(nil) {
-                        if model == .cmyk { settings.setCMYK(profile) } else { settings.setRGB(profile) }
+            SettingsRow {
+                VStack(alignment: .leading, spacing: 8) {
+                    Button("Load Profile…") {
+                        if let (profile, model) = ProfileLoader.choose(nil) {
+                            if model == .cmyk { settings.setCMYK(profile) } else { settings.setRGB(profile) }
+                        }
                     }
+                    let colors = settings.converter()
+                    if colors.cmykMissing || colors.rgbMissing {
+                        Label(colors.cmykMissing
+                              ? String(localized: "“\(settings.cmyk.name)” isn’t on this Mac: Generic CMYK is used in its place.")
+                              : String(localized: "“\(settings.rgb.name)” isn’t on this Mac: sRGB is used in its place."), image: .warning)
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                            .frame(width: 330, alignment: .leading)
+                    }
+                    SettingsNote(settings.cmyk.isNone
+                         ? "Without a profile, the screen uses a simple conversion and the print can look different. With one (as in Illustrator’s Color Settings), the screen shows the colors as they print, and RGB, HSL, hex and imported RGB colors convert through it. Documents can have their own (Edit › Assign Profile…)."
+                         : "The screen shows the colors as this profile prints them; RGB, HSL, hex and imported RGB colors convert through it. Documents can have their own (Edit › Assign Profile…).")
                 }
             }
-            let colors = settings.converter()
-            if colors.cmykMissing || colors.rgbMissing {
-                Label(colors.cmykMissing
-                      ? String(localized: "“\(settings.cmyk.name)” isn’t on this Mac: Generic CMYK is used in its place.")
-                      : String(localized: "“\(settings.rgb.name)” isn’t on this Mac: sRGB is used in its place."), image: .warning)
-                    .font(.caption)
-                    .foregroundStyle(.orange)
-            }
-            Text(settings.cmyk.isNone
-                 ? "Without a profile, the screen uses a simple conversion and the print can look different. With one (as in Illustrator’s Color Settings), the screen shows the colors as they print, and RGB, HSL, hex and imported RGB colors convert through it. Documents can have their own (Edit › Assign Profile…)."
-                 : "The screen shows the colors as this profile prints them; RGB, HSL, hex and imported RGB colors convert through it. Documents can have their own (Edit › Assign Profile…).")
-                .font(.caption).foregroundStyle(.secondary)
         }
         .onAppear { ColorProfiles.refresh() }
     }

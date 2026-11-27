@@ -378,3 +378,13 @@ final class GoogleFonts {
         #endif
     }
 }
+
+extension GoogleFonts {
+    /// Settings › General › Fonts (owner's request, 23/11/2026): off, the Google Fonts tab and the "Add from Google Fonts"
+    /// offers don't show, and Cutline never talks to Google; the families already added keep working.
+    nonisolated static let shownKey = "showGoogleFonts"
+
+    static var shown: Bool {
+        Feature.googleFonts.isOn && (UserDefaults.standard.object(forKey: shownKey) == nil || UserDefaults.standard.bool(forKey: shownKey))
+    }
+}

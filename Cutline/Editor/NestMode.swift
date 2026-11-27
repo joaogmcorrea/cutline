@@ -63,10 +63,31 @@ final class NestSession {
     static let maxPieces = 500
     static let maxQuantity = 999
     private static let zeroID = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
-    /// The settings stay while the app is open (not in the preferences: test copies share them with the owner's app).
-    private static var lastSettings = NestSettings()
+    /// Spacing, Turn and Inside holes come back the next time Cutline opens (owner's request, 23/11/2026: key `nestSettings`);
+    /// Fill and new artboards stay only while the app is open. A hidden test copy doesn't save them (it shares the
+    /// preferences with the owner's app).
+    private static var lastSettings = storedSettings() { didSet { store(lastSettings) } }
+    private static let settingsKey = "nestSettings"
     private static var lastFill = false
     private static var lastAddArtboards = false
+
+    private static func storedSettings() -> NestSettings {
+        var settings = NestSettings()
+        guard let saved = UserDefaults.standard.dictionary(forKey: settingsKey) else { return settings }
+        // Numbers as numbers or as text (a test copy's arguments come as text).
+        func number(_ key: String) -> Double? { (saved[key] as? NSNumber)?.doubleValue ?? (saved[key] as? String).flatMap(Double.init) }
+        if let spacing = number("spacing"), spacing >= 0, spacing <= 50 { settings.spacing = spacing }
+        if let turn = (saved["turn"] as? String).flatMap(NestTurn.init(rawValue:)) { settings.turn = turn }
+        if let holes = number("holes") { settings.holes = holes != 0 }
+        return settings
+    }
+
+    private static func store(_ settings: NestSettings) {
+        #if DEBUG
+        if DebugHooks.hidden { return }
+        #endif
+        UserDefaults.standard.set(["spacing": settings.spacing, "turn": settings.turn.rawValue, "holes": settings.holes], forKey: settingsKey)
+    }
 
     @ObservationIgnored private weak var doc: Document?
     let artboardID: UUID

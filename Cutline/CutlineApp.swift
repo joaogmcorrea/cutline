@@ -64,10 +64,12 @@ struct CutlineApp: App {
         .defaultLaunchBehavior(.suppressed)
         .commandsRemoved()
 
-        // Cutline › Settings… (⌘,).
+        // Cutline › Settings… (⌘,). It can grow (owner's request, 23/11/2026); never smaller than the open tab.
         Settings {
             SettingsView()
         }
+        .defaultSize(width: 640, height: 460)
+        .windowResizability(.contentMinSize)
 
         // Help › Report a Bug… (one window each; no items in the File menu). Request a Feature… opens the roadmap.
         WindowGroup(for: ReportRequest.self) { $request in

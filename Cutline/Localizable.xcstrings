@@ -43,6 +43,502 @@
         }
       }
     },
+    "Continue" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar"
+          }
+        }
+      }
+    },
+    "Cutline 1.8 brings Nesting and a new look for Settings." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cutline 1.8 trae Anidar y un nuevo aspecto para Ajustes."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Cutline 1.8 traz o Encaixar e os Ajustes de cara nova."
+          }
+        }
+      }
+    },
+    "Cutline fits the pieces on the sheet for you. Let them turn, or fill the artboard with copies of each one." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cutline coloca las piezas en la hoja por ti. Deja que giren, o llena la mesa de trabajo con copias de cada una."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Cutline encaixa as peças na folha para você. Deixe que elas girem, ou encha a prancheta com cópias de cada uma."
+          }
+        }
+      }
+    },
+    "Cutline fits your pieces on the sheet to use less material. Open the Nest tab on the right, or Object › Nest… (⌥⌘N)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cutline coloca las piezas en la hoja para gastar menos material. Abre la pestaña Anidar a la derecha, o Objeto › Anidar… (⌥⌘N)."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Cutline encaixa as peças na folha para gastar menos material. Abra a aba Encaixar à direita, ou Objeto › Encaixar… (⌥⌘N)."
+          }
+        }
+      }
+    },
+    "Fonts:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fuentes:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fontes:"
+          }
+        }
+      }
+    },
+    "Full Notes on GitHub" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notas completas en GitHub"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notas completas no GitHub"
+          }
+        }
+      }
+    },
+    "Grid" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuadrícula"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grade"
+          }
+        }
+      }
+    },
+    "Hide until the next version" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar hasta la próxima versión"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esconder até a próxima versão"
+          }
+        }
+      }
+    },
+    "Hold the T in the tools and pick Type on a Path. Click a line or a shape and type. It cuts along the letters." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantén pulsada la T en las herramientas y elige Texto en trazado. Haz clic en una línea o una forma y escribe. Corta siguiendo las letras."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segure o T nas ferramentas e escolha Texto no caminho. Clique numa linha ou numa forma e digite. O corte segue as letras."
+          }
+        }
+      }
+    },
+    "List" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lista"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lista"
+          }
+        }
+      }
+    },
+    "Nest your pieces and waste less material" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anida las piezas y gasta menos material"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encaixe as peças e gaste menos material"
+          }
+        }
+      }
+    },
+    "Nesting" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anidar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encaixar"
+          }
+        }
+      }
+    },
+    "New in 1.8" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuevo en 1.8"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Novo na 1.8"
+          }
+        }
+      }
+    },
+    "Off, Cutline never talks to Google. The fonts you already added keep working." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desactivado, Cutline nunca se conecta con Google. Las fuentes que ya añadiste siguen funcionando."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desligado, o Cutline nunca fala com o Google. As fontes que você já adicionou continuam funcionando."
+          }
+        }
+      }
+    },
+    "Remove from Recents" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar de Recientes"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover dos Recentes"
+          }
+        }
+      }
+    },
+    "Reset Panel Layout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer disposición de los paneles"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redefinir Disposição dos Painéis"
+          }
+        }
+      }
+    },
+    "Settings UI redesign" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes rediseñados"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes redesenhados"
+          }
+        }
+      }
+    },
+    "Settings has a new look that feels more at home on the Mac. Each topic has its own tab, and the options line up the same way on all of them." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes tiene un nuevo aspecto, más propio de una app de Mac. Cada tema tiene su pestaña, y las opciones se alinean igual en todas."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os Ajustes têm cara nova, mais com jeito de app do Mac. Cada assunto tem a sua aba, e as opções ficam alinhadas do mesmo jeito em todas."
+          }
+        }
+      }
+    },
+    "Show Again" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volver a mostrar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar de novo"
+          }
+        }
+      }
+    },
+    "Show Google Fonts in the font list" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar Google Fonts en la lista de fuentes"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar o Google Fonts na lista de fontes"
+          }
+        }
+      }
+    },
+    "Show in Finder" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar en Finder"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar no Finder"
+          }
+        }
+      }
+    },
+    "Show recent files as" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar recientes como"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar os recentes como"
+          }
+        }
+      }
+    },
+    "Since 1.7" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desde 1.7"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desde a 1.7"
+          }
+        }
+      }
+    },
+    "Test cut:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prueba de corte:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teste de corte:"
+          }
+        }
+      }
+    },
+    "Text that follows a path" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texto que sigue un trazado"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texto que segue um caminho"
+          }
+        }
+      }
+    },
+    "The size of the test square in the Send window of a new document. You can still change it there." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El tamaño del cuadrado de prueba en la ventana Enviar de un documento nuevo. También puedes cambiarlo allí."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O tamanho do quadrado de teste na janela Enviar de um documento novo. Dá para mudar lá também."
+          }
+        }
+      }
+    },
+    "Try It" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experimentar"
+          }
+        }
+      }
+    },
+    "Try Nest" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probar Anidar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experimentar o Encaixar"
+          }
+        }
+      }
+    },
+    "What’s New" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Novedades"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Novidades"
+          }
+        }
+      }
+    },
+    "What’s New in %@…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Novedades de %@…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Novidades da %@…"
+          }
+        }
+      }
+    },
+    "What’s New in Cutline %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Novedades de Cutline %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Novidades do Cutline %@"
+          }
+        }
+      }
+    },
     "· from file" : {
       "localizations" : {
         "es" : {
@@ -3128,6 +3624,22 @@
         }
       }
     },
+    "Appearance:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apariencia:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aparência:"
+          }
+        }
+      }
+    },
     "Applies to the selected letters." : {
       "localizations" : {
         "es" : {
@@ -3236,6 +3748,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "As setas movem"
+          }
+        }
+      }
+    },
+    "Arrow keys move:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las flechas mueven:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As setas movem:"
           }
         }
       }
@@ -4706,6 +5234,22 @@
         }
       }
     },
+    "CMYK profile:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perfil CMYK:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perfil CMYK:"
+          }
+        }
+      }
+    },
     "Collapse all panels to icons" : {
       "localizations" : {
         "es" : {
@@ -5575,6 +6119,22 @@
         }
       }
     },
+    "Cutline follows the Mac’s language unless you choose one here. It changes when Cutline opens again. The same choice is in System Settings › General › Language & Region › Applications." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cutline usa el idioma de tu Mac, salvo que elijas uno aquí. El cambio se aplica cuando Cutline se vuelve a abrir. La misma opción está en Ajustes del Sistema › General › Idioma y región › Aplicaciones."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Cutline usa o idioma do Mac, a não ser que você escolha um aqui. A troca vale quando o Cutline abrir de novo. A mesma escolha fica em Ajustes do Sistema › Geral › Idioma e Região › Aplicativos."
+          }
+        }
+      }
+    },
     "Cutline on GitHub" : {
       "localizations" : {
         "es" : {
@@ -5603,6 +6163,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "O Cutline quer pôr o script Send to Cutline na pasta Scripts do Illustrator."
+          }
+        }
+      }
+    },
+    "Cutline will be in English the next time it opens." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cutline se abrirá en español la próxima vez."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Cutline vai abrir em português na próxima vez."
           }
         }
       }
@@ -7675,6 +8252,22 @@
         }
       }
     },
+    "Grid color:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color de la cuadrícula:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cor da grade:"
+          }
+        }
+      }
+    },
     "Gridline every" : {
       "localizations" : {
         "es" : {
@@ -7687,6 +8280,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Linha da grade a cada"
+          }
+        }
+      }
+    },
+    "Gridline every:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Línea de cuadrícula cada:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linha da grade a cada:"
           }
         }
       }
@@ -7735,6 +8344,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cor das guias"
+          }
+        }
+      }
+    },
+    "Guide color:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color de las guías:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cor das guias:"
           }
         }
       }
@@ -8167,6 +8792,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Só as imagens"
+          }
+        }
+      }
+    },
+    "Import" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar"
           }
         }
       }
@@ -8739,6 +9380,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Paisagem: para cortar, a folha vai na base girada um quarto de volta no sentido horário, como no Silhouette Studio. As marcas ficam onde a máquina as procura na folha girada: o quadrado no canto inferior esquerdo da prancheta."
+          }
+        }
+      }
+    },
+    "Language:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma:"
           }
         }
       }
@@ -9523,6 +10180,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Margem"
+          }
+        }
+      }
+    },
+    "Margin:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Margen:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Margem:"
           }
         }
       }
@@ -10808,6 +11481,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quantidade de nós"
+          }
+        }
+      }
+    },
+    "Node count:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cantidad de nodos:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quantidade de nós:"
           }
         }
       }
@@ -13307,6 +13996,23 @@
         }
       }
     },
+    "Restart Now" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reiniciar ahora"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reabrir agora"
+          }
+        }
+      }
+    },
     "Reverse Gradient" : {
       "localizations" : {
         "es" : {
@@ -13351,6 +14057,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Espaço de trabalho RGB"
+          }
+        }
+      }
+    },
+    "RGB working space:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espacio de trabajo RGB:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espaço de trabalho RGB:"
           }
         }
       }
@@ -14619,6 +15341,22 @@
         }
       }
     },
+    "Show when no document is open" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar cuando no haya ningún documento abierto"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar quando não houver documento aberto"
+          }
+        }
+      }
+    },
     "Shows the test cut on the sheet: drag it to move it, or its corner to resize it" : {
       "localizations" : {
         "es" : {
@@ -14977,6 +15715,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Menores que"
+          }
+        }
+      }
+    },
+    "Smoothing:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suavizado:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suavização:"
           }
         }
       }
@@ -15399,6 +16153,22 @@
         }
       }
     },
+    "Start screen:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pantalla de inicio:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tela de início:"
+          }
+        }
+      }
+    },
     "START WITH" : {
       "localizations" : {
         "es" : {
@@ -15607,6 +16377,22 @@
         }
       }
     },
+    "Subdivisions:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subdivisiones:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subdivisões:"
+          }
+        }
+      }
+    },
     "Subscript" : {
       "localizations" : {
         "es" : {
@@ -15715,6 +16501,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Trocar de máquina"
+          }
+        }
+      }
+    },
+    "System Default (%@)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Predeterminado del sistema (%@)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Padrão do sistema (%@)"
           }
         }
       }
@@ -17266,6 +18068,22 @@
         }
       }
     },
+    "Trace Image:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vectorizar imagen:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vetorizar imagem:"
+          }
+        }
+      }
+    },
     "Trace “%@”" : {
       "localizations" : {
         "es" : {
@@ -17422,6 +18240,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tentar primeiro"
+          }
+        }
+      }
+    },
+    "Try first:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probar primero:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tentar primeiro:"
           }
         }
       }
@@ -17824,6 +18658,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Atualizações"
+          }
+        }
+      }
+    },
+    "Updates:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualizaciones:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualizações:"
           }
         }
       }
@@ -18369,6 +19219,22 @@
         }
       }
     },
+    "With ⇧:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con ⇧:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Com ⇧:"
+          }
+        }
+      }
+    },
     "With ⌥" : {
       "localizations" : {
         "es" : {
@@ -18397,6 +19263,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Com base de corte"
+          }
+        }
+      }
+    },
+    "With ⌥:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con ⌥:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Com ⌥:"
           }
         }
       }

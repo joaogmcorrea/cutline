@@ -220,8 +220,13 @@ extension Document {
 /// Test cut: a square with a C (for Cutline) inside, at the spot chosen in the Send window's preview, in the size
 /// chosen there, and with one color's settings, to check the blade before cutting everything.
 nonisolated enum TestCut {
-    /// Side of the square, in mm.
-    static let defaultSide = 10.0
+    /// Side of the square new documents start with, in mm: Settings › Machine › Test cut (owner's request, 23/11/2026),
+    /// 10 by default.
+    static var defaultSide: Double {
+        let stored = UserDefaults.standard.double(forKey: sizeKey)
+        return stored == 0 ? 10 : min(max(stored, sides.lowerBound), sides.upperBound)
+    }
+    static let sizeKey = "testCutSize"
     static let sides = 5.0...30.0
 
     /// In page mm: the inner C first and the square last (the piece doesn't come loose earlier).

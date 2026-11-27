@@ -276,7 +276,24 @@ struct EditorCommands: Commands {
                     hiddenText = Panel.text(hiddenOnes)
                 }))
             }
+            // The panels as Cutline first showed them (owner's request, 23/11/2026: dragging them around since 1.7.0
+            // had no way back): their order, which are open in the column and which are hidden, plus the tools and the
+            // control bar.
+            Button("Reset Panel Layout") { Self.resetPanelLayout() }
             Divider()
+        }
+    }
+}
+
+extension EditorCommands {
+    /// The keys of the side panel (Editor/SidePanel.swift) and of the Window menu's toggles back to their defaults; the
+    /// panels follow on their own (`@AppStorage`). A hidden test copy only logs it: it shares the owner's preferences.
+    static func resetPanelLayout() {
+        #if DEBUG
+        if DebugHooks.hidden { NSLog("CUTLINE_TEST reset panel layout"); return }
+        #endif
+        for key in ["ordemPaineis", "paineisRecolhidos", "paineisOcultos", "ferramentasVisiveis", "barraControleVisivel"] {
+            UserDefaults.standard.removeObject(forKey: key)
         }
     }
 }

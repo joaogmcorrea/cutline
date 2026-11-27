@@ -25,9 +25,15 @@
 //   "CUTLINE_TEST frames"), do:spaceH runs that document action (list in `perform`), drag:x1,y1,x2,y2 (mm) drags
 //   the mouse, plus:right (bottom, left, top) clicks the Artboard tool's + by that edge of the active artboard
 //   ("plus:right?" only puts the pointer on it), and shift / noshift hold and let go of ⇧ for the next steps;
-//   CUTLINE_TEST_SETTINGS=1 opens Cutline › Settings; CUTLINE_START=1 keeps the start screen on in a hidden test, and
+//   CUTLINE_TEST_SETTINGS=1 opens Cutline › Settings (=canvas… on that tab; CUTLINE_TEST_LANGUAGE=es picks a language there
+//   without saving it); CUTLINE_START=1 keeps the start screen on in a hidden test, and
 //   CUTLINE_TEST_RECENT=/a.cutline:/b.studio3 shows those files as its recent ones (the owner's list stays untouched),
-//   CUTLINE_TEST_START=blank|printAndCut picks that way to start 1 s after it opens;
+//   CUTLINE_TEST_START=blank|printAndCut|tryNest|typeOnPath picks that way to start 1 s after it opens;
+//   CUTLINE_TEST_WHATS_NEW=1.8 shows the start screen's spotlight and What's New of that version (WhatsNew.swift),
+//   CUTLINE_TEST_SPOTLIGHT=1 opens it on that highlight (from 0) (=folded: the thin line, without saving it),
+//   CUTLINE_TEST_WHATS_NEW_SHEET=1 opens the What's New sheet 1 s after, CUTLINE_TEST_RECENT_LAYOUT=list shows the
+//   recent files as a list (without saving it), CUTLINE_TEST_REMOVE_RECENT=1 removes the first one from the screen;
+//   CUTLINE_TEST_TIP_TIME also stops the spotlight's drawings;
 //   CUTLINE_SNAPSHOT_DELAY=6 takes the snapshot later;
 //   CUTLINE_MARKS=1 turns on the Print & Cut marks; CUTLINE_TEST_BLEED=1.5 turns on the print bleed (that width, mm);
 //   CUTLINE_TEST_PRINT=/x.pdf writes the print to a PDF (one page per artboard; after CUTLINE_TEST_DELAY s, 1.5 by default);
@@ -108,6 +114,8 @@
 //   go, sleep:2 waits, do:align:top aligns to what -alignTo says (an argument: nothing saved), do:key:Label sets the key object.
 //   Rich tips and the side panel's order (19/11/2026): CUTLINE_TEST_PANEL_TIP=nest shows an icon's tip, CUTLINE_TEST_TIP_TIME=1.5
 //   stops the animations at that second, CUTLINE_TEST_PANEL_DRAG=nest:-110 shows a drag stopped midway (and logs the order).
+//   Hand redesign (23/11/2026): CUTLINE_TEST_EXPORT_UI=/folder lists the open windows and their AppKit views for
+//   _dev/tools/ui-redesign/uidump (see `exportUI`), CUTLINE_TEST_EXPORT_NAME=main names the files, CUTLINE_TEST_EXPORT_DELAY=6.
 //   CUTLINE_HIDDEN=1 (with `open -g`) tests without showing up: the windows stay behind the desktop.
 #if DEBUG
 import AppKit
@@ -120,12 +128,17 @@ enum DebugHooks {
     /// is using the Mac — and `screencapture -l` still photographs them. No App Nap, which would slow the hidden app.
     /// Popovers and menus need the active window: those tests still show up.
     static func hideWindows() {
+        // CUTLINE_TEST_EXPORT_UI (hand redesign, see `exportUI`) starts here: this runs at launch, with or without hiding.
+        scheduleUIExport()
         guard ProcessInfo.processInfo.environment["CUTLINE_HIDDEN"] != nil else { return }
         activity = ProcessInfo.processInfo.beginActivity(options: .userInitiatedAllowingIdleSystemSleep, reason: "hidden test")
         let level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.desktopWindow)) - 1)
         let hide = {
             MainActor.assumeIsolated {
                 for nsWindow in NSApp?.windows ?? [] where nsWindow.sheetParent == nil && nsWindow.parent == nil {
+                    // The hidden place (and a test size) must not be saved as the window's frame in the owner's
+                    // settings: the Settings window did ("NSWindow Frame com_apple_SwiftUI_Settings_window", 23/11/2026).
+                    if !nsWindow.frameAutosaveName.isEmpty { nsWindow.setFrameAutosaveName("") }
                     if nsWindow.level != level { nsWindow.level = level }
                     if nsWindow.frame.minX > -20000 { nsWindow.setFrameOrigin(NSPoint(x: -30000, y: nsWindow.frame.minY)) }
                 }
@@ -670,12 +683,42 @@ enum DebugHooks {
 
     static var startAction: String? { ProcessInfo.processInfo.environment["CUTLINE_TEST_START"] }
 
+    /// The start screen's What's New (WhatsNew.swift): another version, the highlight, folded, the sheet, the list.
+    static var whatsNewVersion: String? { ProcessInfo.processInfo.environment["CUTLINE_TEST_WHATS_NEW"] }
+    static var spotlightSlide: Int? { ProcessInfo.processInfo.environment["CUTLINE_TEST_SPOTLIGHT"].flatMap { Int($0) } }
+    static var spotlightFolded: Bool { ProcessInfo.processInfo.environment["CUTLINE_TEST_SPOTLIGHT"] == "folded" }
+    static var whatsNewSheet: Bool { ProcessInfo.processInfo.environment["CUTLINE_TEST_WHATS_NEW_SHEET"] != nil }
+    static var recentLayout: String? { ProcessInfo.processInfo.environment["CUTLINE_TEST_RECENT_LAYOUT"] }
+    /// CUTLINE_TEST_REMOVE_RECENT=1: Remove from Recents on the first recent file 1 s after the start screen opens.
+    static var removeRecent: Bool { ProcessInfo.processInfo.environment["CUTLINE_TEST_REMOVE_RECENT"] != nil }
+
     static var recentForTest: [URL]? {
         ProcessInfo.processInfo.environment["CUTLINE_TEST_RECENT"].map { $0.split(separator: ":").map { URL(fileURLWithPath: String($0)) } }
     }
 
-    /// CUTLINE_TEST_SETTINGS=1: opens Cutline › Settings at launch.
+    /// CUTLINE_TEST_SETTINGS=1: opens Cutline › Settings at launch; =general|canvas|color|importing|machine opens that tab.
     static var openSettings: Bool { ProcessInfo.processInfo.environment["CUTLINE_TEST_SETTINGS"] != nil }
+
+    static var settingsTab: SettingsTab? { ProcessInfo.processInfo.environment["CUTLINE_TEST_SETTINGS"].flatMap(SettingsTab.init(rawValue:)) }
+
+    /// CUTLINE_TEST_SETTINGS_SIZE=900x700: the Settings window takes that size 1 s after it opens, as if dragged by its
+    /// corner, and logs whether it can be resized (NSLog "CUTLINE_TEST settings").
+    @MainActor static func resizeSettings() {
+        guard let size = ProcessInfo.processInfo.environment["CUTLINE_TEST_SETTINGS_SIZE"]?.split(separator: "x").compactMap({ Double($0) }),
+              size.count == 2 else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            guard let window = NSApp.windows.first(where: { $0.identifier?.rawValue.contains("Settings") == true }) else {
+                NSLog("CUTLINE_TEST settings: no window"); return
+            }
+            window.setContentSize(NSSize(width: size[0], height: size[1]))
+            NSLog("CUTLINE_TEST settings: resizable %d, min %@, now %@", window.styleMask.contains(.resizable) ? 1 : 0,
+                  NSStringFromSize(window.contentMinSize), NSStringFromSize(window.contentLayoutRect.size))
+        }
+    }
+
+    /// CUTLINE_TEST_LANGUAGE=system|en|pt-BR|es: the Language menu of Settings › General shows that choice (and its
+    /// notice) without saving it.
+    static var settingsLanguage: AppLanguage? { ProcessInfo.processInfo.environment["CUTLINE_TEST_LANGUAGE"].flatMap(AppLanguage.init(rawValue:)) }
 
     /// The "do:" step of CUTLINE_TEST_KEYS: runs a document action by name, as its menu item does (the menus are
     /// disabled in a hidden copy): do:spaceH, do:spaceV.
@@ -1565,6 +1608,116 @@ private final class RedirectStopper: NSObject, URLSessionTaskDelegate, @unchecke
     nonisolated func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
                                 newRequest request: URLRequest, completionHandler: @escaping @Sendable (URLRequest?) -> Void) {
         completionHandler(nil)
+    }
+}
+// MARK: Interface export for the hand redesign (_design/interface-redesign/screens/)
+
+/// CUTLINE_TEST_EXPORT_UI=/folder lists every open window (sheets and child windows too), CUTLINE_TEST_EXPORT_DELAY
+/// seconds after launch (4 by default), for `_dev/tools/ui-redesign/uidump`, which photographs each one with
+/// `screencapture -l` and reads its accessibility tree from outside (inside the app, SwiftUI leaves its texts out):
+///   <name>.done           "<window number> <file name>" per window, written last (the signal that the copy is ready);
+///   <file name>.views.json the AppKit views of the window (class, frame in points from the window's top-left corner,
+///                         and for controls the text, font, size and colors that accessibility doesn't give).
+/// File names are "<name>__<window title>" ("-sheet" for a sheet); CUTLINE_TEST_EXPORT_NAME=main sets <name> ("screen").
+/// CUTLINE_TEST_EXPORT_CACHE=1 also draws each window into "<file name>.cache.png" (2x, `cacheDisplay`): no glass and
+/// wrong vibrant colors, only for a Mac where the terminal has no Screen Recording permission.
+/// Found while making it (23/11/2026): `dataWithPDF(inside:)` gives almost nothing (SwiftUI isn't drawn, only AppKit
+/// labels), and drawing through `displayIgnoringOpacity` into a PDF gives the whole window as ~380 small bitmaps: no
+/// editable vectors, so the editable file is an SVG built from the screenshot (uidump svg).
+extension DebugHooks {
+    static func scheduleUIExport() {
+        let environment = ProcessInfo.processInfo.environment
+        guard let folder = environment["CUTLINE_TEST_EXPORT_UI"] else { return }
+        let delay = Double(environment["CUTLINE_TEST_EXPORT_DELAY"] ?? "") ?? 4
+        let name = environment["CUTLINE_TEST_EXPORT_NAME"] ?? "screen"
+        let cache = environment["CUTLINE_TEST_EXPORT_CACHE"] != nil
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            MainActor.assumeIsolated { exportUI(to: URL(fileURLWithPath: folder, isDirectory: true), name: name, cache: cache) }
+        }
+    }
+
+    static func exportUI(to folder: URL, name: String, cache: Bool) {
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let windows = NSApp.windows.filter {
+            ($0.isVisible || $0.sheetParent != nil) && $0.frame.width >= 40 && $0.frame.height >= 40 && $0.contentView != nil
+        }
+        var done: [String] = []
+        var used = Set<String>()
+        for window in windows {
+            let title = window.title.isEmpty ? window.className : window.title
+            var base = name + "__" + slug(title) + (window.sheetParent != nil ? "-sheet" : window.parent != nil ? "-child" : "")
+            let stem = base
+            var n = 2
+            while used.contains(base) { base = stem + "-\(n)"; n += 1 }
+            used.insert(base)
+            guard let view = window.contentView?.superview ?? window.contentView else { continue }
+            let spec: [String: Any] = ["title": window.title, "windowClass": window.className, "windowNumber": window.windowNumber,
+                                       "size": [round2(window.frame.width), round2(window.frame.height)],
+                                       "appearance": window.effectiveAppearance.name.rawValue,
+                                       "language": Locale.preferredLanguages.first ?? "", "views": viewTree(view, in: window)]
+            if let json = try? JSONSerialization.data(withJSONObject: spec, options: [.prettyPrinted, .sortedKeys]) {
+                try? json.write(to: folder.appendingPathComponent(base + ".views.json"))
+            }
+            if cache, let png = bitmap2x(view) { try? png.write(to: folder.appendingPathComponent(base + ".cache.png")) }
+            done.append("\(window.windowNumber) \(base)")
+        }
+        try? (done.joined(separator: "\n") + "\n").write(to: folder.appendingPathComponent(name + ".done"), atomically: true, encoding: .utf8)
+        NSLog("CUTLINE_TEST export %@", done.joined(separator: ", "))
+    }
+
+    private static func slug(_ text: String) -> String {
+        let s = text.lowercased().unicodeScalars.map { CharacterSet.alphanumerics.contains($0) && $0.isASCII ? String($0) : "-" }.joined()
+        return s.split(separator: "-").joined(separator: "-")
+    }
+
+    /// The AppKit views, with what accessibility doesn't tell: fonts and colors of fields, labels and buttons.
+    private static func viewTree(_ root: NSView, in window: NSWindow) -> [[String: Any]] {
+        let frame = window.frame
+        var views: [[String: Any]] = []
+        func walk(_ v: NSView, parent: Int?) {
+            let id = views.count
+            var entry: [String: Any] = ["id": id, "class": v.className]
+            if let parent { entry["parent"] = parent }
+            let r = window.convertToScreen(v.convert(v.bounds, to: nil))
+            entry["frame"] = [round2(r.minX - frame.minX), round2(frame.maxY - r.maxY), round2(r.width), round2(r.height)]
+            if v.isHidden { entry["hidden"] = true }
+            if let field = v as? NSTextField {
+                entry["string"] = field.stringValue
+                entry["textColor"] = hex(field.textColor)
+                if field.drawsBackground { entry["backgroundColor"] = hex(field.backgroundColor) }
+            }
+            if let button = v as? NSButton { entry["string"] = button.title }
+            if let control = v as? NSControl, let font = control.font {
+                entry["font"] = font.fontName
+                entry["size"] = Double(font.pointSize)
+            }
+            if let layer = v.layer {
+                if let color = layer.backgroundColor { entry["layerBackground"] = hex(NSColor(cgColor: color)) }
+                if layer.cornerRadius > 0 { entry["cornerRadius"] = Double(layer.cornerRadius) }
+            }
+            views.append(entry)
+            for sub in v.subviews { walk(sub, parent: id) }
+        }
+        walk(root, parent: nil)
+        return views
+    }
+
+    private static func bitmap2x(_ view: NSView) -> Data? {
+        let size = view.bounds.size
+        guard let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: Int(size.width * 2), pixelsHigh: Int(size.height * 2),
+                                         bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                                         colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0) else { return nil }
+        rep.size = size
+        view.cacheDisplay(in: view.bounds, to: rep)
+        return rep.representation(using: .png, properties: [:])
+    }
+
+    private static func round2(_ v: CGFloat) -> Double { (Double(v) * 100).rounded() / 100 }
+
+    private static func hex(_ color: NSColor?) -> String? {
+        guard let c = color?.usingColorSpace(.sRGB) else { return nil }
+        let parts = [c.redComponent, c.greenComponent, c.blueComponent, c.alphaComponent].map { Int(($0 * 255).rounded()) }
+        return "#" + parts.map { String(format: "%02X", max(0, min(255, $0))) }.joined()
     }
 }
 #endif
